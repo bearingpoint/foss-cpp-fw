@@ -31,6 +31,7 @@
 #include <boglfw/perf/marker.h>
 #include <boglfw/perf/results.h>
 #include <boglfw/perf/frameCapture.h>
+#include <boglfw/perf/perfPrint.h>
 
 #include <GLFW/glfw3.h>
 #include <Box2D/Box2D.h>
@@ -87,11 +88,6 @@ void onInputEventHandler(InputEvent& ev) {
 			captureFrame = true;
 	}
 }
-
-// these are defined in perfPrint.cpp
-void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data);
-void printTopHits(std::vector<perf::sectionData> data);
-void printCallTree(std::vector<std::shared_ptr<perf::sectionData>> t, int level);
 
 int main(int argc, char* argv[]) {
 	perf::setCrtThreadName("main");
@@ -284,3 +280,4 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+
