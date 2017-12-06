@@ -16,7 +16,6 @@
 
 class RenderContext;
 class BinaryStream;
-enum class SerializationObjectTypes;
 struct aabb;
 
 class Entity {
@@ -39,7 +38,7 @@ public:
 	virtual void update(float dt) {}
 	virtual void draw(RenderContext const& ctx) {}
 	virtual void serialize(BinaryStream &stream);
-	virtual SerializationObjectTypes getSerializationType();
+	virtual int getSerializationType();
 	virtual EntityType getEntityType() const = 0;
 	virtual aabb getAABB() const = 0;
 

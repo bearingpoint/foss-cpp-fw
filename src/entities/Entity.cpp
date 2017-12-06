@@ -31,9 +31,9 @@ void Entity::destroy() {
 
 void Entity::serialize(BinaryStream &stream) { assertDbg(false && "forgot to override this?"); }
 
-SerializationObjectTypes Entity::getSerializationType() {
+int Entity::getSerializationType() {
 	assertDbg(false && "forgot to override this?");
-	return (SerializationObjectTypes)0;
+	return 0;
 }
 
 glm::vec2 Entity::getPosition() {
