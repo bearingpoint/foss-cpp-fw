@@ -15,9 +15,6 @@ void gltBegin();
 // finishes a frame and displays the result
 void gltEnd();
 
-// draws an image (sprite) in screen space
-void gltDrawImg(int x, int y, unsigned width, unsigned height, GLenum format, GLenum type, const GLvoid * data);
-
 GLFWwindow* gltGetWindow();
 
 #endif //__glToolkit_h__
