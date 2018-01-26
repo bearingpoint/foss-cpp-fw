@@ -33,12 +33,12 @@ public:
 	// these flags MUST NOT change during the life time of the object, or else UNDEFINED BEHAVIOUR
 	virtual FunctionalityFlags getFunctionalityFlags() const { return FunctionalityFlags::NONE; }
 	virtual glm::vec3 getWorldTransform() const = 0;
-	glm::vec2 getPosition();
+	glm::vec2 getPosition() const;
 
 	virtual void update(float dt) {}
 	virtual void draw(RenderContext const& ctx) {}
-	virtual void serialize(BinaryStream &stream);
-	virtual int getSerializationType();
+	virtual void serialize(BinaryStream &stream) const;
+	virtual int getSerializationType() const;
 	virtual EntityType getEntityType() const = 0;
 	virtual aabb getAABB() const = 0;
 

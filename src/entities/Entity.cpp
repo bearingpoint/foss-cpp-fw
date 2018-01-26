@@ -29,14 +29,14 @@ void Entity::destroy() {
 		delete this;
 }
 
-void Entity::serialize(BinaryStream &stream) { assertDbg(false && "forgot to override this?"); }
+void Entity::serialize(BinaryStream &stream) const { assertDbg(false && "forgot to override this?"); }
 
-int Entity::getSerializationType() {
+int Entity::getSerializationType() const {
 	assertDbg(false && "forgot to override this?");
 	return 0;
 }
 
-glm::vec2 Entity::getPosition() {
+glm::vec2 Entity::getPosition() const {
 	return vec3xy(getWorldTransform());
 }
 
