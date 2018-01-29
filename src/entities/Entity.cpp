@@ -24,7 +24,7 @@ void Entity::destroy() {
 		return;
 	}
 	if (managed_)
-		World::getInstance()->destroyEntity(this);
+		World::getInstance().destroyEntity(this);
 	else
 		delete this;
 }

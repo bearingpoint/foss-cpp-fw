@@ -30,8 +30,6 @@
 
 #define MT_UPDATE	// enables parallel update on entities, using the thread pool
 
-static World *instance = nullptr;
-
 World::World()
 	: physWld(nullptr)
 	, groundBody(nullptr)
@@ -39,8 +37,6 @@ World::World()
 	, entsToTakeOver(1024)
 	, deferredActions_(4096)
 {
-	assert(instance == nullptr && "attempting to initialize multiple instances of World!!!");
-	instance = this;
 #ifdef DEBUG
 	ownerThreadId_ = std::this_thread::get_id();
 #endif
@@ -53,8 +49,8 @@ void World::setPhysics(b2World* phys) {
 	groundBody = physWld->CreateBody(&gdef);
 }
 
-World* World::getInstance() {
-	assert(instance && "No existing World instance!!!");
+World& World::getInstance() {
+    static World instance;
 	return instance;
 }
 

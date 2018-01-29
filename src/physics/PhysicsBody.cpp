@@ -61,8 +61,8 @@ void PhysicsBody::create(const PhysicsProperties& props) {
 	def.angularVelocity = props.angularVelocity;
 	def.linearVelocity = g2b(props.velocity);
 
-	World::getInstance()->queueDeferredAction([this, def] {
-		b2Body_ = World::getInstance()->getPhysics()->CreateBody(&def);
+	World::getInstance().queueDeferredAction([this, def] {
+		b2Body_ = World::getInstance().getPhysics()->CreateBody(&def);
 	});
 }
 

@@ -27,7 +27,7 @@ class PhysDestroyListener;
 
 class World : public IOperationSpatialLocator {
 public:
-	static World* getInstance();
+	static World& getInstance();
 	World();
 	virtual ~World();
 
@@ -65,7 +65,7 @@ public:
 
 #ifdef DEBUG
 	static void assertOnMainThread() {
-		assert(std::this_thread::get_id() == getInstance()->ownerThreadId_);
+		assert(std::this_thread::get_id() == getInstance().ownerThreadId_);
 	}
 #endif
 
