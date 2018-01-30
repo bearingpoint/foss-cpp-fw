@@ -23,6 +23,8 @@ add_library(boglfw ${sources} ${data})
 set_property(TARGET boglfw PROPERTY CXX_STANDARD 14)
 target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS)
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
 ADD_CUSTOM_COMMAND(
     TARGET boglfw
     POST_BUILD

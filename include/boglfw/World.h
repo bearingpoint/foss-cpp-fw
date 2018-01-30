@@ -67,6 +67,10 @@ public:
 	static void assertOnMainThread() {
 		assert(std::this_thread::get_id() == getInstance().ownerThreadId_);
 	}
+#else
+	static void assertOnMainThread() {
+		throw std::runtime_error("Don't call this method on Release builds!");
+	}
 #endif
 
 protected:

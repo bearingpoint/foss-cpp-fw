@@ -39,6 +39,7 @@ World::World()
 {
 #ifdef DEBUG
 	ownerThreadId_ = std::this_thread::get_id();
+	LOGLN("World bound to thread " << ownerThreadId_);
 #endif
 }
 

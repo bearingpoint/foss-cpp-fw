@@ -21,7 +21,7 @@
 
 using namespace glm;
 
-//#define DISABLE_MIPMAPS
+#define DISABLE_MIPMAPS
 
 static GLText* instance = nullptr;
 
