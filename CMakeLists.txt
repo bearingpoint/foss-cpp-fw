@@ -21,7 +21,7 @@ list(REMOVE_ITEM sources ${CMAKE_SOURCE_DIR}/src/main.cpp)
 add_library(boglfw ${sources} ${data})
 
 set_property(TARGET boglfw PROPERTY CXX_STANDARD 14)
-target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS)
+target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 

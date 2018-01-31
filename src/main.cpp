@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
 		win1->addElement(std::make_shared<Button>(glm::vec2(100, 100), glm::vec2(60, 35), "buton1"));
 		win1->addElement(std::make_shared<TextField>(glm::vec2(50, 170), glm::vec2(200, 40), "text"));*/
 
-		OperationsStack opStack(vp1, World::getInstance(), &physWld);
+		OperationsStack opStack(vp1, &World::getInstance(), &physWld);
 		opStack.pushOperation(std::unique_ptr<IOperation>(new OperationPan(InputEvent::MB_RIGHT)));
 		opStack.pushOperation(std::unique_ptr<IOperation>(new OperationSpring(InputEvent::MB_LEFT)));
 		opStack.pushOperation(std::unique_ptr<IOperation>(new OperationGui(Gui)));
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 				{20, 10, ViewportCoord::percent}); 											// size
 
 		DrawList drawList;
-		drawList.add(World::getInstance());
+		drawList.add(&World::getInstance());
 		drawList.add(&physWld);
 		drawList.add(&scale);
 		drawList.add(&sigViewer);
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
 		UpdateList updateList;
 		updateList.add(&physWld);
 		updateList.add(&contactListener);
-		updateList.add(World::getInstance());
+		updateList.add(&World::getInstance());
 		updateList.add(&sigViewer);
 
 		float realTime = 0;							// [s]
