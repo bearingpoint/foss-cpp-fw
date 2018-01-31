@@ -28,7 +28,14 @@
 #include <dmalloc.h>
 #endif
 
-#define MT_UPDATE	// enables parallel update on entities, using the thread pool
+static std::atomic_bool initialized { false };
+static WorldConfig config;
+
+void World::setConfig(WorldConfig cfg) {
+	if (initialized.load())
+		throw std::runtime_error("Called World::setConfig after World has been instantiated!!");
+	config = cfg;
+}
 
 World::World()
 	: physWld(nullptr)
@@ -41,6 +48,11 @@ World::World()
 	ownerThreadId_ = std::this_thread::get_id();
 	LOGLN("World bound to thread " << ownerThreadId_);
 #endif
+	extentXn_ = config.extent_Xn;
+	extentXp_ = config.extent_Xp;
+	extentYn_ = config.extent_Yn;
+	extentYp_ = config.extent_Yp;
+	initialized.store(true);
 }
 
 void World::setPhysics(b2World* phys) {
@@ -221,18 +233,19 @@ void World::update(float dt) {
 	// do the actual update on entities:
 	do {
 	PERF_MARKER("entities-update");
-#ifdef MT_UPDATE
-	parallel_for(
-#else
-	std::for_each(
-#endif
+
+	auto pred = [dt] (Entity* e) {
+		e->update(dt);
+	};
+	if (config.disableParallelProcessing) {
+		for (auto e : entsToUpdate)
+			pred(e);
+	} else
+		parallel_for(
 			entsToUpdate.begin(), entsToUpdate.end(),
-#ifdef MT_UPDATE
 			Infrastructure::getThreadPool(),
-#endif
-			[dt] (auto &e) {
-				e->update(dt);
-			});
+			pred
+		);
 	} while (0);
 
 	// execute deferred actions synchronously:

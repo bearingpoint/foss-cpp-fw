@@ -25,10 +25,19 @@ class b2Body;
 struct b2AABB;
 class PhysDestroyListener;
 
+struct WorldConfig {
+	bool disableParallelProcessing = false;	// set to true to disable parallel (multi-threaded) update of entities
+	float extent_Xn = -10;
+	float extent_Xp = 10;
+	float extent_Yn = -10;
+	float extent_Yp = 10;
+};
+
 class World : public IOperationSpatialLocator {
 public:
+	static void setConfig(WorldConfig cfg);
+
 	static World& getInstance();
-	World();
 	virtual ~World();
 
 	/**
@@ -98,6 +107,9 @@ protected:
 
 	void getFixtures(std::vector<b2Fixture*> &out, b2AABB const& aabb);
 	bool testEntity(Entity &e, EntityType filterTypes, Entity::FunctionalityFlags filterFlags);
+
+private:
+	World();
 };
 
 #endif /* WORLD_H_ */
