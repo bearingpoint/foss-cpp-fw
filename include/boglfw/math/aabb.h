@@ -47,6 +47,10 @@ struct aabb {
 		return vMin.x > vMax.x || vMin.y > vMax.y;
 	}
 
+	glm::vec2 center() const {
+		return (vMin + vMax) * 0.5f;
+	}
+
 	aabb reunion(aabb const& x) {
 		aabb o(*this);
 		if (o.vMin.x > x.vMin.x)

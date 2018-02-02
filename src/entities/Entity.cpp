@@ -36,7 +36,7 @@ int Entity::getSerializationType() const {
 	return 0;
 }
 
-glm::vec2 Entity::getPosition() const {
-	return vec3xy(getWorldTransform());
-}
+//glm::vec2 Entity::getPosition() const {
+//	return vec3xy(getWorldTransform());
+//}
 
