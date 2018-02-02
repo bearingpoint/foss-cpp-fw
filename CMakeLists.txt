@@ -29,11 +29,9 @@ ADD_CUSTOM_COMMAND(
     TARGET boglfw
     POST_BUILD
     #COMMAND cp -r ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/dist/
-    COMMAND mkdir -p ${CMAKE_BINARY_DIR}/dist/include
-    COMMAND rsync -qalW --del ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/dist/include
+    COMMAND rsync -qalW --del ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/dist/
     #COMMAND cp -r ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/dist/
-    COMMAND mkdir -p ${CMAKE_BINARY_DIR}/dist/data
-    COMMAND rsync -qalW --del ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/dist/data
+    COMMAND rsync -qalW --del ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/dist/
     COMMAND cp ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_BINARY_DIR}/dist/
 )
 
