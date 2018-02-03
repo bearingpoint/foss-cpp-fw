@@ -8,3 +8,7 @@ Debug/
 Release/
 .metadata/
 RemoteSystemsTempFiles/
+.project
+.cproject
+.settings/
+boglfw-eclipse/
