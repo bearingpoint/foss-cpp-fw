@@ -51,7 +51,7 @@ struct aabb {
 		return (vMin + vMax) * 0.5f;
 	}
 
-	aabb reunion(aabb const& x) {
+	aabb reunion(aabb const& x) const {
 		aabb o(*this);
 		if (o.vMin.x > x.vMin.x)
 			o.vMin.x = x.vMin.x;
@@ -64,7 +64,7 @@ struct aabb {
 		return o;
 	}
 
-	aabb intersect(aabb const& x) {
+	aabb intersect(aabb const& x) const {
 		if (x.vMin.x >= vMax.x ||
 			x.vMax.x <= vMin.x ||
 			x.vMin.y >= vMax.y ||
@@ -74,7 +74,7 @@ struct aabb {
 				glm::vec2(min(vMax.x, x.vMax.x), min(vMax.y, x.vMax.y)));
 	}
 
-	bool intersectCircle(glm::vec2 const& c, float r) {
+	bool intersectCircle(glm::vec2 const& c, float r) const {
 		if (c.x + r <= vMin.x ||
 			c.y + r <= vMin.y ||
 			c.x - r >= vMax.x ||
