@@ -40,7 +40,10 @@ public:
 	virtual void serialize(BinaryStream &stream) const;
 	virtual int getSerializationType() const;
 	virtual EntityType getEntityType() const = 0;
-	virtual aabb getAABB() const = 0;
+
+	// specify requirePrecise to force a precise recomputation of the bounding box (performance penalty)
+	// leave this value false in order to allow faster retrieval via caching or slightly less accurate optimizations
+	virtual aabb getAABB(bool requirePrecise=false) const = 0;
 
 	void destroy();
 	bool isZombie() const { return markedForDeletion_.load(std::memory_order_acquire); }
