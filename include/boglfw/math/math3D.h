@@ -5,6 +5,7 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/geometric.hpp>
 
 #include <utility>
@@ -118,6 +119,10 @@ inline glm::vec2& vec3xy(glm::vec3 &in) {
 
 inline glm::vec2 vec3xy(glm::ivec3 const &in) {
 	return glm::vec2(in.x, in.y);
+}
+
+inline glm::vec3 vec4xyz(glm::vec4 const& v) {
+	return {v.x, v.y, v.z};
 }
 
 inline float vec3lenSq(glm::vec3 const&v) {

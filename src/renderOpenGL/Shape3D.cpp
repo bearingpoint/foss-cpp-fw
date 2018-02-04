@@ -13,7 +13,7 @@
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/log.h>
 
-#include <glm/mat4x4.hpp>
+#include <glm/vec4.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -87,6 +87,8 @@ void Shape3D::drawLine(glm::vec3 point1, glm::vec3 point2, glm::vec3 rgb) {
 }
 
 void Shape3D::drawLine(glm::vec3 point1, glm::vec3 point2, glm::vec4 rgba) {
+	glm::vec3* v[] = {&point1, &point2};
+	transform(v, 2);
 	buffer_.push_back({point1, rgba});
 	indices_.push_back(buffer_.size()-1);
 	buffer_.push_back({point2, rgba});
@@ -98,6 +100,7 @@ void Shape3D::drawLineList(glm::vec3 verts[], int nVerts, glm::vec3 rgb) {
 }
 
 void Shape3D::drawLineList(glm::vec3 verts[], int nVerts, glm::vec4 rgba) {
+	transform(verts, nVerts);
 	for (int i=0; i<nVerts; i++) {
 		buffer_.push_back({verts[i], rgba});
 		indices_.push_back(buffer_.size()-1);
@@ -109,6 +112,7 @@ void Shape3D::drawLineStrip(glm::vec3 verts[], int nVerts, glm::vec3 rgb) {
 }
 
 void Shape3D::drawLineStrip(glm::vec3 verts[], int nVerts, glm::vec4 rgba) {
+	transform(verts, nVerts);
 	for (int i=0; i<nVerts; i++) {
 		buffer_.push_back({verts[i], rgba});
 		indices_.push_back(buffer_.size()-1);
@@ -122,6 +126,7 @@ void Shape3D::drawPolygon(glm::vec3 verts[], int nVerts, glm::vec3 rgb) {
 }
 
 void Shape3D::drawPolygon(glm::vec3 verts[], int nVerts, glm::vec4 rgba) {
+	transform(verts, nVerts);
 	for (int i=0; i<nVerts; i++) {
 		buffer_.push_back({verts[i], rgba});
 		indices_.push_back(buffer_.size()-1);
@@ -155,24 +160,33 @@ void Shape3D::drawRectangleXOYCentered(glm::vec2 pos, glm::vec2 size, float rota
 void Shape3D::drawRectangleXOYCentered(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec4 rgba) {
 	float halfW = size.x * 0.5f;
 	float halfH = size.y * 0.5f;
+
+	glm::vec3 v[] = {
+		glm::vec3(glm::rotate(glm::vec2(-halfW, halfH), rotation) + pos, 0),	// top left
+		glm::vec3(glm::rotate(glm::vec2(halfW, halfH), rotation) + pos, 0),		// top right
+		glm::vec3(glm::rotate(glm::vec2(halfW, -halfH), rotation) + pos, 0),	// bottom right
+		glm::vec3(glm::rotate(glm::vec2(-halfW, -halfH), rotation) + pos, 0),	// bottom left
+	};
+	transform(v, 4);
+
 	s_lineVertex sVertex;
 	sVertex.rgba = rgba;
 	// top left
-	sVertex.pos = glm::vec3(glm::rotate(glm::vec2(-halfW, halfH), rotation) + pos, 0);
+	sVertex.pos = v[0];
 	buffer_.push_back(sVertex);
 	indices_.push_back(buffer_.size()-1);
 	// top right
-	sVertex.pos = glm::vec3(glm::rotate(glm::vec2(halfW, halfH), rotation) + pos, 0);
+	sVertex.pos = v[1];
 	buffer_.push_back(sVertex);
 	indices_.push_back(buffer_.size()-1);
 	indices_.push_back(buffer_.size()-1);
 	// bottom right
-	sVertex.pos = glm::vec3(glm::rotate(glm::vec2(halfW, -halfH), rotation) + pos, 0);
+	sVertex.pos = v[2];
 	buffer_.push_back(sVertex);
 	indices_.push_back(buffer_.size()-1);
 	indices_.push_back(buffer_.size()-1);
 	// bottom left
-	sVertex.pos = glm::vec3(glm::rotate(glm::vec2(-halfW, -halfH), rotation) + pos, 0);
+	sVertex.pos = v[3];
 	buffer_.push_back(sVertex);
 	indices_.push_back(buffer_.size()-1);
 	indices_.push_back(buffer_.size()-1);
@@ -195,4 +209,27 @@ void Shape3D::drawCircleXOY(glm::vec2 pos, float radius, int nSides, glm::vec4 r
 	}
 	drawPolygon(v, nSides, rgba);
 	delete [] v;
+}
+
+void Shape3D::setTransform(glm::mat4 mat) {
+	transform_ = mat;
+	transformActive_ = true;
+}
+
+void Shape3D::resetTransform() {
+	transformActive_ = false;
+}
+
+void Shape3D::transform(glm::vec3* v[], int n) {
+	if (!transformActive_)
+		return;
+	for (int i=0; i<n; i++)
+		*v[i] = vec4xyz(transform_ * glm::vec4(*v[i], 1));
+}
+
+void Shape3D::transform(glm::vec3 v[], int n) {
+	if (!transformActive_)
+		return;
+	for (int i=0; i<n; i++)
+		v[i] = vec4xyz(transform_ * glm::vec4(v[i], 1));
 }

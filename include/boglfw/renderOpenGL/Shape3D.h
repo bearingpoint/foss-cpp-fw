@@ -13,6 +13,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 #include <vector>
 #include <set>
 #include <string>
@@ -51,6 +52,10 @@ public:
 	void drawCircleXOY(glm::vec2 pos, float radius, int nSides, glm::vec3 rgb);
 	void drawCircleXOY(glm::vec2 pos, float radius, int nSides, glm::vec4 rgba);
 
+	// sets a transform matrix that will affect all future drawXXX calls
+	void setTransform(glm::mat4 mat);
+	void resetTransform();
+
 protected:
 	Shape3D(Renderer* renderer);
 
@@ -59,6 +64,9 @@ private:
 	void purgeRenderQueue() override;
 	void unload() override;
 
+	void transform(glm::vec3* v[], int n);
+	void transform(glm::vec3 v[], int n);
+
 	struct s_lineVertex {
 		glm::vec3 pos;
 		glm::vec4 rgba; 	// color
@@ -66,6 +74,8 @@ private:
 	// line buffers
 	std::vector<s_lineVertex> buffer_;
 	std::vector<unsigned short> indices_;
+	glm::mat4 transform_ {1};
+	bool transformActive_ = false;
 
 	unsigned lineShaderProgram_;
 	unsigned indexPos_;

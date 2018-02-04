@@ -13,6 +13,14 @@ else
 fi
 make -j4
 
-printf "\n Done. Your files are in ./build/dist\n\n"
+RESULT=$?
+
 cd ..
 
+if [ $RESULT -eq 0 ]; then
+	printf "\n Success. Your files are in ./build/dist\n\n"
+	exit 0
+else
+	printf "\n Errors encountered. \n\n"
+	exit 1
+fi
