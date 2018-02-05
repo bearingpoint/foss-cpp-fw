@@ -45,8 +45,12 @@ inline int circularNext(int index, int n) {
 inline float pointDirectionNormalized(glm::vec2 const &p) {
 	if (p.x >= 0)
 		return asinf(p.y);
-	else
-		return -asinf(p.y) + PI*sign(p.y);
+	else {
+		auto s = sign(p.y);
+		if (s == 0)
+			s = 1;
+		return -asinf(p.y) + PI*s;
+	}
 }
 
 /*
