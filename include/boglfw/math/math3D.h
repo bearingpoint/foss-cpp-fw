@@ -86,7 +86,7 @@ inline float angleDiff(float a, float b) {
 	return d;
 }
 
-// computes the smaller angular difference (that is the smallest value to increment one of them o that the two become equivalent)
+// computes the smaller angular difference (that is the smallest value to increment one of them such that the two become equivalent)
 // between the two angles in absolute terms.
 // The returned value lies in the interval [0, PI)
 inline float absAngleDiff(float a, float b) {
