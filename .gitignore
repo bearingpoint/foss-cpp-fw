@@ -1,13 +1,2 @@
 build/
 workspace/
-CMakeCache.txt
-CMakeFiles/
-Makefile
-cmake_install.cmake
-Debug/
-Release/
-.metadata/
-RemoteSystemsTempFiles/
-.project
-.cproject
-.settings/
