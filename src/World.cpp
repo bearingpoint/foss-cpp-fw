@@ -22,7 +22,9 @@
 
 #include <glm/glm.hpp>
 #include <Box2D/Box2D.h>
+
 #include <algorithm>
+#include <atomic>
 
 #ifdef DEBUG_DMALLOC
 #include <dmalloc.h>
