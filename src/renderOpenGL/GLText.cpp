@@ -21,9 +21,8 @@
 
 using namespace glm;
 
-//#define DISABLE_MIPMAPS
-
 static GLText* instance = nullptr;
+bool GLText::disableMipMaps_ = false;
 
 void GLText::init(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize) {
 	instance = new GLText(renderer, texturePath, rows, cols, firstChar, defaultSize);
@@ -48,9 +47,9 @@ GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols,
 	textureID_ = TextureLoader::loadFromPNG(texturePath, nullptr, nullptr);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID_);
-#ifndef DISABLE_MIPMAPS
-	glGenerateMipmap(GL_TEXTURE_2D);
-#endif
+	if (!disableMipMaps_) {
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
 
 	// Initialize VBO
 	glGenBuffers(1, &vertexBufferID_);

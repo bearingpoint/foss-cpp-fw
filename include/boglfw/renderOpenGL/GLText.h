@@ -19,6 +19,7 @@ class ViewportCoord;
 
 class GLText : public IRenderable {
 public:
+	static void disableMipMaps(bool disable) { disableMipMaps_ = disable; }
 	static GLText* get();
 	virtual ~GLText() override;
 	static void init(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize);
@@ -63,6 +64,8 @@ private:
 	std::string viewportFilter_;
 	std::vector<std::string> viewportFilters_;
 	std::vector<int> verticesPerItem_;
+
+	static bool disableMipMaps_;
 };
 
 #endif /* RENDEROPENGL_GLTEXT_H_ */
