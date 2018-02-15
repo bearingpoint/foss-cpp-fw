@@ -49,6 +49,9 @@ GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols,
 	glBindTexture(GL_TEXTURE_2D, textureID_);
 	if (!disableMipMaps_) {
 		glGenerateMipmap(GL_TEXTURE_2D);
+	} else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	}
 
 	// Initialize VBO
