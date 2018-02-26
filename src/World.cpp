@@ -322,3 +322,14 @@ void World::getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, 
 	});
 }
 
+int World::registerEventHandler(std::string eventName, std::function<void(int param)> handler) {
+	return mapUserEvents_[eventName].add(handler);
+}
+
+void World::removeEventHandler(std::string eventName, int handlerId) {
+	mapUserEvents_[eventName].remove(handlerId);
+}
+
+void World::triggerEvent(std::string eventName, int param) {
+	mapUserEvents_[eventName].trigger(param);
+}

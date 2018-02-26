@@ -13,12 +13,14 @@
 #include "input/operations/IOperationSpatialLocator.h"
 #include "utils/MTVector.h"
 #include "renderOpenGL/RenderContext.h"
+#include "utils/Event.h"
 
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
 
 #include <vector>
 #include <memory>
 #include <atomic>
+#include <map>
 
 class b2World;
 class b2Body;
@@ -72,6 +74,10 @@ public:
 	// this is thread safe by design; if called from the synchronous loop that executes deferred actions, it's executed immediately, else added to the queue
 	void queueDeferredAction(std::function<void()> &&fun);
 
+	int registerEventHandler(std::string eventName, std::function<void(int param)> handler);
+	void removeEventHandler(std::string eventName, int handlerId);
+	void triggerEvent(std::string eventName, int param = 0);
+
 #ifdef DEBUG
 	static void assertOnMainThread() {
 		assert(std::this_thread::get_id() == getInstance().ownerThreadId_);
@@ -101,6 +107,8 @@ protected:
 	// this holds actions deferred from the multi-threaded update which will be executed synchronously at the end on a single thread
 	MTVector<std::function<void()>> deferredActions_;
 	std::atomic<bool> executingDeferredActions_ { false };
+
+	std::map<std::string, Event<void(int param)>> mapUserEvents_;
 
 	void destroyPending();
 	void takeOverPending();
