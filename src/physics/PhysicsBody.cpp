@@ -43,6 +43,9 @@ PhysicsBody::PhysicsBody(PhysicsBody &&b)
 
 
 void PhysicsBody::create(const PhysicsProperties& props) {
+#ifdef DEBUG
+	World::assertOnMainThread();
+#endif
 	assertDbg(b2Body_==nullptr);
 	assertDbg(userPointer_ != nullptr);
 	assertDbg(!std::isnan(props.angle));
@@ -61,9 +64,7 @@ void PhysicsBody::create(const PhysicsProperties& props) {
 	def.angularVelocity = props.angularVelocity;
 	def.linearVelocity = g2b(props.velocity);
 
-	World::getInstance().queueDeferredAction([this, def] {
-		b2Body_ = World::getInstance().getPhysics()->CreateBody(&def);
-	});
+	b2Body_ = World::getInstance().getPhysics()->CreateBody(&def);
 }
 
 PhysicsBody::~PhysicsBody() {
