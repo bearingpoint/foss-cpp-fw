@@ -85,6 +85,7 @@ void SpatialCache::getCachedEntities(std::vector<Entity*> &out, glm::vec2 const&
 
 	for (int i=i1; i<i2; i++)
 		for (int j=j1; j<j2; j++) {
+#warning "Optimize: lock only if update is required"
 			bool expectedLocked = false;
 			while (!cells_[i][j].locked_.compare_exchange_weak(expectedLocked, true, std::memory_order_acq_rel, std::memory_order_relaxed))
 				expectedLocked = false; // spin wait
