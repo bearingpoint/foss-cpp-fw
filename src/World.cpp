@@ -262,7 +262,7 @@ void World::update(float dt) {
 }
 
 void World::queueDeferredAction(std::function<void()> &&fun) {
-	if (executingDeferredActions_)
+	if (executingDeferredActions_.load(std::memory_order_acquire))
 		fun();
 	else
 		deferredActions_.push_back(std::move(fun));

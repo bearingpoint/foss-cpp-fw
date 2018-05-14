@@ -84,7 +84,7 @@ public:
 	}
 #else
 	static void assertOnMainThread() {
-		throw std::runtime_error("Don't call this method on Release builds!");
+		throw std::runtime_error(std::string("Don't call this method on Release builds! : ") + __PRETTY_FUNCTION__ + " : " + std::to_string(__LINE__));
 	}
 #endif
 

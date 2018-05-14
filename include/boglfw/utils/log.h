@@ -129,4 +129,6 @@ public:
 
 #endif // _ENABLE_LOGGING_
 
+#define NOT_IMPLEMENTED throw std::runtime_error(std::string("Not implemented: ") + __PRETTY_FUNCTION__ + " : " + std::to_string(__LINE__))
+
 #endif /* LOG_H_ */

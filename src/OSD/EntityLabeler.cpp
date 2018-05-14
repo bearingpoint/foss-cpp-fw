@@ -13,6 +13,7 @@
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/math/aabb.h>
+#include <boglfw/utils/log.h>
 
 #include <vector>
 
@@ -43,8 +44,7 @@ public:
 			}
 			break;
 		default:
-			assertDbg(false);
-			throw std::runtime_error("must implement!");
+			NOT_IMPLEMENTED;
 		}
 		return ret;
 	}
