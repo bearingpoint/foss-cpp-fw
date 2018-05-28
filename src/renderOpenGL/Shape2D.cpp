@@ -12,6 +12,7 @@
 #include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/log.h>
+#include <boglfw/perf/marker.h>
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -66,6 +67,7 @@ void Shape2D::resetViewportFilter() {
 }
 
 void Shape2D::render(Viewport* vp) {
+	PERF_MARKER_FUNC;
 	glUseProgram(lineShaderProgram_);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -134,6 +136,7 @@ void Shape2D::drawLine(ViewportCoord point1, ViewportCoord point2, float z, glm:
 }
 
 void Shape2D::drawLine(ViewportCoord point1, ViewportCoord point2, float z, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	batches_.push_back({
 		indices_.size(),
 		2,
@@ -150,6 +153,7 @@ void Shape2D::drawLineList(ViewportCoord verts[], int nVerts, float z, glm::vec3
 }
 
 void Shape2D::drawLineList(ViewportCoord verts[], int nVerts, float z, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	batches_.push_back({
 		indices_.size(),
 		nVerts,
@@ -166,6 +170,7 @@ void Shape2D::drawLineStrip(ViewportCoord verts[], int nVerts, float z, glm::vec
 }
 
 void Shape2D::drawLineStrip(ViewportCoord verts[], int nVerts, float z, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	batches_.push_back({
 		indices_.size(),
 		(nVerts-1) * 2,
@@ -184,6 +189,7 @@ void Shape2D::drawPolygon(ViewportCoord verts[], int nVerts, float z, glm::vec3 
 }
 
 void Shape2D::drawPolygon(ViewportCoord verts[], int nVerts, float z, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	batches_.push_back({
 		indices_.size(),
 		nVerts * 2,
@@ -212,6 +218,7 @@ void Shape2D::drawRectangle(ViewportCoord pos, float z, ViewportCoord size, glm:
 }
 
 void Shape2D::drawRectangle(ViewportCoord pos, float z, ViewportCoord size, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	ViewportCoord coords[] {
 		pos,
 		pos + size.y(),
@@ -226,6 +233,7 @@ void Shape2D::drawRectangleCentered(ViewportCoord pos, float z, ViewportCoord si
 }
 
 void Shape2D::drawRectangleCentered(ViewportCoord pos, float z, ViewportCoord size, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	auto hSize = size * 0.5f;
 	ViewportCoord coords[] {
 		pos - hSize,
@@ -255,6 +263,7 @@ void Shape2D::drawCircle(ViewportCoord pos, float radius, float z, int nSides, g
 }
 
 void Shape2D::drawCircle(ViewportCoord pos, float radius, float z, int nSides, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	// make a polygon out of the circle
 	float phiStep = 2 * PI * 1.f / nSides;
 	ViewportCoord *v = new ViewportCoord[nSides];
