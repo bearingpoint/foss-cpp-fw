@@ -105,13 +105,14 @@ void Shape2D::render(Viewport* vp) {
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, 0, &colorBuf[0]);
 	glDrawElements(GL_TRIANGLES, indicesTri_.size(), GL_UNSIGNED_SHORT, &indicesTri_[0]);*/
 
-	// render line primitives:
+	// build buffers:
 	posBuf.clear();
 	colorBuf.clear();
 	for (auto &v : buffer_) {
 		posBuf.push_back(glm::vec3(v.pos.x(vp), v.pos.y(vp), v.z));
 		colorBuf.push_back(v.rgba);
 	}
+	// do the viewport filtering and actual drawing:
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, 0, &posBuf[0]);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, 0, &colorBuf[0]);
 	for (auto &b : batches_) {

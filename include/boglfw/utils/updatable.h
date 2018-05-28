@@ -12,6 +12,10 @@
 
 template<typename T> void update(T* t, float dt);
 
+template<class Callable> void update(Callable *fn, float dt) {
+	(*fn)(dt);
+}
+
 class updatable_wrap {
 public:
 	template<typename T>

@@ -14,6 +14,10 @@ class RenderContext;
 
 template<typename T> void draw(T* t, RenderContext const& ctx);
 
+template<class Callable> void draw(Callable *fn, float dt) {
+	(*fn)(dt);
+}
+
 class drawable_wrap {
 public:
 	template<typename T>
