@@ -277,8 +277,10 @@ void World::draw(RenderContext const& ctx) {
 	Shape3D::get()->drawLine(glm::vec3(extentXn_*1.5f, extentYp_, 0), glm::vec3(extentXp_*1.5f, extentYp_, 0), lineColor);
 	Shape3D::get()->drawLine(glm::vec3(extentXn_*1.5f, extentYn_, 0), glm::vec3(extentXp_*1.5f, extentYn_, 0), lineColor);
 	// draw entities
-	for (auto e : entsToDraw)
+	for (auto e : entsToDraw) {
+		PERF_MARKER((std::string("Entity draw: ") + std::to_string((int)e->getEntityType())).c_str());
 		e->draw(ctx);
+	}
 }
 
 bool World::testEntity(Entity &e, EntityType filterTypes, Entity::FunctionalityFlags filterFlags) {

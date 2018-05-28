@@ -123,7 +123,10 @@ void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data) {
 		return std::chrono::nanoseconds(pt - referenceTime).count();
 	};
 	// compute metrics:
-	int64_t timeSpan = relativeNano(data.back().endTime_);
+	auto lastFrame = std::max_element(data.begin(), data.end(), [] (perf::FrameCapture::frameData const& d1, perf::FrameCapture::frameData const& d2) {
+		return d1.endTime_ < d2.endTime_;
+	});
+	int64_t timeSpan = relativeNano(lastFrame->endTime_);
 	struct winsize sz;
 	ioctl(STDOUT_FILENO,TIOCGWINSZ,&sz);
 	auto lineWidth = sz.ws_col - 10;
@@ -191,7 +194,7 @@ void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data) {
 		if (endOffs > startOffs) {
 			crtStr << ioModif::RESET << (((ioModif::BG_RGB)colors[f.threadIndex_ % colorsCount]) * (f.deadTime_? 0.5 : 1))
 					<< ioModif::BOLD << (f.deadTime_ ? ioModif::FG_GRAY : ioModif::FG_WHITE)
-					<< (char)('A' + frameID - 1);
+					<< (char)('A' + frameID);
 			int callCells = max(0, (int)(endOffs - crtStrOffs - 1));
 			crtStr << std::string(callCells, ' ') << ioModif::RESET;
 			crtStrOffs += callCells + 1;
@@ -220,8 +223,8 @@ void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data) {
 				legend.push_back("");
 			legend[p.second] = p.first;
 		}
-		for (unsigned i=1; i<legend.size(); i++)
-			std::cout << ioModif::BOLD << (char)('A' + i - 1) << ioModif::NO_BOLD << " - " << legend[i] << "\n";
+		for (unsigned i=0; i<legend.size(); i++)
+			std::cout << ioModif::BOLD << (char)('A' + i) << ioModif::NO_BOLD << " - " << legend[i] << "\n";
 	}
 	std::cout << ioModif::RESET << "\n\n";
 }

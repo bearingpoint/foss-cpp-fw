@@ -7,6 +7,7 @@
 
 #include <boglfw/utils/ThreadPool.h>
 #include <boglfw/utils/assert.h>
+#include <boglfw/perf/marker.h>
 
 ThreadPool::ThreadPool(unsigned numberOfThreads)
 {
@@ -43,6 +44,7 @@ void ThreadPool::stop() {
 }
 
 void ThreadPool::workerFunc() {
+	perf::setCrtThreadName("ThreadPoolWorker");
 #ifdef DEBUG_THREADPOOL
 	LOGLN(__FUNCTION__ << " begin");
 #endif

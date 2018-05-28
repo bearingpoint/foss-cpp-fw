@@ -12,6 +12,7 @@
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/log.h>
+#include <boglfw/perf/marker.h>
 
 #include <sstream>
 #include <iomanip>
@@ -26,6 +27,7 @@ SignalDataSource::~SignalDataSource() {
 }
 
 void SignalDataSource::update(float dt) {
+	PERF_MARKER_FUNC;
 	timeSinceLastSample_ += dt;
 	if (timeSinceLastSample_ < sampleInterval_)
 		return;
@@ -61,6 +63,7 @@ void SignalViewer::update(float dt) {
 }
 
 void SignalViewer::draw(RenderContext const&) {
+	PERF_MARKER_FUNC;
 	constexpr int maxYDivisions = 5;
 	constexpr float textSize = 16;
 	constexpr float spacePerChar = textSize/2; // pixels

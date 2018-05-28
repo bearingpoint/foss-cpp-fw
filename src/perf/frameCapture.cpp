@@ -21,7 +21,7 @@ MTVector<FrameCapture*> FrameCapture::allInstances_ {8};
 #endif
 
 void FrameCapture::start(FrameCapture::CaptureMode mode) {
-	assert(mode_.load(std::memory_order_consume) == Disabled && "Capture already in progress!");
+	assert(mode_.load(std::memory_order_acquire) == Disabled && "Capture already in progress!");
 	if (mode == ThisThreadOnly)
 		exclusiveThreadID_.store(std::this_thread::get_id(), std::memory_order_release);
 	captureStartTime_ = std::chrono::high_resolution_clock::now();
@@ -44,7 +44,7 @@ std::string FrameCapture::getThreadNameForIndex(unsigned index) {
 }
 
 std::vector<FrameCapture::frameData> FrameCapture::getResults() {
-	assert(mode_ == Disabled && "Don't call this while capturing!!!");
+	assert(mode_.load(std::memory_order_acquire) == Disabled && "Don't call this while capturing!!!");
 	std::vector<FrameCapture::frameData> ret;
 	for (auto &fv : allFrames_) {
 		assert (fv != nullptr);
