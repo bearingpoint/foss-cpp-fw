@@ -28,8 +28,7 @@ public:
 	void deleteViewport(std::string const& name) override;
 	void clearViewports() override { viewports_.clear(); }
 
-	// DrawList const& list
-	void render();
+	void render(DrawList const& list);
 
 	void unload();
 

@@ -7,7 +7,6 @@
 
 #include <boglfw/physics/PhysicsDebugDraw.h>
 #include <boglfw/renderOpenGL/Shape3D.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/math/box2glm.h>
 #include <boglfw/math/math3D.h>
 
@@ -18,7 +17,7 @@
 #include <dmalloc.h>
 #endif
 
-PhysicsDebugDraw::PhysicsDebugDraw(RenderContext ctx) : rc(ctx) {
+PhysicsDebugDraw::PhysicsDebugDraw() {
 }
 
 PhysicsDebugDraw::~PhysicsDebugDraw() {

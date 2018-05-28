@@ -12,9 +12,9 @@
 
 class RenderContext;
 
-template<typename T> void draw(T* t, RenderContext const& ctx);
+template<typename T> void draw(T* t, Viewport* vp);
 
-template<class Callable> void draw(Callable *fn, float dt) {
+template<class Callable> void draw(Callable *fn, Viewport* vp) {
 	(*fn)(dt);
 }
 
@@ -34,14 +34,14 @@ public:
 		return self_->getRawPtr() == w.self_->getRawPtr();
 	}
 
-	void draw(RenderContext const &ctx) {
-		self_->draw_(ctx);
+	void draw(Viewport* vp) {
+		self_->draw_(vp);
 	}
 
 private:
 	struct concept_t {
 		virtual ~concept_t() noexcept = default;
-		virtual void draw_(RenderContext const& ctx) = 0;
+		virtual void draw_(Viewport* vp) = 0;
 		virtual concept_t* copy()=0;
 		virtual void* getRawPtr() = 0;
 	};
@@ -50,8 +50,8 @@ private:
 		T* obj_;
 		model_t(T* x) : obj_(x) {}
 		~model_t() noexcept {};
-		void draw_(RenderContext const& ctx) override {
-			drawImpl(obj_, ctx, true);
+		void draw_(Viewport* vp) override {
+			drawImpl(obj_, vp, true);
 		}
 		concept_t* copy() override {
 			return new model_t<T>(obj_);
@@ -61,13 +61,13 @@ private:
 		}
 
 		template<typename T1>
-		static decltype(&T1::draw) drawImpl(T1* t, RenderContext const& ctx, bool dummyToUseMember) {
-			t->draw(ctx);
+		static decltype(&T1::draw) drawImpl(T1* t, Viewport* vp, bool dummyToUseMember) {
+			t->draw(vp);
 			return nullptr;
 		}
 		template<typename T1>
-		static void drawImpl(T1* t, RenderContext const& ctx, ...) {
-			::draw(t, ctx);
+		static void drawImpl(T1* t, Viewport* vp, ...) {
+			::draw(t, vp);
 		}
 	};
 

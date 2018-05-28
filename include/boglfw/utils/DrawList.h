@@ -27,9 +27,9 @@ public:
 		}), list_.end());
 	}
 
-	void draw(RenderContext const& ctx) {
+	void draw(Viewport* vp) {
 		for (auto &w : list_)
-			w.draw(ctx);
+			w.draw(vp);
 	}
 
 private:

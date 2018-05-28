@@ -8,12 +8,11 @@
 #ifndef PHYSICSDEBUGDRAW_H_
 #define PHYSICSDEBUGDRAW_H_
 
-#include "../renderOpenGL/RenderContext.h"
 #include <Box2D/Common/b2Draw.h>
 
 class PhysicsDebugDraw : public b2Draw {
 public:
-	PhysicsDebugDraw(RenderContext ctx);
+	PhysicsDebugDraw();
 	virtual ~PhysicsDebugDraw();
 
 	/// Draw a closed polygon provided in CCW order.
@@ -34,9 +33,6 @@ public:
 	/// Draw a transform. Choose your own length scale.
 	/// @param xf a transform.
 	virtual void DrawTransform(const b2Transform& xf);
-
-private:
-	RenderContext rc;
 };
 
 #endif /* PHYSICSDEBUGDRAW_H_ */

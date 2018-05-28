@@ -63,11 +63,11 @@ void Renderer::deleteViewport(std::string const& name) {
 	viewports_.erase(it);
 }
 
-void Renderer::render(RenderContext const& ctx) {
-	// 1. clear viewports:
+void Renderer::render(DrawList const& list) {
 	for (auto &vp : viewports_) {
 		if (!vp.second->isEnabled())
 			continue;
+		// 1. clear viewport:
 		auto vpp = vp.second->position();
 		glViewport(vpp.x, vpp.y, vp.second->width(), vp.second->height());
 		glClearColor(vp.second->backgroundColor_.r, vp.second->backgroundColor_.g, vp.second->backgroundColor_.b, 0);
@@ -75,24 +75,16 @@ void Renderer::render(RenderContext const& ctx) {
 		glEnable(GL_SCISSOR_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glDisable(GL_SCISSOR_TEST);
-	}
-	// 2. execute deferred drawing per viewport
-	for (auto &vp : viewports_) {
-		for (auto &cb : ctx.deferred_)
-			cb(vp.second.get());
-	}
-	ctx.deferred_.clear();
 
-	// 3. do the low-level rendering
-	for (auto r : renderComponents_) {
-		for (auto &vp : viewports_) {
-			if (!vp.second->isEnabled())
-				continue;
-			auto vpp = vp.second->position();
-			glViewport(vpp.x, vpp.y, vp.second->width(), vp.second->height());
+		// 2. build the render queue for this viewport
+		list.draw(vp.second);
+
+		// 3. do the low-level rendering
+		for (auto r : renderComponents_) {
+			// TODO optimization: have two queues per IRenderable - one common and one per viewport and only rebuild the second
 			r->render(vp.second.get());
+			r->purgeRenderQueue();
 		}
-		r->purgeRenderQueue();
 	}
 }
 
