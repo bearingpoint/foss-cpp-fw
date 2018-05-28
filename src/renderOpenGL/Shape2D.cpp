@@ -73,16 +73,15 @@ void Shape2D::render(Viewport* vp) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glBlendEquation(GL_BLEND_EQUATION_ALPHA);
 
-	glUniformMatrix4fv(indexMatViewport_, 1, GL_FALSE, glm::value_ptr(vp->camera()->matProjView()));
 	glEnableVertexAttribArray(indexPos_);
 	glEnableVertexAttribArray(indexColor_);
 
 	// set up viewport space settings:
-	float sx = 2.f / (vp->width()-1);
-	float sy = -2.f / (vp->height()-1);
-	float sz = -1.e-2f;
-	glm::mat4x4 matVP_to_UniformScale(glm::scale(glm::mat4(), glm::vec3(sx, sy, sz)));
 	int vpw = vp->width(), vph = vp->height();
+	float sx = 2.f / (vpw-1);
+	float sy = -2.f / (vph-1);
+	float sz = -1.e-2f;
+	glm::mat4x4 matVP_to_UniformScale(glm::scale(glm::mat4(1), glm::vec3(sx, sy, sz)));
 	glm::mat4x4 matVP_to_Uniform(glm::translate(matVP_to_UniformScale,
 			glm::vec3(-vpw/2, -vph/2, 0)));
 	glUniformMatrix4fv(indexMatViewport_, 1, GL_FALSE, glm::value_ptr(matVP_to_Uniform));
