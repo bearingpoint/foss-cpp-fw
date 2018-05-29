@@ -81,31 +81,14 @@ void Shape2D::render(Viewport* vp) {
 	glEnableVertexAttribArray(indexPos_);
 	glEnableVertexAttribArray(indexColor_);
 
-	static std::vector<glm::vec3> posBuf;
-	posBuf.reserve(max(buffer_.size(), max(bufferTri_.size(), buffer_.size())));
-	static std::vector<glm::vec4> colorBuf;
-	colorBuf.reserve(max(buffer_.size(), max(bufferTri_.size(), buffer_.size())));
-
-	// build triangle vertex buffer:
-	/*for (auto &v : bufferTri_) {
-		posBuf.push_back(glm::vec3(v.pos.x(vp), v.pos.y(vp), v.z));
-		colorBuf.push_back(v.rgba);
-	}
 	// render triangle primitives:
-	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, 0, &posBuf[0]);
+	/*glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, 0, &posBuf[0]);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, 0, &colorBuf[0]);
 	glDrawElements(GL_TRIANGLES, indicesTri_.size(), GL_UNSIGNED_SHORT, &indicesTri_[0]);*/
 
-	// build buffers:
-	posBuf.clear();
-	colorBuf.clear();
-	for (auto &v : buffer_) {
-		posBuf.push_back(glm::vec3(v.pos.x(vp), v.pos.y(vp), v.z));
-		colorBuf.push_back(v.rgba);
-	}
 	// do the actual drawing:
-	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, 0, &posBuf[0]);
-	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, 0, &colorBuf[0]);
+	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
+	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
 	for (auto &b : batches_) {
 		glDrawElements(GL_LINES, b.length, GL_UNSIGNED_SHORT, &indices_[b.offset]);
 	}
@@ -131,9 +114,9 @@ void Shape2D::drawLine(glm::vec2 point1, glm::vec2 point2, float z, glm::vec4 rg
 		indices_.size(),
 		2
 	});
-	buffer_.push_back({point1, z, rgba});
+	buffer_.emplace_back(point1, z, rgba);
 	indices_.push_back(buffer_.size()-1);
-	buffer_.push_back({point2, z, rgba});
+	buffer_.emplace_back(point2, z, rgba);
 	indices_.push_back(buffer_.size()-1);
 }
 
@@ -148,7 +131,7 @@ void Shape2D::drawLineList(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgb
 		nVerts
 	});
 	for (int i=0; i<nVerts; i++) {
-		buffer_.push_back({verts[i], z, rgba});
+		buffer_.emplace_back(verts[i], z, rgba);
 		indices_.push_back(buffer_.size()-1);
 	}
 }
@@ -164,7 +147,7 @@ void Shape2D::drawLineStrip(glm::vec2 verts[], int nVerts, float z, glm::vec4 rg
 		(nVerts-1) * 2
 	});
 	for (int i=0; i<nVerts; i++) {
-		buffer_.push_back({verts[i], z, rgba});
+		buffer_.emplace_back(verts[i], z, rgba);
 		indices_.push_back(buffer_.size()-1);
 		if (i > 0 && i < nVerts-1)
 			indices_.push_back(buffer_.size()-1);
@@ -182,7 +165,7 @@ void Shape2D::drawPolygon(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba
 		nVerts * 2
 	});
 	for (int i=0; i<nVerts; i++) {
-		buffer_.push_back({verts[i], z, rgba});
+		buffer_.emplace_back(verts[i], z, rgba);
 		indices_.push_back(buffer_.size()-1);
 		if (i > 0) {
 			indices_.push_back(buffer_.size()-1);
@@ -207,9 +190,9 @@ void Shape2D::drawRectangle(glm::vec2 pos, float z, glm::vec2 size, glm::vec4 rg
 	PERF_MARKER_FUNC;
 	glm::vec2 coords[] {
 		pos,
-		pos + size.y(),
+		{pos.x, pos.y + size.y},
 		pos + size,
-		pos + size.x()
+		{pos.x + size.x, pos.y}
 	};
 	drawPolygon(coords, 4, z, rgba);
 }
@@ -223,9 +206,9 @@ void Shape2D::drawRectangleCentered(glm::vec2 pos, float z, glm::vec2 size, glm:
 	auto hSize = size * 0.5f;
 	glm::vec2 coords[] {
 		pos - hSize,
-		pos - hSize + hSize.y(),
+		pos - hSize + hSize.y,
 		pos + hSize,
-		pos + hSize - hSize.y()
+		pos + hSize - hSize.y
 	};
 	drawPolygon(coords, 4, z, rgba);
 }
@@ -237,9 +220,9 @@ void Shape2D::drawRectangleFilled(glm::vec2 pos, float z, glm::vec2 size, glm::v
 void Shape2D::drawRectangleFilled(glm::vec2 pos, float z, glm::vec2 size, glm::vec4 rgba) {
 	glm::vec2 coords[] {
 		pos,
-		pos + size.y(),
+		pos + size.y,
 		pos + size,
-		pos + size.x()
+		pos + size.x
 	};
 	drawPolygonFilled(coords, 4, z, rgba);
 }

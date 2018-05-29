@@ -1,5 +1,4 @@
 #include <boglfw/OSD/Label.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/renderOpenGL/GLText.h>
@@ -19,17 +18,17 @@ glm::vec2 Label::boxSize() const {
 	return GLText::get()->getTextRect(value_, textSize_);
 }
 
-void Label::draw() {
-	GLText::get()->setViewportFilter(viewportFilter_);
+void Label::draw(Viewport* vp) {
+	if (!viewportFilter_.empty() && viewportFilter_ != vp->name())
+		return;
+
 	GLText::get()->print(value_, pos_, z_, textSize_, color_);
-	GLText::get()->resetViewportFilter();
 	if (drawFrame) {
-		glm::vec2 rectSize = boxSize();
-		auto vsz = ViewportCoord(rectSize.x, rectSize.y);
+		glm::vec2 rectSize = boxSize() + glm::vec2(5, 5);
 		Shape2D::get()->drawRectangle(
-				pos_ + ViewportCoord{5, 5},
+				pos_.xy(vp) + glm::vec2{5, 5},
 				z_,
-				vsz + ViewportCoord{5, 5},
+				rectSize,
 				color_);
 	}
 }

@@ -27,7 +27,7 @@ public:
 		}), list_.end());
 	}
 
-	void draw(Viewport* vp) {
+	void draw(Viewport* vp) const {
 		for (auto &w : list_)
 			w.draw(vp);
 	}

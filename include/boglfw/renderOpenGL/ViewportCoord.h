@@ -65,6 +65,8 @@ public:
 	float x(Viewport* vp) const;
 	float y(Viewport* vp) const;
 
+	glm::vec2 xy(Viewport* vp) const;
+
 #ifdef DEBUG
 	void debugPrint();
 #endif

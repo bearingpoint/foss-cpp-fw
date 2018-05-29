@@ -14,7 +14,7 @@
 
 class Entity;
 class Label;
-class RenderContext;
+class Viewport;
 
 class EntityLabeler {
 public:
@@ -26,7 +26,7 @@ public:
 	// remove a named label
 	void removeEntityLabel(const Entity* ent, std::string const& name);
 
-	void draw(RenderContext const&);
+	void draw(Viewport* vp);
 
 private:
 	EntityLabeler();

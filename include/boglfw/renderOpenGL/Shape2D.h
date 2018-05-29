@@ -68,6 +68,9 @@ private:
 		glm::vec2 pos;
 		float z;
 		glm::vec4 rgba; 	// color
+
+		s_lineVertex(glm::vec2 pos, float z, glm::vec4 rgba)
+			: pos(pos), z(z), rgba(rgba) {}
 	};
 	// line buffers
 	std::vector<s_lineVertex> buffer_;

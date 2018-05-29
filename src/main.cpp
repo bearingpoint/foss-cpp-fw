@@ -56,7 +56,7 @@ bool captureFrame = false;
 b2World *pPhysWld = nullptr;
 PhysicsDebugDraw *pPhysicsDraw = nullptr;
 
-template<> void draw(b2World* wld, RenderContext const &ctx) {
+template<> void draw(b2World* wld, Viewport* vp) {
 	wld->DrawDebugData();
 }
 
@@ -111,12 +111,11 @@ int main(int argc, char* argv[]) {
 		auto vp = std::make_unique<Viewport>(0, 0, winW, winH);
 		auto vp1 = vp.get();
 		renderer.addViewport("main", std::move(vp));
-		RenderContext renderContext;
 
 		b2ThreadPool b2tp(6);
 		b2World physWld(b2Vec2_zero, &b2tp);
 		pPhysWld = &physWld;
-		PhysicsDebugDraw physicsDraw(renderContext);
+		PhysicsDebugDraw physicsDraw();
 		pPhysicsDraw = &physicsDraw;
 		physicsDraw.SetFlags(
 					  b2Draw::e_shapeBit
@@ -188,6 +187,23 @@ int main(int argc, char* argv[]) {
 		sigViewer.addSignal("frameTime", &frameTime,
 				glm::vec3(1.f, 0.2f, 0.2f), 0.1f, 50, 0.1, 0, 3);
 
+		drawList.add([&](Viewport*) {
+			GLText::get()->print("Salut Lume!\n[Powered by Box2D]",
+					{20, 20, ViewportCoord::absolute, ViewportCoord::bottom | ViewportCoord::left},
+					0, 16, glm::vec3(0.2f, 0.4, 1.0f));
+
+			if (updatePaused) {
+				GLText::get()->print("PAUSED",
+						{50, 50, ViewportCoord::percent},
+						0, 32, glm::vec3(1.f, 0.8f, 0.2f));
+			}
+			if (slowMo) {
+				GLText::get()->print("~~ Slow Motion ON ~~",
+						{10, 45},
+						0, 18, glm::vec3(1.f, 0.5f, 0.1f));
+			}
+		});
+
 		// initial update:
 		updateList.update(0);
 
@@ -231,27 +247,9 @@ int main(int argc, char* argv[]) {
 					PERF_MARKER("frame-draw");
 					// wait until previous frame finishes rendering and show frame output:
 					gltEnd();
-					// draw builds the render queue for the current frame
-					drawList.draw(renderContext);
-
-					GLText::get()->print("Salut Lume!\n[Powered by Box2D]",
-							{20, 20, ViewportCoord::absolute, ViewportCoord::bottom | ViewportCoord::left},
-							0, 16, glm::vec3(0.2f, 0.4, 1.0f));
-
-					if (updatePaused) {
-						GLText::get()->print("PAUSED",
-								{50, 50, ViewportCoord::percent},
-								0, 32, glm::vec3(1.f, 0.8f, 0.2f));
-					}
-					if (slowMo) {
-						GLText::get()->print("~~ Slow Motion ON ~~",
-								{10, 45},
-								0, 18, glm::vec3(1.f, 0.5f, 0.1f));
-					}
-
-					// do the actual openGL render for the previous frame (which is independent of our world)
 					gltBegin();
-					renderer.render(renderContext);
+					// build the render queue for the current frame and start the actual openGL render (which is independent of our world)
+					renderer.render(drawList);
 					// now rendering is on-going, move on to the next update:
 				}
 			} /* frame context */

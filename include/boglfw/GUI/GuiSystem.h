@@ -13,7 +13,7 @@
 #include <vector>
 
 class IGuiElement;
-class RenderContext;
+class Viewport;
 class InputEvent;
 
 class GuiSystem : public ICaptureManager {
@@ -27,7 +27,7 @@ public:
 
 	void addElement(std::shared_ptr<IGuiElement> e);
 	void removeElement(std::shared_ptr<IGuiElement> e);
-	void draw(RenderContext const &ctx);
+	void draw(Viewport* vp);
 	void handleInput(InputEvent &ev);
 
 private:

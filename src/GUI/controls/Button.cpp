@@ -7,9 +7,9 @@
 
 #include <boglfw/GUI/controls/Button.h>
 #include <boglfw/GUI/GuiTheme.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/GLText.h>
+#include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/math/math3D.h>
 
 Button::Button(glm::vec2 pos, glm::vec2 size, std::string text)
@@ -25,7 +25,7 @@ void Button::clicked(glm::vec2 clickPosition, MouseButtons button) {
 		onClick.trigger(this);
 }
 
-void Button::draw(RenderContext const& ctx, glm::vec3 frameTranslation, glm::vec2 frameScale) {
+void Button::draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) {
 	Shape2D::get()->drawRectangleFilled(
 			vec3xy(frameTranslation) + glm::vec2(2,2),	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
 			frameTranslation.z,
@@ -36,8 +36,8 @@ void Button::draw(RenderContext const& ctx, glm::vec3 frameTranslation, glm::vec
 			frameTranslation.z,
 			getSize() * frameScale,
 			GuiTheme::getButtonFrameColor());
-	int tx = frameTranslation.x + 10;
-	int ty = frameTranslation.y + 15;
-	int tz = frameTranslation.z + 1;
+	float tx = frameTranslation.x + 10;
+	float ty = frameTranslation.y + 15;
+	float tz = frameTranslation.z + 1;
 	GLText::get()->print(text_, {tx, ty}, tz, 14, GuiTheme::getButtonTextColor());
 }

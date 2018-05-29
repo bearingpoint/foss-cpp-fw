@@ -19,7 +19,7 @@ public:
 
 	glm::vec2 boxSize() const;
 
-	void draw();
+	void draw(Viewport* vp);
 
 	bool drawFrame = true;
 

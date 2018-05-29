@@ -23,7 +23,7 @@ public:
 
 protected:
 	virtual void clicked(glm::vec2 clickPosition, MouseButtons button) override;
-	virtual void draw(RenderContext const& ctx, glm::vec3 frameTranslation, glm::vec2 frameScale) override;
+	virtual void draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) override;
 
 private:
 	std::string text_;

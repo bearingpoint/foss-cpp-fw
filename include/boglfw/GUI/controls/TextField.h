@@ -21,7 +21,7 @@ public:
 
 	virtual void keyDown(int keyCode) override;
 	virtual void keyChar(char c) override;
-	virtual void draw(RenderContext const &ctx, glm::vec3 frameTranslation, glm::vec2 frameScale) override;
+	virtual void draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) override;
 
 	Event<void(TextField*)> onTrigger;
 

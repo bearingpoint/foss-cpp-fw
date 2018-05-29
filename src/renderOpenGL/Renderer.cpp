@@ -11,7 +11,6 @@
 #include <boglfw/renderOpenGL/Shape3D.h>
 #include <boglfw/renderOpenGL/GLText.h>
 #include <boglfw/renderOpenGL/MeshRenderer.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/utils/DrawList.h>
 #include <boglfw/utils/assert.h>
 
@@ -77,7 +76,7 @@ void Renderer::render(DrawList const& list) {
 		glDisable(GL_SCISSOR_TEST);
 
 		// 2. build the render queue for this viewport
-		list.draw(vp.second);
+		list.draw(vp.second.get());
 
 		// 3. do the low-level rendering
 		for (auto r : renderComponents_) {

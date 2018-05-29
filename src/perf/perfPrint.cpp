@@ -167,7 +167,7 @@ void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data) {
 		threadData &td = threads[f.threadIndex_];
 		// see if this frame appeared before in this thread:
 		if (td.legend.find(f.name_) == td.legend.end())
-			td.legend[f.name_] = td.legend.size();
+			td.legend.insert({f.name_, td.legend.size()});
 		// check if need to pop a stack level
 		while (td.callsEndTime.size() >= 2 && *(td.callsEndTime.end()-2) < relativeNano(f.endTime_))
 			td.callsEndTime.pop_back();

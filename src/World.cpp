@@ -268,7 +268,7 @@ void World::queueDeferredAction(std::function<void()> &&fun) {
 		deferredActions_.push_back(std::move(fun));
 }
 
-void World::draw(RenderContext const& ctx) {
+void World::draw(Viewport* vp) {
 	PERF_MARKER_FUNC;
 	// draw extent lines:
 	glm::vec3 lineColor(0.2f, 0, 0.8f);
@@ -279,7 +279,7 @@ void World::draw(RenderContext const& ctx) {
 	// draw entities
 	for (auto e : entsToDraw) {
 		PERF_MARKER((std::string("Entity draw: ") + std::to_string((int)e->getEntityType())).c_str());
-		e->draw(ctx);
+		e->draw(vp);
 	}
 }
 

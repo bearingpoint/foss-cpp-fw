@@ -21,7 +21,7 @@ public:
 	FunctionalityFlags getFunctionalityFlags() const override { return FunctionalityFlags::DRAWABLE | FunctionalityFlags::UPDATABLE; }
 
 	void update(float dt) override;
-	void draw(RenderContext const& ctx) override;
+	void draw(Viewport* vp) override;
 
 	//physics::DynamicBody* body() { return &body_; }
 

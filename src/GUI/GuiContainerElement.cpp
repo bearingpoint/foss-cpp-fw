@@ -19,11 +19,11 @@ GuiContainerElement::~GuiContainerElement() {
 	children_.clear();
 }
 
-void GuiContainerElement::draw(RenderContext const &ctx, glm::vec3 frameTranslation, glm::vec2 frameScale) {
+void GuiContainerElement::draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) {
 	// draw all children relative to the client area
 	frameTranslation += glm::vec3(clientAreaOffset_, getZValue());
 	for (auto &e : children_) {
-		e->draw(ctx, frameTranslation + glm::vec3(e->getPosition(), e->getZValue()), frameScale);
+		e->draw(vp, frameTranslation + glm::vec3(e->getPosition(), e->getZValue()), frameScale);
 	}
 	// TODO draw frame around focused element:
 }

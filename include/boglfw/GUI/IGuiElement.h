@@ -12,7 +12,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-class RenderContext;
+class Viewport;
 class ICaptureManager;
 
 class IGuiElement {
@@ -29,7 +29,7 @@ public:
 protected:
 	friend class GuiSystem;
 
-	virtual void draw(RenderContext const &ctx, glm::vec3 frameTranslation, glm::vec2 frameScale) = 0;
+	virtual void draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) = 0;
 
 	virtual void mouseEnter() {}
 	virtual void mouseLeave() {}

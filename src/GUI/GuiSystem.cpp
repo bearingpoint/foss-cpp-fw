@@ -10,7 +10,6 @@
 #include <boglfw/GUI/GuiHelper.h>
 #include <boglfw/input/InputEvent.h>
 #include <boglfw/utils/log.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/math/math3D.h>
 
@@ -32,12 +31,12 @@ void GuiSystem::removeElement(std::shared_ptr<IGuiElement> e) {
 	e->setCaptureManager(nullptr);
 }
 
-void GuiSystem::draw(RenderContext const &ctx) {
+void GuiSystem::draw(Viewport* vp) {
 	for (auto &e : elements_)
 	{
 		glm::vec2 bboxMin, bboxMax;
 		e->getBoundingBox(bboxMin, bboxMax);
-		e->draw(ctx, glm::vec3(bboxMin, e->getZValue()), glm::vec2(1));
+		e->draw(vp, glm::vec3(bboxMin, e->getZValue()), glm::vec2(1));
 	}
 }
 

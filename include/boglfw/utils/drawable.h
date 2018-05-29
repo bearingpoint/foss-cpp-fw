@@ -10,12 +10,12 @@
 
 #include <memory>
 
-class RenderContext;
+class Viewport;
 
 template<typename T> void draw(T* t, Viewport* vp);
 
 template<class Callable> void draw(Callable *fn, Viewport* vp) {
-	(*fn)(dt);
+	(*fn)(vp);
 }
 
 class drawable_wrap {
@@ -34,14 +34,14 @@ public:
 		return self_->getRawPtr() == w.self_->getRawPtr();
 	}
 
-	void draw(Viewport* vp) {
+	void draw(Viewport* vp) const {
 		self_->draw_(vp);
 	}
 
 private:
 	struct concept_t {
 		virtual ~concept_t() noexcept = default;
-		virtual void draw_(Viewport* vp) = 0;
+		virtual void draw_(Viewport* vp) const = 0;
 		virtual concept_t* copy()=0;
 		virtual void* getRawPtr() = 0;
 	};
@@ -50,7 +50,7 @@ private:
 		T* obj_;
 		model_t(T* x) : obj_(x) {}
 		~model_t() noexcept {};
-		void draw_(Viewport* vp) override {
+		void draw_(Viewport* vp) const override {
 			drawImpl(obj_, vp, true);
 		}
 		concept_t* copy() override {

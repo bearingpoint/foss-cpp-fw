@@ -6,7 +6,6 @@
  */
 
 #include <boglfw/OSD/SignalViewer.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/GLText.h>
 #include <boglfw/renderOpenGL/Viewport.h>
@@ -62,84 +61,89 @@ void SignalViewer::update(float dt) {
 		s.source_->update(dt);
 }
 
-void SignalViewer::draw(RenderContext const &ctx) {
+void SignalViewer::draw(Viewport* vp) {
 	PERF_MARKER_FUNC;
 
-	ctx.defer([this] (Viewport* vp) {
-		if (!viewportFilter_.empty() && viewportFilter_ != vp->name())
-			return;
+	if (!viewportFilter_.empty() && viewportFilter_ != vp->name())
+		return;
 
-		constexpr int maxYDivisions = 5;
-		constexpr float textSize = 16;
-		constexpr float spacePerChar = textSize/2; // pixels
-		const glm::vec4 frameColor(1.f, 1.f, 1.f, 0.3f);
-		const glm::vec4 divisionColor(1.f, 1.f, 1.f, 0.2f);
-		const glm::vec4 divisionLabelColor(1.f, 1.f, 1.f, 0.6f);
+	constexpr int maxYDivisions = 5;
+	constexpr float textSize = 16;
+	constexpr float spacePerChar = textSize/2; // pixels
+	const glm::vec4 frameColor(1.f, 1.f, 1.f, 0.3f);
+	const glm::vec4 divisionColor(1.f, 1.f, 1.f, 0.2f);
+	const glm::vec4 divisionLabelColor(1.f, 1.f, 1.f, 0.6f);
 
-		glm::vec2 pos = {pos_.x(vp), pos_.y(vp)};
+	glm::vec2 pos = pos_.xy(vp);
+	glm::vec2 size = size_.xy(vp);
 
-		for (auto &s : sourceInfo_) {
-			Shape2D::get()->drawRectangle(pos, z_, size_, frameColor);
-			float sMin = 1.e20f, sMax = -1.e20f;
-			// scan all samples and seek min/max values:
-			for (unsigned i=0; i<s.source_->getNumSamples(); i++) {
-				float si = s.source_->getSample(i);
-				if (si < sMin)
-					sMin = si;
-				if (si > sMax)
-					sMax = si;
-			}
-			// smooth out zoom level:
-			if (sMin > s.lastMinValue_)
-				sMin = sMin*0.1f + s.lastMinValue_*0.9f;
-			if (sMax < s.lastMaxValue_)
-				sMax = sMax*0.1f + s.lastMaxValue_*0.9f;
-			s.lastMinValue_ = sMin;
-			s.lastMaxValue_ = sMax;
-			if (sMin > s.maxLowerY_)
-				sMin = s.maxLowerY_;
-			if (sMax < s.minUpperY_)
-				sMax = s.minUpperY_;
-			// draw samples:
-			ViewportCoord widthPerSample = size_.x() / s.source_->getCapacity();
-			ViewportCoord pixelsPerYUnit = {0, 0};
-			if (sMin != sMax)
-				pixelsPerYUnit = size_.y() / (sMax - sMin);
-			ViewportCoord prevVertex = pos + size_.y() * 0.5f;
-			for (unsigned i=0; i<s.source_->getNumSamples(); i++) {
-				ViewportCoord crtVertex = prevVertex.x() + widthPerSample +
-					pos.y() + size_.y() - pixelsPerYUnit * (s.source_->getSample(i)-sMin);
-				Shape2D::get()->drawLine(prevVertex, crtVertex, z_, s.color_);
-				prevVertex = crtVertex;
-			}
-			// draw value axis division lines & labels
-			if (sMin * sMax < 0) {
-				// zero line is visible
-				auto zeroY = pos.y() + size_.y() + pixelsPerYUnit*sMin;
-				Shape2D::get()->drawLine(pos.x() + zeroY, pos.x() + size_.x() + zeroY, z_, frameColor);
-			}
-			int nYDivs = maxYDivisions; //min(maxYDivisions, (int)(size.y / yDivisionSize));
-			int nDecimals = s.source_->getNumSamples() ? -log10(sMax - sMin) : 0;
-			if (s.displayPrecision_ >= 0)
-				nDecimals = s.displayPrecision_;
-			ViewportCoord yDivisionSize = size_.y() / nYDivs;
-			for (int i=1; i<nYDivs; i++) {
-				auto lineY = pos.y() + size_.y() + yDivisionSize * (-i);
-				Shape2D::get()->drawLine(pos.x() + lineY, pos.x() + size_.x() + lineY, z_, divisionColor);
-				std::stringstream ss;
-				ss << std::fixed << std::setprecision(nDecimals) << sMin + (sMax-sMin) * i / nYDivs;
-				GLText::get()->print(ss.str(), pos.x() - ViewportCoord{(ss.str().size()+1) * spacePerChar, -textSize/2} + lineY, z_, textSize, divisionLabelColor);
-			}
-			// draw title and current value:
-			std::stringstream stitle;
-			stitle << s.name_;
-			if (s.source_->getNumSamples())
-				stitle << " : " << std::fixed << std::setprecision(nDecimals) << s.source_->getSample(s.source_->getNumSamples()-1);
-			else
-				stitle << " (no values)";
-			GLText::get()->print(stitle.str(), pos, z_, textSize, s.color_);
-
-			pos = pos + size_.y() + ViewportCoord{0, 10 + textSize};
+	for (auto &s : sourceInfo_) {
+		Shape2D::get()->drawRectangle(pos, z_, size, frameColor);
+		float sMin = 1.e20f, sMax = -1.e20f;
+		// scan all samples and seek min/max values:
+		for (unsigned i=0; i<s.source_->getNumSamples(); i++) {
+			float si = s.source_->getSample(i);
+			if (si < sMin)
+				sMin = si;
+			if (si > sMax)
+				sMax = si;
 		}
-	});
+		// smooth out zoom level:
+		if (sMin > s.lastMinValue_)
+			sMin = sMin*0.1f + s.lastMinValue_*0.9f;
+		if (sMax < s.lastMaxValue_)
+			sMax = sMax*0.1f + s.lastMaxValue_*0.9f;
+		s.lastMinValue_ = sMin;
+		s.lastMaxValue_ = sMax;
+		if (sMin > s.maxLowerY_)
+			sMin = s.maxLowerY_;
+		if (sMax < s.minUpperY_)
+			sMax = s.minUpperY_;
+		// draw samples:
+		float widthPerSample = size.x / s.source_->getCapacity();
+		float pixelsPerYUnit = 0;
+		if (sMin != sMax)
+			pixelsPerYUnit = size.y / (sMax - sMin);
+		glm::vec2 prevVertex;
+		for (unsigned i=0; i<s.source_->getNumSamples(); i++) {
+			glm::vec2 crtVertex { 0, pos.y + size.y - pixelsPerYUnit * (s.source_->getSample(i)-sMin) };
+			if (i==0) {
+				prevVertex = crtVertex + glm::vec2(pos.x, 0);
+				continue;
+			} else {
+				crtVertex.x += prevVertex.x + widthPerSample;
+			}
+			Shape2D::get()->drawLine(prevVertex, crtVertex, z_, s.color_);
+#warning "build an array and use drawLineStrip"
+			prevVertex = crtVertex;
+		}
+		// draw value axis division lines & labels
+		if (sMin * sMax < 0) {
+			// zero line is visible
+			glm::vec2 zeroY = {0, pos.y + size.y + pixelsPerYUnit*sMin};
+			Shape2D::get()->drawLine(pos + zeroY, pos + glm::vec2(size.x, 0) + zeroY, z_, frameColor);
+		}
+		int nYDivs = maxYDivisions; //min(maxYDivisions, (int)(size.y / yDivisionSize));
+		int nDecimals = s.source_->getNumSamples() ? -log10(sMax - sMin) : 0;
+		if (s.displayPrecision_ >= 0)
+			nDecimals = s.displayPrecision_;
+		float yDivisionSize = size.y / nYDivs;
+		for (int i=1; i<nYDivs; i++) {
+			float lineY = size.y + yDivisionSize * (-i);
+			Shape2D::get()->drawLine(pos + glm::vec2{0, lineY}, pos + glm::vec2{size.x, lineY}, z_, divisionColor);
+			std::stringstream ss;
+			ss << std::fixed << std::setprecision(nDecimals) << sMin + (sMax-sMin) * i / nYDivs;
+			GLText::get()->print(ss.str(), pos + glm::vec2{-(ss.str().size()+1) * spacePerChar, textSize/2 + lineY}, z_, textSize, divisionLabelColor);
+		}
+		// draw title and current value:
+		std::stringstream stitle;
+		stitle << s.name_;
+		if (s.source_->getNumSamples())
+			stitle << " : " << std::fixed << std::setprecision(nDecimals) << s.source_->getSample(s.source_->getNumSamples()-1);
+		else
+			stitle << " (no values)";
+		GLText::get()->print(stitle.str(), pos, z_, textSize, s.color_);
+
+		pos.y += size.y + 10 + textSize;
+	}
 }

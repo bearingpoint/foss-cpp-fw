@@ -1,18 +1,20 @@
 #pragma once
 
+#include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <glm/vec3.hpp>
 
-class RenderContext;
+class Viewport;
 
 class ScaleDisplay
 {
 public:
-	ScaleDisplay(glm::vec3 pos, int maxPixelsPerUnit);
+	ScaleDisplay(ViewportCoord pos, float z, int maxPixelsPerUnit);
 
-	void draw(RenderContext const& ctx);
+	void draw(Viewport* vp);
 
 protected:
-	glm::vec3 pos_;
+	ViewportCoord pos_;
+	float z_;
 	int segmentsXOffset;
 	int segmentHeight;
 	int labelYOffset;

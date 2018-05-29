@@ -13,6 +13,8 @@
 #include <vector>
 #include <map>
 
+class DrawList;
+
 class Renderer : public IViewportManager {
 public:
 	virtual ~Renderer();

@@ -8,7 +8,6 @@
 #include <boglfw/GUI/Window.h>
 #include <boglfw/GUI/GuiTheme.h>
 #include <boglfw/GUI/ICaptureManager.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/math/math3D.h>
 
@@ -21,7 +20,7 @@ Window::Window(glm::vec2 position, glm::vec2 size)
 Window::~Window() {
 }
 
-void Window::draw(RenderContext const &ctx, glm::vec3 frameTranslation, glm::vec2 frameScale) {
+void Window::draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) {
 	glm::ivec3 trans(frameTranslation);
 	// draw frame
 	glm::vec2 scaledSize = getSize();
@@ -41,7 +40,7 @@ void Window::draw(RenderContext const &ctx, glm::vec3 frameTranslation, glm::vec
 			clientSize, GuiTheme::getClientFrameColor());
 
 	// now draw contents:
-	GuiContainerElement::draw(ctx, glm::vec3(trans)+glm::vec3(0,0,0.5f), frameScale);
+	GuiContainerElement::draw(vp, glm::vec3(trans)+glm::vec3(0,0,0.5f), frameScale);
 }
 
 void Window::mouseDown(MouseButtons button) {

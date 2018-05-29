@@ -14,7 +14,7 @@
 #include <glm/vec3.hpp>
 #include <atomic>
 
-class RenderContext;
+class Viewport;
 class BinaryStream;
 struct aabb;
 
@@ -36,7 +36,7 @@ public:
 	//glm::vec2 getPosition() const;
 
 	virtual void update(float dt) {}
-	virtual void draw(RenderContext const& ctx) {}
+	virtual void draw(Viewport* vp) {}
 	virtual void serialize(BinaryStream &stream) const;
 	virtual int getSerializationType() const;
 	virtual EntityType getEntityType() const = 0;

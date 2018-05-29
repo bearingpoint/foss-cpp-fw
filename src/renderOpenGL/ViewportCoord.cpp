@@ -51,6 +51,10 @@ float ViewportCoord::y(Viewport* vp) const {
 	return y;
 }
 
+glm::vec2 ViewportCoord::xy(Viewport* vp) const {
+	return glm::vec2 { x(vp), y(vp) };
+}
+
 ViewportCoord ViewportCoord::scale(float s) const {
 	if (s == 0)
 		return {0, 0};

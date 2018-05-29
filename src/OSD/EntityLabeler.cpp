@@ -8,7 +8,6 @@
 #include <boglfw/OSD/EntityLabeler.h>
 #include <boglfw/entities/Entity.h>
 #include <boglfw/OSD/Label.h>
-#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/math/math3D.h>
@@ -65,7 +64,7 @@ EntityLabeler& EntityLabeler::getInstance() {
 	return instance;
 }
 
-void EntityLabeler::draw(RenderContext const&) {
+void EntityLabeler::draw(Viewport* vp) {
 	std::vector<const Entity*> entsToRemove;
 	for (auto const& p : labels_) {
 		if (p.first->isZombie()) {

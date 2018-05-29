@@ -12,7 +12,6 @@
 #include "SpatialCache.h"
 #include "input/operations/IOperationSpatialLocator.h"
 #include "utils/MTVector.h"
-#include "renderOpenGL/RenderContext.h"
 #include "utils/Event.h"
 
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
@@ -26,6 +25,7 @@ class b2World;
 class b2Body;
 struct b2AABB;
 class PhysDestroyListener;
+class Viewport;
 
 struct WorldConfig {
 	bool disableParallelProcessing = false;	// set to true to disable parallel (multi-threaded) update of entities
@@ -69,7 +69,7 @@ public:
 	void getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags, glm::vec2 const& pos, float radius, bool clipToCircle);
 
 	void update(float dt);
-	void draw(RenderContext const& ctx);
+	void draw(Viewport* vp);
 
 	// this is thread safe by design; if called from the synchronous loop that executes deferred actions, it's executed immediately, else added to the queue
 	void queueDeferredAction(std::function<void()> &&fun);

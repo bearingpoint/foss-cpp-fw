@@ -19,7 +19,7 @@
 #include <functional>
 
 class SignalDataSource;
-class RenderContext;
+class Viewport;
 
 class SignalViewer {
 public:
@@ -57,7 +57,7 @@ public:
 	}
 
 	void update(float dt);
-	void draw(RenderContext const&);
+	void draw(Viewport* vp);
 
 private:
 	std::vector<DataInfo> sourceInfo_;
