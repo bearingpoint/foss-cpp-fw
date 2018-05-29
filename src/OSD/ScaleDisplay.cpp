@@ -75,8 +75,8 @@ void ScaleDisplay::draw(Viewport* vp) {
 		snprintf(scaleLabel, 100, "%g", i*segIncrement);
 		int localSegHeight = (int)(i*segIncrement) == (i*segIncrement) ? 0 : segmentHeight / 2;
 		GLText::get()->print(scaleLabel,
-				pos_ - ViewportCoord{ localSegHeight +segmentsXOffset+i*(int)(pixelsPerUnit*segIncrement),
-				  	  	 10 + localSegHeight },
+				pos_ + ViewportCoord{ -localSegHeight + segmentsXOffset+i*(int)(pixelsPerUnit*segIncrement),
+					 	 -10 + localSegHeight },
 				z_,
 				12, TEXT_COLOR);
 	}
