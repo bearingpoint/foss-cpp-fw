@@ -133,7 +133,7 @@ void SignalViewer::draw(Viewport* vp) {
 			Shape2D::get()->drawLine(pos + glm::vec2{0, lineY}, pos + glm::vec2{size.x, lineY}, z_, divisionColor);
 			std::stringstream ss;
 			ss << std::fixed << std::setprecision(nDecimals) << sMin + (sMax-sMin) * i / nYDivs;
-			GLText::get()->print(ss.str(), pos + glm::vec2{-(ss.str().size()+1) * spacePerChar, textSize/2 + lineY}, z_, textSize, divisionLabelColor);
+			GLText::get()->print(ss.str(), pos + glm::vec2{(ss.str().size()+1) * (-spacePerChar), textSize/2 + lineY}, z_, textSize, divisionLabelColor);
 		}
 		// draw title and current value:
 		std::stringstream stitle;
