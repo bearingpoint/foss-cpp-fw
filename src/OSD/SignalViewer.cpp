@@ -88,13 +88,19 @@ void SignalViewer::draw(Viewport* vp) {
 			if (si > sMax)
 				sMax = si;
 		}
-		// smooth out zoom level:
-		if (sMin > s.lastMinValue_)
-			sMin = sMin*0.1f + s.lastMinValue_*0.9f;
-		if (sMax < s.lastMaxValue_)
-			sMax = sMax*0.1f + s.lastMaxValue_*0.9f;
-		s.lastMinValue_ = sMin;
-		s.lastMaxValue_ = sMax;
+		bool noData = false;
+		if (!s.source_->getNumSamples()) {
+			sMin = sMax = 0;
+			noData = true;
+		} else {
+			// smooth out zoom level:
+			if (sMin > s.lastMinValue_)
+				sMin = sMin*0.1f + s.lastMinValue_*0.9f;
+			if (sMax < s.lastMaxValue_)
+				sMax = sMax*0.1f + s.lastMaxValue_*0.9f;
+			s.lastMinValue_ = sMin;
+			s.lastMaxValue_ = sMax;
+		}
 		if (sMin > s.maxLowerY_)
 			sMin = s.maxLowerY_;
 		if (sMax < s.minUpperY_)
@@ -124,7 +130,7 @@ void SignalViewer::draw(Viewport* vp) {
 			Shape2D::get()->drawLine(pos + zeroY, pos + glm::vec2(size.x, 0) + zeroY, z_, frameColor);
 		}
 		int nYDivs = maxYDivisions; //min(maxYDivisions, (int)(size.y / yDivisionSize));
-		int nDecimals = s.source_->getNumSamples() ? -log10(sMax - sMin) : 0;
+		int nDecimals = noData ? 0 : clamp((int)(4 - log10(sMax - sMin)), 0, 7);
 		if (s.displayPrecision_ >= 0)
 			nDecimals = s.displayPrecision_;
 		float yDivisionSize = size.y / nYDivs;
@@ -138,7 +144,7 @@ void SignalViewer::draw(Viewport* vp) {
 		// draw title and current value:
 		std::stringstream stitle;
 		stitle << s.name_;
-		if (s.source_->getNumSamples())
+		if (!noData)
 			stitle << " : " << std::fixed << std::setprecision(nDecimals) << s.source_->getSample(s.source_->getNumSamples()-1);
 		else
 			stitle << " (no values)";
