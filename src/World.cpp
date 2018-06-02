@@ -45,6 +45,7 @@ World::World()
 	, entsToDestroy(1024)
 	, entsToTakeOver(1024)
 	, deferredActions_(4096)
+	, pendingActions_(4096)
 {
 #ifdef DEBUG
 	ownerThreadId_ = std::this_thread::get_id();
@@ -254,18 +255,26 @@ void World::update(float dt) {
 	{
 		PERF_MARKER("deferred-actions");
 		executingDeferredActions_.store(true, std::memory_order_release);
-		for (auto &a : deferredActions_)
-			a();
-		deferredActions_.clear();
+		pendingActions_.clear();
+		for (auto &a : deferredActions_) {
+			if (a.second-- == 0)
+				a.first();
+			else
+				pendingActions_.push_back(std::move(a));
+		}
+		deferredActions_.swap(pendingActions_);
 		executingDeferredActions_.store(false, std::memory_order_release);
 	}
 }
 
-void World::queueDeferredAction(std::function<void()> &&fun) {
-	if (executingDeferredActions_.load(std::memory_order_acquire))
-		fun();
-	else
-		deferredActions_.push_back(std::move(fun));
+void World::queueDeferredAction(std::function<void()> &&fun, int delayFrames) {
+	if (executingDeferredActions_.load(std::memory_order_acquire)) {
+		if (delayFrames == 0)
+			fun();
+		else
+			pendingActions_.push_back(std::make_pair(std::move(fun), delayFrames));
+	} else
+		deferredActions_.push_back(std::make_pair(std::move(fun), delayFrames));
 }
 
 void World::draw(Viewport* vp) {

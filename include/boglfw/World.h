@@ -71,8 +71,10 @@ public:
 	void update(float dt);
 	void draw(Viewport* vp);
 
-	// this is thread safe by design; if called from the synchronous loop that executes deferred actions, it's executed immediately, else added to the queue
-	void queueDeferredAction(std::function<void()> &&fun);
+	// this is thread safe by design; if called from the synchronous loop that executes deferred actions, it's executed immediately (if delayFrames=0),
+	// else it's added to the queue
+	// delayFrames - number of frames to delay the execution of the action
+	void queueDeferredAction(std::function<void()> &&fun, int delayFrames=0);
 
 	int registerEventHandler(std::string eventName, std::function<void(int param)> handler);
 	void removeEventHandler(std::string eventName, int handlerId);
@@ -105,7 +107,8 @@ protected:
 #endif
 
 	// this holds actions deferred from the multi-threaded update which will be executed synchronously at the end on a single thread
-	MTVector<std::function<void()>> deferredActions_;
+	MTVector<std::pair<std::function<void()>, int>> deferredActions_;
+	decltype(deferredActions_) pendingActions_;
 	std::atomic<bool> executingDeferredActions_ { false };
 
 	std::map<std::string, Event<void(int param)>> mapUserEvents_;
