@@ -21,6 +21,7 @@ std::atomic<std::ostream*> logger::pLogStream_ { &std::cout };
 std::atomic<std::ostream*> logger::pErrStream_ { nullptr };
 std::mutex logger::logMutex_;
 std::mutex logger::errMutex_;
+std::atomic_int logger::logLevel_ { LOG_LEVEL_INFO };
 
 std::string formatCrtDateTime() {
 	time_t t = time(0);   // get time now

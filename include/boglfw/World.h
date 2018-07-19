@@ -77,6 +77,8 @@ public:
 	// delayFrames - number of frames to delay the execution of the action
 	void queueDeferredAction(std::function<void()> &&fun, int delayFrames=0);
 
+	bool hasQueuedDeferredActions() const { return deferredActions_.size() > 0; }
+
 	int registerEventHandler(std::string eventName, std::function<void(int param)> handler);
 	void removeEventHandler(std::string eventName, int handlerId);
 	void triggerEvent(std::string eventName, int param = 0);

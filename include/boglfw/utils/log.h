@@ -21,16 +21,21 @@
 
 #define LOGPREFIX(PREF) logger_prefix logger_prefix_token(PREF);
 
-#define LOGIMPL(X) {if (logger::instance().getLogStream()) {\
-	std::lock_guard<std::mutex> lk(logger::getLogMutex());\
-	logger::instance().writeprefix(*logger::instance().getLogStream());\
-	*logger::instance().getLogStream() << X;\
-}}
+#define LOGIMPL(LEVEL, WRITE_PREFIX, X) {\
+	if (LEVEL <= logger::instance().getLogLevel()) {\
+		if (logger::instance().getLogStream()) {\
+			std::lock_guard<std::mutex> lk(logger::getLogMutex());\
+			if (WRITE_PREFIX)\
+				logger::instance().writeprefix(*logger::instance().getLogStream());\
+			*logger::instance().getLogStream() << X;\
+		}\
+	}\
+}
 
 #ifdef DEBUG
-#define LOG(X) { LOGIMPL(X)\
+#define LOG(X) { LOGIMPL(LOG_LEVEL_INFO, true, X)\
 	/* also put the log on stdout in DEBUG mode */\
-	if (logger::instance().getLogStream() != &std::cout) {\
+	if (LOG_LEVEL_INFO <= logger::instance().getLogLevel() && logger::instance().getLogStream() != &std::cout) {\
 		std::lock(logger::getLogMutex(), logger::getErrMutex());\
 		std::lock_guard<std::mutex> lkL(logger::getLogMutex(), std::adopt_lock);\
 		std::lock_guard<std::mutex> lkE(logger::getErrMutex(), std::adopt_lock);\
@@ -39,15 +44,11 @@
 	}\
 }
 #else
-#define LOG(X) LOGIMPL(X)
+#define LOG(X) LOGIMPL(LOG_LEVEL_INFO, true, X)
 #endif
 
-#define LOGNP(X) { if (*logger::instance().getLogStream()) {\
-	std::lock_guard<std::mutex> lk(logger::getLogMutex());\
-	*logger::instance().getLogStream() << X;\
-	}\
-}
-#define LOGLN(X) {LOG(X << "\n")}
+#define LOGNP(X) LOGIMPL(LOG_LEVEL_INFO, false, X)
+#define LOGLN(X) LOG(X << "\n")
 #define ERROR(X) {\
 	std::lock_guard<std::mutex> lk(logger::getErrMutex());\
 	for (auto stream : {&std::cerr, logger::instance().getErrStream()}) {\
@@ -60,21 +61,24 @@
 }
 
 #else
+#define LOGIMPL(LEVEL, WRITE_PREFIX, X)
 #define LOG(X)
 #define LOGNP(X)
 #define LOGLN(X)
 #define ERROR(X)
 #endif
 
-#ifdef DEBUG
-#define DEBUGLOG LOG
-#define DEBUGLOGLN LOGLN
-#else
-#define DEBUGLOG(X)
-#define DEBUGLOGLN(X)
-#endif
+#define DEBUGLOG(X) LOGIMPL(LOG_LEVEL_DEBUG, true, X)
+#define DEBUGLOGNP(X) LOGIMPL(LOG_LEVEL_DEBUG, false, X)
+#define DEBUGLOGLN(X) DEBUGLOG(X << "\n")
 
 #ifdef _ENABLE_LOGGING_
+
+enum logLevels {
+	LOG_LEVEL_ERROR = 0,
+	LOG_LEVEL_INFO,
+	LOG_LEVEL_DEBUG
+};
 
 class logger {
 public:
@@ -103,6 +107,9 @@ public:
 	static std::mutex& getLogMutex() { return logMutex_; }
 	static std::mutex& getErrMutex() { return errMutex_; }
 
+	static int getLogLevel() { return logLevel_.load(std::memory_order_acquire); }
+	static void setLogLevel(int level) { logLevel_.store(level, std::memory_order_release); }
+
 private:
 	static std::atomic<std::ostream*> pLogStream_;
 	static std::atomic<std::ostream*> pErrStream_;
@@ -110,6 +117,7 @@ private:
 	static thread_local logger& instance_;
 	static std::mutex logMutex_;
 	static std::mutex errMutex_;
+	static std::atomic_int logLevel_;
 
 	void push_prefix(std::string prefix) { prefix_.push_back(prefix); }
 	void pop_prefix() { prefix_.pop_back(); }
