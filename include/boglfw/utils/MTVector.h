@@ -97,18 +97,21 @@ public:
 			move_to(pos_ - 1);
 			return *this;
 		}
-		iterator& operator + (int offs) {
+		iterator operator + (int offs) const {
+			return iterator(parent_, pos_+offs);
+		}
+		iterator& operator += (int offs) {
 			move_to(pos_ + offs);
 			return *this;
 		}
-		size_t operator - (iterator const& it) {
+		size_t operator - (iterator const& it) const {
 			return pos_ - it.pos_;
 		}
-		bool operator !=(iterator const& i) {
+		bool operator !=(iterator const& i) const {
 			assertDbg(&i.parent_ == &parent_ && "iterators must belong to the same vector");
 			return i.pos_ != pos_;
 		}
-		bool operator <(iterator const& i) {
+		bool operator <(iterator const& i) const {
 			assertDbg(&i.parent_ == &parent_ && "iterators must belong to the same vector");
 			return pos_ < i.pos_;
 		}
