@@ -45,11 +45,18 @@ public:
 	ThreadPool(unsigned numberOfThreads);
 	~ThreadPool();	// make sure you call stop() before destruction
 
-	void stop(); // waits for all tasks to be processed, waits for all workers to finish and shuts down the threads in the pool
+	void stop(); // waits for all tasks to finish processing, waits for all workers to finish and shuts down the threads in the pool
+
+	void wait(); // waits for all tasks to finish processing
 
 	template<class F, class... Args>
 	PoolTaskHandle queueTask(F task, Args... args) {
 		std::unique_lock<std::mutex> lk(poolMutex_);
+		while (queueBlocked_.load(std::memory_order_acquire)) {
+			lk.unlock();
+			std::this_thread::yield();
+			lk.lock();
+		}
 #ifdef DEBUG_THREADPOOL
 	LOGLN(__FUNCTION__ << " mutex acquired.");
 #endif
@@ -71,6 +78,7 @@ protected:
 	std::mutex poolMutex_;
 	std::condition_variable condPendingTask_;
 	std::vector<std::thread> workers_;
+	std::atomic<bool> queueBlocked_ { false };	// pool is waiting for all tasks completion, calls to queueTask are blocked until operation finishes
 	std::atomic<bool> stopSignal_ { false };	// signal workers to stop
 	std::atomic<bool> stopRequested_ { false };	// stop requested by user
 	std::atomic<bool> stopped_ { false };
@@ -78,6 +86,7 @@ protected:
 	void workerFunc();
 
 	void checkValidState();
+	void wait_impl(std::unique_lock<std::mutex> &lk);
 };
 
 

@@ -24,16 +24,26 @@ ThreadPool::~ThreadPool() {
 	assertDbg(stopped_ && "Thread pool has not been stopped before destruction!");
 }
 
-void ThreadPool::stop() {
+void ThreadPool::wait_impl(std::unique_lock<std::mutex> &poolLk) {
 	// wait for all tasks to be processed
-	std::unique_lock<std::mutex> poolLk(poolMutex_);
 	checkValidState();
-	stopRequested_.store(true);
+	queueBlocked_.store(true);
 	while (!queuedTasks_.empty()) {
 		poolLk.unlock();
 		std::this_thread::yield();
 		poolLk.lock();
 	}
+	queueBlocked_.store(false);
+}
+
+void ThreadPool::wait() {
+	std::unique_lock<std::mutex> poolLk(poolMutex_);
+	wait_impl(poolLk);
+}
+
+void ThreadPool::stop() {
+	std::unique_lock<std::mutex> poolLk(poolMutex_);
+	wait_impl(poolLk);
 	// wait for all workers to finish and shuts down the threads in the pool
 	stopSignal_.store(true);
 	poolLk.unlock();
