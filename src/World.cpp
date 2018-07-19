@@ -342,5 +342,6 @@ void World::removeEventHandler(std::string eventName, int handlerId) {
 }
 
 void World::triggerEvent(std::string eventName, int param) {
-	mapUserEvents_[eventName].trigger(param);
+	if (!config.disableUserEvents)
+		mapUserEvents_[eventName].trigger(param);
 }
