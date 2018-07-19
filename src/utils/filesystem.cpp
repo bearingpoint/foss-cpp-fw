@@ -141,17 +141,21 @@ bool deleteFile(std::string const& path) {
 	return true;
 }
 
-std::vector<std::string> getFiles(std::string const& baseDir) {
+std::vector<std::string> getFiles(std::string const& baseDir, bool includeSubDirs) {
 	LOGPREFIX("getFiles");
 	std::vector<std::string> files;
     DIR *dp;
     struct dirent *dirp;
+    std::string separator = (baseDir.back() != '/') ? "/" : "";
     if ((dp = opendir(baseDir.c_str())) == NULL) {
     	ERROR(errno << ": Could not open directory \"" << baseDir << "\"\n");
     } else {
         while ((dirp = readdir(dp)) != NULL) {
-            if (dirp->d_name != std::string(".") && dirp->d_name != std::string(".."))
-				files.push_back(baseDir + dirp->d_name);
+            if (dirp->d_name != std::string(".") && dirp->d_name != std::string("..")) {
+            	auto path = baseDir + separator + dirp->d_name;
+            	if (!isDir(path) || includeSubDirs)
+            		files.push_back(path);
+            }
         }
         closedir(dp);
     }
@@ -159,7 +163,7 @@ std::vector<std::string> getFiles(std::string const& baseDir) {
 }
 
 void applyRecursive(std::string const& baseDir, std::function<void(std::string const& filename)> func) {
-	std::vector<std::string> files = getFiles(baseDir);
+	std::vector<std::string> files = getFiles(baseDir, true);
 	for (auto f : files) {
 		if (isDir(f))
 			applyRecursive(f, func);

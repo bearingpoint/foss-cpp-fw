@@ -14,7 +14,7 @@
 
 namespace filesystem {
 
-std::vector<std::string> getFiles(std::string const& baseDir);
+std::vector<std::string> getFiles(std::string const& baseDir, bool includeSubDirs);
 bool isDir(std::string const& dir);
 bool pathExists(std::string const& path);
 bool mkDir(std::string const& path);
