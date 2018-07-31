@@ -1,5 +1,5 @@
 /*
- * dir.cpp
+ * filesystem.cpp
  *
  *  Created on: Oct 15, 2015
  *      Author: bog
@@ -9,17 +9,16 @@
 #include <boglfw/utils/log.h>
 #include <boglfw/utils/strManip.h>
 
-#ifdef __WIN32__
-// TODO include relevant headers here
-#else
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/sendfile.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <utime.h>
+
+#ifndef __WIN32__
+#include <sys/sendfile.h>
 #endif
 
 #include <iostream>
@@ -28,9 +27,6 @@
 #include <functional>
 #include <fstream>
 
-#ifdef __WIN32__
-// TODO write implementation using windows headers...
-#else
 namespace filesystem {
 
 bool isDir(std::string const& dir) {
@@ -126,10 +122,21 @@ bool copyFile(std::string const& source, std::string const& dest) {
 			ERROR(errno << ": Could not stat() source file \"" << source << "\"");
 			ret = false;
 		}
-		if (ret && sendfile(fd, fs, 0, stat_source.st_size) < 0) {
+#ifdef __WIN32__
+		if (ret) {
+			char* data = new char[stat_source.st_size];
+			ret = (read(fs, data, stat_source.st_size) >= 0);
+			if (ret)
+				ret = (write(fd, data, stat_source.st_size) >= 0);
+		}
+#else
+		if (ret) {
+			ret = (sendfile(fd, fs, 0, stat_source.st_size) >= 0);
+		}
+#endif
+		if (!ret) {
 			ERROR(errno << ": Could not copy file \n" <<
-					"\"" << source <<"\" -> \"" << dest << "\"");
-			ret = false;
+				"\"" << source <<"\" -> \"" << dest << "\"");
 		}
 	}
 
@@ -180,5 +187,3 @@ void applyRecursive(std::string const& baseDir, std::function<void(std::string c
 }
 
 } // namespace
-
-#endif // #ifdef __WIN32__
