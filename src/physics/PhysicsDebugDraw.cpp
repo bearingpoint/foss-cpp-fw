@@ -60,3 +60,10 @@ void PhysicsDebugDraw::DrawTransform(const b2Transform& xf) {
 	DrawSegment(xf.p, x, red);
 	DrawSegment(xf.p, y, green);
 }
+
+/// Draw a point.
+void PhysicsDebugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color) {
+	DrawCircle(p, size, color);
+	DrawSegment(p - b2Vec2(size/2, 0), p + b2Vec2(size/2, 0), color);
+	DrawSegment(p - b2Vec2(0, size/2), p + b2Vec2(0, size/2), color);
+}

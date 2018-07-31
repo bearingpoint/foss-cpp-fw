@@ -33,6 +33,9 @@ public:
 	/// Draw a transform. Choose your own length scale.
 	/// @param xf a transform.
 	virtual void DrawTransform(const b2Transform& xf);
+
+	/// Draw a point.
+	virtual void DrawPoint(const b2Vec2& p, float32 size, const b2Color& color);
 };
 
 #endif /* PHYSICSDEBUGDRAW_H_ */
