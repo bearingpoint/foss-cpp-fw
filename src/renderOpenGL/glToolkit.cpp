@@ -38,8 +38,9 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 	glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
-	if (glewInit() != GLEW_OK) {
+	if (int glewError = glewInit() != GLEW_OK) {
 		cout << "FAILED glewInit" << endl;
+		cout << "\"" << glewGetErrorString(glewError) << "\"" << endl;
 		return false;
 	}
 
