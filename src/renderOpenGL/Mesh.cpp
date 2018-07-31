@@ -11,14 +11,14 @@
 #include <GL/gl.h>
 
 Mesh::Mesh() {
-	uint bufs[2];
+	unsigned bufs[2];
 	glGenBuffers(2, bufs);
 	vertexBuffer_ = bufs[0];
 	indexBuffer_ = bufs[1];
 }
 
 Mesh::~Mesh() {
-	uint bufs[] { vertexBuffer_, indexBuffer_ };
+	unsigned bufs[] { vertexBuffer_, indexBuffer_ };
 	glDeleteBuffers(2, bufs);
 }
 
@@ -144,7 +144,7 @@ void Mesh::createBox(glm::vec3 center, float width, float height, float depth) {
 
 #if (1)	// debug vertices with colors
 	glm::vec3 c[] { {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 0} };
-	for (uint i=0; i<vertices_.size(); i++) {
+	for (unsigned i=0; i<vertices_.size(); i++) {
 		vertices_[i].color = c[i % (sizeof(c) / sizeof(c[0]))];
 	}
 #endif

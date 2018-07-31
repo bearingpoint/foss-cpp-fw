@@ -138,7 +138,7 @@ void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data) {
 	struct threadData {
 		std::vector<std::unique_ptr<std::stringstream>> str;
 		std::vector<int> strOffs;
-		std::map<std::string, uint> legend;
+		std::map<std::string, unsigned> legend;
 		std::vector<unsigned> callsEndTime;
 
 		threadData() = default;

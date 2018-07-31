@@ -228,8 +228,8 @@ void GLText::render(Viewport* pCrtViewport) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// do the drawing:
-	uint offset = 0;
-	for (uint i=0; i<itemPositions_.size(); i++) {
+	unsigned offset = 0;
+	for (unsigned i=0; i<itemPositions_.size(); i++) {
 		if (viewportFilters_[i].empty() || viewportFilters_[i] == pCrtViewport->name()) {
 			glm::vec2 translate(itemPositions_[i].x(pCrtViewport), itemPositions_[i].y(pCrtViewport));
 			glUniform2fv(translationID_, 1, &translate[0]);

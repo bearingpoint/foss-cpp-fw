@@ -23,6 +23,10 @@ add_library(boglfw ${sources} ${data})
 set_property(TARGET boglfw PROPERTY CXX_STANDARD 14)
 target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14)
 
+if (WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__WIN32__")
+endif()
+
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 ADD_CUSTOM_COMMAND(

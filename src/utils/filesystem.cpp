@@ -9,6 +9,9 @@
 #include <boglfw/utils/log.h>
 #include <boglfw/utils/strManip.h>
 
+#ifdef __WIN32__
+// TODO include relevant headers here
+#else
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -17,6 +20,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <utime.h>
+#endif
 
 #include <iostream>
 #include <string>
@@ -24,6 +28,9 @@
 #include <functional>
 #include <fstream>
 
+#ifdef __WIN32__
+// TODO write implementation using windows headers...
+#else
 namespace filesystem {
 
 bool isDir(std::string const& dir) {
@@ -173,3 +180,5 @@ void applyRecursive(std::string const& baseDir, std::function<void(std::string c
 }
 
 } // namespace
+
+#endif // #ifdef __WIN32__
