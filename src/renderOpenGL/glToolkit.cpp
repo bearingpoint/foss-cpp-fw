@@ -21,7 +21,7 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 {
 	// initialize GLFW and set-up window an' all:
 	if (!glfwInit()) {
-		cout << "FAILED glfwInit" << endl;
+		cerr << "FAILED glfwInit" << endl;
 		return false;
 	}
 
@@ -32,15 +32,15 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 
 	window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
 	if (!window) {
-		cout << "FAILED creating window" << endl;
+		cerr << "FAILED creating window" << endl;
 		return false;
 	}
 	glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
 	if (int glewError = glewInit() != GLEW_OK) {
-		cout << "FAILED glewInit" << endl;
-		cout << "\"" << glewGetErrorString(glewError) << "\"" << endl;
+		cerr << "FAILED glewInit" << endl;
+		cerr << "\"" << glewGetErrorString(glewError) << "\"" << endl;
 		return false;
 	}
 
