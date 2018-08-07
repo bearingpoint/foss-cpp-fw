@@ -17,7 +17,9 @@
 #include <memory>
 
 #include <unistd.h>
+#ifndef __WIN32__
 #include <sys/ioctl.h>
+#endif
 
 std::string formatTime(uint64_t val, int mul=1) {
 	static const char* suffix[] = {
@@ -63,7 +65,7 @@ void printCallTree(std::vector<std::shared_ptr<perf::sectionData>> t, int level)
 		return x->getInclusiveNanosec() > y->getInclusiveNanosec();
 	});
 	const auto tab = "    ";
-	std::vector<ulong> frameTimes;
+	std::vector<unsigned long> frameTimes;
 	for (auto &s : t) {
 		for (int i=0; i<level; i++) {
 			std::cout<<"|" << tab;
@@ -127,9 +129,13 @@ void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data) {
 		return d1.endTime_ < d2.endTime_;
 	});
 	int64_t timeSpan = relativeNano(lastFrame->endTime_);
+#ifndef __WIN32__
 	struct winsize sz;
 	ioctl(STDOUT_FILENO,TIOCGWINSZ,&sz);
 	auto lineWidth = sz.ws_col - 10;
+#else
+	auto lineWidth = 70;
+#endif
 	if (lineWidth <= 0)
 		lineWidth = 80; // asume default
 	double cellsPerNanosec = (lineWidth-1.0) / timeSpan;

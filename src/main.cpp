@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 		b2ThreadPool b2tp(6);
 		b2World physWld(b2Vec2_zero, &b2tp);
 		pPhysWld = &physWld;
-		PhysicsDebugDraw physicsDraw();
+		PhysicsDebugDraw physicsDraw;
 		pPhysicsDraw = &physicsDraw;
 		physicsDraw.SetFlags(
 					  b2Draw::e_shapeBit
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 		PhysDestroyListener destroyListener;
 		physWld.SetDestructionListener(&destroyListener);
 
-		World world;
+		World &world = World::getInstance();
 
 		world.setPhysics(&physWld);
 		world.setDestroyListener(&destroyListener);
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 		randSeed(time(NULL));
 		LOGLN("RAND seed: " << rand_seed);
 
-		ScaleDisplay scale(glm::vec3(15, 25, 0), 300);
+		ScaleDisplay scale({15, 25}, 0, 300);
 		SignalViewer sigViewer(
 				{24, 4, ViewportCoord::percent, ViewportCoord::top|ViewportCoord::right},	// position
 				-0.1f, 																		// z
@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
 		sigViewer.addSignal("frameTime", &frameTime,
 				glm::vec3(1.f, 0.2f, 0.2f), 0.1f, 50, 0.1, 0, 3);
 
-		drawList.add([&](Viewport*) {
+		auto infoTexts = [&](Viewport*) {
 			GLText::get()->print("Salut Lume!\n[Powered by Box2D]",
 					{20, 20, ViewportCoord::absolute, ViewportCoord::bottom | ViewportCoord::left},
 					0, 16, glm::vec3(0.2f, 0.4, 1.0f));
@@ -202,7 +202,8 @@ int main(int argc, char* argv[]) {
 						{10, 45},
 						0, 18, glm::vec3(1.f, 0.5f, 0.1f));
 			}
-		});
+		};
+		drawList.add(&infoTexts);
 
 		// initial update:
 		updateList.update(0);

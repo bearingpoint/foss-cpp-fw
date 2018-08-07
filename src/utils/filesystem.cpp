@@ -50,7 +50,11 @@ bool touchFile(std::string const& path) {
 
 bool mkDir(std::string const& path) {
 	LOGPREFIX("mkDir");
-	if (mkdir(path.c_str(), S_IRWXU) < -1) {
+	if (mkdir(path.c_str()
+#ifndef __WIN32__
+			, S_IRWXU
+#endif
+			) < -1) {
 		ERROR(errno << ": Could not create directory \"" << path << "\"");
 		return false;
 	}
@@ -99,7 +103,11 @@ unsigned long getFileTimestamp(std::string const& path) {
 		ERROR("Could not stat() file \"" << path << "\"");
 		return 0;
 	}
+#ifndef __WIN32__
 	return (unsigned long)fileInfo.st_mtim.tv_sec;
+#else
+	return (unsigned long)fileInfo.st_mtime;
+#endif
 }
 
 bool copyFile(std::string const& source, std::string const& dest) {
