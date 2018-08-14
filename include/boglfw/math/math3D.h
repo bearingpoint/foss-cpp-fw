@@ -61,6 +61,7 @@ inline float pointDirectionNormalized(glm::vec2 const &p) {
  * computes the angle from (0,0) in direction p. p can have any arbitrary length
  */
 inline float pointDirection(glm::vec2 const &p) {
+	assertDbg(glm::length(p) != 0);
 	return pointDirectionNormalized(glm::normalize(p));
 }
 
