@@ -163,7 +163,7 @@ bool deleteFile(std::string const& path) {
 	return true;
 }
 
-size_t getFileSize(std::string const& path) {
+uint64_t getFileSize(std::string const& path) {
 	LOGPREFIX("getFileSize");
 	int fs = open(path.c_str(), O_RDONLY, 0);
 	if (fs < 0) {
