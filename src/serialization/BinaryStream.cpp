@@ -102,8 +102,8 @@ void BinaryStream::read(void* outBuffer, size_t size) {
  */
 template<typename T, typename std::enable_if<std::is_fundamental<T>::value, T>::type*>
 BinaryStream& BinaryStream::operator << (T const& t) {
-	size_t dataSize = sizeof(t);
-	if (pos_ + dataSize > capacity_) {
+	size_t data_size = sizeof(t);
+	if (pos_ + data_size > capacity_) {
 		if (ownsBuffer_)
 			expandBuffer();
 		else
@@ -111,13 +111,13 @@ BinaryStream& BinaryStream::operator << (T const& t) {
 	}
 	if (IS_LITTLE_ENDIAN) {
 		// little endian, write directly:
-		memcpy((char*)buffer_+pos_, &t, dataSize);
-		pos_ += dataSize;
+		memcpy((char*)buffer_+pos_, &t, data_size);
+		pos_ += data_size;
 		if (pos_ > size_)
 			size_ = pos_;
 	} else {
 		// big endian, must write byte by byte in reverse order
-		char* ptr = (char*)&t + dataSize-1;
+		char* ptr = (char*)&t + data_size-1;
 		while (ptr >= (char*)&t) {
 			*(((char*)buffer_) + pos_++) = *(ptr--);
 		}
@@ -134,9 +134,9 @@ BinaryStream& BinaryStream::operator << (T const& t) {
  */
 template<typename T, typename std::enable_if<std::is_fundamental<T>::value, T>::type*>
 BinaryStream& BinaryStream::operator >> (T &t) {
-	size_t dataSize = sizeof(t);
+	size_t data_size = sizeof(t);
 	size_t maxSize = ifstream_ ? fileSize_ : size_;
-	if (pos_ + dataSize > maxSize)
+	if (pos_ + data_size > maxSize)
 		throw std::runtime_error("attempted to read past the end of the buffer!");
 	void *readBuffer = buffer_;
 	size_t *readPos = &pos_;
@@ -144,19 +144,19 @@ BinaryStream& BinaryStream::operator >> (T &t) {
 	// because the main buffer may not contain all the bytes needed, and a re-read from file may occur half-way
 	char tempBuffer[32];
 	size_t tempReadPos = 0;
-	assertDbg(dataSize < sizeof(tempBuffer)); // if this ever fails, we need to increase tempBuffer capacity
+	assertDbg(data_size < sizeof(tempBuffer)); // if this ever fails, we need to increase tempBuffer capacity
 	if (ifstream_) {
 		readBuffer = tempBuffer;
 		readPos = &tempReadPos;
-		read((void*)tempBuffer, dataSize);
+		read((void*)tempBuffer, data_size);
 	}
 	if (IS_LITTLE_ENDIAN) {
 		// little endian, read directly:
-		memcpy(&t, (char*)readBuffer+(*readPos), dataSize);
-		*readPos += dataSize;
+		memcpy(&t, (char*)readBuffer+(*readPos), data_size);
+		*readPos += data_size;
 	} else {
 		// big endian, must write byte by byte in reverse order
-		char* ptr = (char*)&t + dataSize-1;
+		char* ptr = (char*)&t + data_size-1;
 		while (ptr >= (char*)&t) {
 			*(ptr--) = *(((char*)readBuffer) + (*readPos)++);
 		}

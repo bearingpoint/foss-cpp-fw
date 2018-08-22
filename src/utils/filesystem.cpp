@@ -163,6 +163,22 @@ bool deleteFile(std::string const& path) {
 	return true;
 }
 
+size_t getFileSize(std::string const& path) {
+	LOGPREFIX("getFileSize");
+	int fs = open(path.c_str(), O_RDONLY, 0);
+	if (fs < 0) {
+		ERROR(errno << ": Could not open file \"" << path <<"\"");
+		return 0;
+	}
+	struct stat stat_source;
+	if (fstat(fs, &stat_source) < 0) {
+		ERROR(errno << ": Could not stat() file \"" << path << "\"");
+		return 0;
+	}
+	close(fs);
+	return stat_source.st_size;
+}
+
 std::vector<std::string> getFiles(std::string const& baseDir, bool includeSubDirs) {
 	LOGPREFIX("getFiles");
 	std::vector<std::string> files;

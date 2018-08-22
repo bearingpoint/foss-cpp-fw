@@ -38,8 +38,8 @@ public:
 
 	virtual ~BinaryStream();
 
-	size_t getCapacity() const { return capacity_; }
-	size_t getSize() const { return ifstream_ ? fileSize_ : size_; }
+	size_t capacity() const { return capacity_; }
+	size_t size() const { return ifstream_ ? fileSize_ : size_; }
 	const void* getBuffer() const { assertDbg(!ifstream_); return buffer_; }
 	void seek(size_t offset);
 	bool eof() { return ifstream_ ? pos_ >= fileSize_ : pos_ >= size_; }

@@ -26,6 +26,7 @@ unsigned long getFileTimestamp(std::string const& path);	// returns timestamp in
 bool touchFile(std::string const& path);
 bool copyFile(std::string const& source, std::string const& dest);
 bool deleteFile(std::string const& path);
+size_t getFileSize(std::string const& path);
 
 void applyRecursive(std::string const& baseDir, std::function<void(std::string const& filename)> func);
 

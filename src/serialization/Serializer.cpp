@@ -69,9 +69,9 @@ bool Serializer::serializeToFile(const std::string &path) {
 	}
 	serializationQueue_.clear();
 	BigFile bigFile;
-	bigFile.addFile("master", masterStream.getBuffer(), masterStream.getSize());
+	bigFile.addFile("master", masterStream.getBuffer(), masterStream.size());
 	for (unsigned i=0; i<vecStreams.size(); i++) {
-		bigFile.addFile(vecFilenames[i], vecStreams[i]->getBuffer(), vecStreams[i]->getSize());
+		bigFile.addFile(vecFilenames[i], vecStreams[i]->getBuffer(), vecStreams[i]->size());
 		vecStreams[i].reset();
 	}
 	return bigFile.saveToDisk(path);

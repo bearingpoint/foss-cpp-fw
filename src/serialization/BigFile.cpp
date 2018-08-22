@@ -76,7 +76,7 @@ bool BigFile::saveToDisk_v1(const std::string &path) {
 		offset += fd.size;
 	}
 	// update table header tableSize field:
-	tableHeader.tableSize = tableStream.getSize();
+	tableHeader.tableSize = tableStream.size();
 
 	// 3. serialize header & table header:
 	BinaryStream headerAndTableStream(sizeof(hdr)+sizeof(tableHeader));
@@ -85,8 +85,8 @@ bool BigFile::saveToDisk_v1(const std::string &path) {
 	// 4. write file data
 	try {
 		std::ofstream file(path, std::ios::out | std::ios::binary);
-		file.write((const char*)headerAndTableStream.getBuffer(), headerAndTableStream.getSize());
-		file.write((const char*)tableStream.getBuffer(), tableStream.getSize());
+		file.write((const char*)headerAndTableStream.getBuffer(), headerAndTableStream.size());
+		file.write((const char*)tableStream.getBuffer(), tableStream.size());
 		for (auto &pair : mapFiles) {
 			FileDescriptor &fd = pair.second;
 			file.write((const char*)fd.pStart, fd.size);
