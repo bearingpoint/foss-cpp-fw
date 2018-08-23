@@ -26,6 +26,7 @@
 #include <vector>
 #include <functional>
 #include <fstream>
+#include <algorithm>
 
 namespace filesystem {
 
@@ -50,11 +51,11 @@ bool touchFile(std::string const& path) {
 
 bool mkDir(std::string const& path) {
 	LOGPREFIX("mkDir");
-	if (mkdir(path.c_str()
+	if (0 != mkdir(path.c_str()
 #ifndef __WIN32__
 			, S_IRWXU
 #endif
-			) < -1) {
+			)) {
 		ERROR(errno << ": Could not create directory \"" << path << "\"");
 		return false;
 	}
@@ -62,10 +63,16 @@ bool mkDir(std::string const& path) {
 }
 
 bool mkDirRecursive(std::string const& path) {
+	if (path.empty() || path==".")
+		return true;
 	std::vector<std::string> dirs = strSplit(path, '/');
-	std::string builtPath = "";
+	// remove empty entries and dot entries
+	dirs.erase(std::remove_if(dirs.begin(), dirs.end(), [](auto &s) {
+		return s.empty() || s == ".";
+	}), dirs.end());
+	std::string builtPath = path[0] == '/' ? "/" : "./";	// start with absolute or relative path
 	for (auto d : dirs) {
-		builtPath += "/" + d;
+		builtPath += d + "/";
 		if (!pathExists(builtPath))
 			if (!mkDir(builtPath))
 				return false;
