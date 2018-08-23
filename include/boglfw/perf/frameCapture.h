@@ -40,7 +40,7 @@ public:
 		frameData(const char name[], std::chrono::time_point<std::chrono::high_resolution_clock> start,
 				unsigned threadIndex, bool deadTime)
 			: startTime_(start), threadIndex_(threadIndex), deadTime_(deadTime) {
-			strncpy(name_, name, sizeof(name_)/sizeof(name_[0]));
+			strncpy(name_, name, sizeof(name_)/sizeof(name_[0]) - 1);
 		}
 	};
 
