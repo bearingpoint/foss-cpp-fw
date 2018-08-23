@@ -44,8 +44,8 @@ World::World()
 	, groundBody(nullptr)
 	, entsToDestroy(1024)
 	, entsToTakeOver(1024)
-	, deferredActions_(4096)
-	, pendingActions_(4096)
+	, deferredActions_(8192)
+	, pendingActions_(8192)
 {
 #ifdef DEBUG
 	ownerThreadId_ = std::this_thread::get_id();
