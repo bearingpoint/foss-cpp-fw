@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 
 class GLFWwindow;
+class SDL_Window;
 
 // initializes openGL an' all
 bool gltInit(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled");
@@ -16,5 +17,8 @@ void gltBegin();
 void gltEnd();
 
 GLFWwindow* gltGetWindow();
+
+// initialize openGL on an SDL window
+bool gltInitWithSDL(SDL_Window* window);
 
 #endif //__glToolkit_h__
