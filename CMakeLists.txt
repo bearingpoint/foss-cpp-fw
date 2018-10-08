@@ -13,6 +13,13 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/dist/lib)
 
 # The following folder will be included
 include_directories("${PROJECT_SOURCE_DIR}/include")
+if (WIN32)
+	link_directories("/mingw64/lib")
+	include_directories("/mingw64/include")
+else()
+	link_directories("/usr/lib")
+	include_directories("/usr/include")
+endif()
 
 file(GLOB_RECURSE sources	include/*.h)
 file(GLOB_RECURSE sources 	src/*.cpp)
