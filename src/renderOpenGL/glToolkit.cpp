@@ -13,6 +13,8 @@ using namespace std;
 #include <cassert>
 
 static GLFWwindow* window = NULL;
+static bool boundToSDL = false;
+SDL_Window* sdl_window = nullptr;
 
 GLFWwindow* gltGetWindow() {
 	return window;
@@ -66,11 +68,15 @@ void gltBegin()
 // finishes a frame and displays the result
 void gltEnd()
 {
-	glfwSwapBuffers(window);
+	if (boundToSDL)
+		SDL_GL_SwapWindow(sdl_window);
+	else
+		glfwSwapBuffers(window);
 }
 
 bool gltInitWithSDL(SDL_Window* window) {
 	assert(window);
+	sdl_window = window;
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -79,5 +85,6 @@ bool gltInitWithSDL(SDL_Window* window) {
 	if (!context)
 		return false;
 	SDL_GL_MakeCurrent(window, context);
+	boundToSDL = true;
 	return initGLEW();
 }
