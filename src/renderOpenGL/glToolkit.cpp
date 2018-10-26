@@ -58,11 +58,11 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 }
 
 // begins a frame
-void gltBegin()
+void gltBegin(glm::vec4 clearColor)
 {
-	glClearColor(0,0,0,0);
+	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClearDepth(1.f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	// ================================
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 // finishes a frame and displays the result
@@ -79,7 +79,7 @@ bool gltInitWithSDL(SDL_Window* window) {
 	sdl_window = window;
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	auto context = SDL_GL_CreateContext(window);
 	if (!context)

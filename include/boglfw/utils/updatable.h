@@ -61,7 +61,7 @@ private:
 			return new model_t<T>(obj_);
 		}
 		void* getRawPtr() override {
-			return obj_;
+			return (void*)obj_;
 		}
 
 		template<typename T1>

@@ -56,8 +56,8 @@ private:
 		concept_t* copy() override {
 			return new model_t<T>(obj_);
 		}
-		void* getRawPtr() {
-			return obj_;
+		void* getRawPtr() override {
+			return (void*)obj_;
 		}
 
 		template<typename T1>

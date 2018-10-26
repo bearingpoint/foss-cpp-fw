@@ -10,7 +10,9 @@
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/math/math3D.h>
+#include <boglfw/utils/tesselate-vec2.h>
 #include <boglfw/utils/log.h>
+#include <boglfw/utils/arrayContainer.h>
 #include <boglfw/perf/marker.h>
 
 #include <glm/mat4x4.hpp>
@@ -179,7 +181,9 @@ void Shape2D::drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec
 }
 
 void Shape2D::drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba) {
-	//TODO must tesselate into triangles
+	arrayContainer<glm::vec2> vtx(verts, nVerts);
+	arrayContainer<decltype(vtx)> vtxWrap(&vtx, 1);
+	std::vector<uint16_t> inds = mapbox::earcut<uint16_t>(vtxWrap);
 }
 
 void Shape2D::drawRectangle(glm::vec2 pos, float z, glm::vec2 size, glm::vec3 rgb) {
