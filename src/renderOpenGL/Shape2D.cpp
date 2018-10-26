@@ -83,17 +83,18 @@ void Shape2D::render(Viewport* vp) {
 	glEnableVertexAttribArray(indexPos_);
 	glEnableVertexAttribArray(indexColor_);
 
-	// render triangle primitives:
-	/*glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, 0, &posBuf[0]);
-	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, 0, &colorBuf[0]);
-	glDrawElements(GL_TRIANGLES, indicesTri_.size(), GL_UNSIGNED_SHORT, &indicesTri_[0]);*/
-
-	// do the actual drawing:
+	// render line primitives
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
 	for (auto &b : batches_) {
 		glDrawElements(GL_LINES, b.length, GL_UNSIGNED_SHORT, &indices_[b.offset]);
 	}
+
+	// render triangle primitives:
+	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].pos);
+	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].rgba);
+	glDisable(GL_CULL_FACE);
+	glDrawElements(GL_TRIANGLES, indicesTri_.size(), GL_UNSIGNED_SHORT, &indicesTri_[0]);
 
 	glDisable(GL_BLEND);
 }
@@ -181,9 +182,19 @@ void Shape2D::drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec
 }
 
 void Shape2D::drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
 	arrayContainer<glm::vec2> vtx(verts, nVerts);
 	arrayContainer<decltype(vtx)> vtxWrap(&vtx, 1);
 	std::vector<uint16_t> inds = mapbox::earcut<uint16_t>(vtxWrap);
+	assertDbg(inds.size() % 3 == 0);
+
+	bufferTri_.reserve(bufferTri_.size() + nVerts);
+	for (auto v = verts; v < verts+nVerts; v++)
+		bufferTri_.emplace_back(*v, z, rgba);
+	indicesTri_.reserve(indicesTri_.size() + inds.size());
+	unsigned base = bufferTri_.size();
+	for (unsigned i=0; i<inds.size(); i++)
+		indicesTri_.push_back(base + inds[i]);
 }
 
 void Shape2D::drawRectangle(glm::vec2 pos, float z, glm::vec2 size, glm::vec3 rgb) {
@@ -209,10 +220,10 @@ void Shape2D::drawRectangleCentered(glm::vec2 pos, float z, glm::vec2 size, glm:
 	PERF_MARKER_FUNC;
 	auto hSize = size * 0.5f;
 	glm::vec2 coords[] {
-		pos - hSize,
-		pos - hSize + hSize.y,
-		pos + hSize,
-		pos + hSize - hSize.y
+		pos + glm::vec2{-hSize.x, -hSize.y},
+		pos + glm::vec2{-hSize.x, +hSize.y},
+		pos + glm::vec2{+hSize.x, +hSize.y},
+		pos + glm::vec2{+hSize.x, -hSize.y}
 	};
 	drawPolygon(coords, 4, z, rgba);
 }
@@ -224,9 +235,9 @@ void Shape2D::drawRectangleFilled(glm::vec2 pos, float z, glm::vec2 size, glm::v
 void Shape2D::drawRectangleFilled(glm::vec2 pos, float z, glm::vec2 size, glm::vec4 rgba) {
 	glm::vec2 coords[] {
 		pos,
-		pos + size.y,
+		pos + glm::vec2{0, size.y},
 		pos + size,
-		pos + size.x
+		pos + glm::vec2{size.x, 0}
 	};
 	drawPolygonFilled(coords, 4, z, rgba);
 }
