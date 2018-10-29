@@ -83,18 +83,18 @@ void Shape2D::render(Viewport* vp) {
 	glEnableVertexAttribArray(indexPos_);
 	glEnableVertexAttribArray(indexColor_);
 
+	// render triangle primitives:
+	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].pos);
+	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].rgba);
+	glDisable(GL_CULL_FACE);
+	glDrawElements(GL_TRIANGLES, indicesTri_.size(), GL_UNSIGNED_SHORT, &indicesTri_[0]);
+
 	// render line primitives
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
 	for (auto &b : batches_) {
 		glDrawElements(GL_LINES, b.length, GL_UNSIGNED_SHORT, &indices_[b.offset]);
 	}
-
-	// render triangle primitives:
-	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].pos);
-	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].rgba);
-	glDisable(GL_CULL_FACE);
-	glDrawElements(GL_TRIANGLES, indicesTri_.size(), GL_UNSIGNED_SHORT, &indicesTri_[0]);
 
 	glDisable(GL_BLEND);
 }
