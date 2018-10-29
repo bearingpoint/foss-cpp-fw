@@ -189,10 +189,10 @@ void Shape2D::drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec
 	assertDbg(inds.size() % 3 == 0);
 
 	bufferTri_.reserve(bufferTri_.size() + nVerts);
+	unsigned base = bufferTri_.size();
 	for (auto v = verts; v < verts+nVerts; v++)
 		bufferTri_.emplace_back(*v, z, rgba);
 	indicesTri_.reserve(indicesTri_.size() + inds.size());
-	unsigned base = bufferTri_.size();
 	for (unsigned i=0; i<inds.size(); i++)
 		indicesTri_.push_back(base + inds[i]);
 }
