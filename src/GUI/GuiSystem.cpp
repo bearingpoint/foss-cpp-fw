@@ -49,6 +49,8 @@ void GuiSystem::normalizeZValuesAndSort(IGuiElement* top) {
 			if (e->getZValue() > maxZ)
 				maxZ = e->getZValue();
 
+	// TODO find a better method because this will crowd all z-values towards zero
+
 	float invMax = maxZ ? 1.f / maxZ : 1;
 	for (unsigned i=0; i<elements_.size(); i++) {
 		for (unsigned j=i+1; j<elements_.size(); j++)

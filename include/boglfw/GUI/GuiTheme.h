@@ -20,6 +20,8 @@ public:
 	static glm::vec4 getClientColor() { return activeTheme_->clientColor; }
 	static glm::vec4 getClientFrameColor() { return activeTheme_->clientFrameColor; }
 	static glm::vec4 getButtonColor() { return activeTheme_->buttonColor; }
+	static glm::vec4 getButtonColorHover() { return activeTheme_->buttonColor; }
+	static glm::vec4 getButtonColorPressed() { return activeTheme_->buttonColor; }
 	static glm::vec4 getButtonFrameColor() { return activeTheme_->buttonFrameColor; }
 	static glm::vec4 getButtonTextColor() { return activeTheme_->buttonTextColor; }
 	static glm::vec4 getTextFieldColor() { return activeTheme_->textFieldColor; }
@@ -30,6 +32,8 @@ protected:
 	glm::vec4 clientColor;
 	glm::vec4 clientFrameColor;
 	glm::vec4 buttonColor;
+	glm::vec4 buttonColorHover;
+	glm::vec4 buttonColorPressed;
 	glm::vec4 buttonFrameColor;
 	glm::vec4 buttonTextColor;
 	glm::vec4 textFieldColor;

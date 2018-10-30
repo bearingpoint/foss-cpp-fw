@@ -42,9 +42,9 @@ if (WIN32)
 	ADD_CUSTOM_COMMAND(
 		TARGET boglfw
 		POST_BUILD
-		COMMAND cp -r ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/dist/
-		COMMAND cp -r ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/dist/
-		COMMAND cp ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_BINARY_DIR}/dist/
+		COMMAND cp -ur ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/dist/
+		COMMAND cp -ur ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/dist/
+		COMMAND cp -u ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_BINARY_DIR}/dist/
 	)
 else()
 	ADD_CUSTOM_COMMAND(

@@ -20,6 +20,7 @@ public:
 	Event<void(Button*)> onClick;
 
 	void setText(std::string text) { text_ = text; }
+	void setIcon(...);
 
 protected:
 	virtual void clicked(glm::vec2 clickPosition, MouseButtons button) override;

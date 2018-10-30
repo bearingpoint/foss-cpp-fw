@@ -13,15 +13,23 @@
 class Infrastructure {
 public:
 	// call this before exiting in order to stop the thread pool and free resources
-	static void shutDown() { getInst().shutDown_(); }
+	static void shutDown() { getInst(true); }
 
-	static ThreadPool& getThreadPool() { return getInst().threadPool_; }
+	static ThreadPool& getThreadPool() { return getInst(false).threadPool_; }
 
 private:
 	Infrastructure();
-	static Infrastructure& getInst() {
-		static Infrastructure instance;
-		return instance;
+	static Infrastructure& getInst(bool shuttingDown) {
+		static bool initialized = false;
+		if (shuttingDown) {
+			if (initialized)
+				getInst(false).shutDown_();
+			return *(Infrastructure*)nullptr;
+		} else {
+			initialized = true;
+			static Infrastructure instance;
+			return instance;
+		}
 	}
 
 	void shutDown_();

@@ -17,4 +17,3 @@ Infrastructure::Infrastructure()
 void Infrastructure::shutDown_() {
 	threadPool_.stop();
 }
-
