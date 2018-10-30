@@ -11,6 +11,7 @@
 class InputEvent {
 public:
 	enum EVENT_TYPE {
+		EV_INVALID,
 		EV_MOUSE_MOVED,
 		EV_MOUSE_DOWN,
 		EV_MOUSE_UP,
@@ -24,11 +25,13 @@ public:
 	enum MOUSE_BUTTON {
 		MB_NONE=-1,
 		MB_LEFT=0,
-		MB_RIGHT,
 		MB_MIDDLE,
+		MB_RIGHT,
 	} mouseButton;
 	int key;
 	char ch;
+
+	InputEvent() : type(EV_INVALID), mIsConsumed(true) {}
 
 	InputEvent(EVENT_TYPE type, float x, float y, float dx, float dy, int dz, MOUSE_BUTTON button, int key, char ch)
 		: type(type), x(x), y(y), dx(dx), dy(dy), dz(dz), mouseButton(button), key(key), ch(ch)
