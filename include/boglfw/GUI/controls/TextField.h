@@ -19,9 +19,9 @@ public:
 
 	std::string getText();
 
-	virtual void keyDown(int keyCode) override;
-	virtual void keyChar(char c) override;
-	virtual void draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) override;
+	virtual bool keyDown(int keyCode) override;
+	virtual bool keyChar(char c) override;
+	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 
 	Event<void(TextField*)> onTrigger;
 

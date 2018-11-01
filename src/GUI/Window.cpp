@@ -20,27 +20,28 @@ Window::Window(glm::vec2 position, glm::vec2 size)
 Window::~Window() {
 }
 
-void Window::draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) {
-	glm::ivec3 trans(frameTranslation);
+void Window::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
+	glm::ivec2 trans(frameTranslation);
 	// draw frame
 	glm::vec2 scaledSize = getSize();
 	scaledSize.x *= frameScale.x;
 	scaledSize.y *= frameScale.y;
-	Shape2D::get()->drawRectangleFilled(vec3xy(trans), frameTranslation.z, scaledSize, GuiTheme::getWindowColor());
-	Shape2D::get()->drawRectangle(vec3xy(trans), frameTranslation.z, scaledSize, GuiTheme::getWindowFrameColor());
+	float z = 0; //frameTranslation.z
+	Shape2D::get()->drawRectangleFilled(vec3xy(trans), z, scaledSize, GuiTheme::getWindowColor());
+	Shape2D::get()->drawRectangle(vec3xy(trans), z, scaledSize, GuiTheme::getWindowFrameColor());
 
 	// draw client area frame:
 	glm::vec2 clientOffset, clientSize;
 	getClientArea(clientOffset, clientSize);
 	clientSize.x *= frameScale.x;
 	clientSize.y *= frameScale.y;
-	Shape2D::get()->drawRectangleFilled(vec3xy(trans)+clientOffset, frameTranslation.z+0.1f,
+	Shape2D::get()->drawRectangleFilled(vec3xy(trans)+clientOffset, z+0.1f,
 			clientSize, GuiTheme::getClientColor());
-	Shape2D::get()->drawRectangle(vec3xy(trans)+clientOffset, frameTranslation.z+0.1f,
+	Shape2D::get()->drawRectangle(vec3xy(trans)+clientOffset, z+0.1f,
 			clientSize, GuiTheme::getClientFrameColor());
 
 	// now draw contents:
-	GuiContainerElement::draw(vp, glm::vec3(trans)+glm::vec3(0,0,0.5f), frameScale);
+	GuiContainerElement::draw(vp, glm::vec3(trans.x, trans.y, z), frameScale);
 }
 
 void Window::mouseDown(MouseButtons button) {

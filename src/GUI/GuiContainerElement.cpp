@@ -19,11 +19,11 @@ GuiContainerElement::~GuiContainerElement() {
 	children_.clear();
 }
 
-void GuiContainerElement::draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) {
+void GuiContainerElement::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	// draw all children relative to the client area
-	frameTranslation += glm::vec3(clientAreaOffset_, getZValue());
+	frameTranslation += clientAreaOffset_;
 	for (auto &e : children_) {
-		e->draw(vp, frameTranslation + glm::vec3(e->getPosition(), e->getZValue()), frameScale);
+		e->draw(vp, frameTranslation + e->getPosition(), frameScale);
 	}
 	// TODO draw frame around focused element:
 }
@@ -90,19 +90,25 @@ void GuiContainerElement::clicked(glm::vec2 clickPosition, MouseButtons button) 
 		elementUnderMouse_->clicked(clickPosition - clientAreaOffset_ - elementUnderMouse_->getPosition(), button);
 }
 
-void GuiContainerElement::keyDown(int keyCode) {
+bool GuiContainerElement::keyDown(int keyCode) {
 	if (focusedElement_)
-		focusedElement_->keyDown(keyCode);
+		return focusedElement_->keyDown(keyCode);
+	else
+		return false;
 }
 
-void GuiContainerElement::keyUp(int keyCode) {
+bool GuiContainerElement::keyUp(int keyCode) {
 	if (focusedElement_)
-		focusedElement_->keyUp(keyCode);
+		return focusedElement_->keyUp(keyCode);
+	else
+		return false;
 }
 
-void GuiContainerElement::keyChar(char c) {
+bool GuiContainerElement::keyChar(char c) {
 	if (focusedElement_)
-		focusedElement_->keyChar(c);
+		return focusedElement_->keyChar(c);
+	else
+		return false;
 }
 
 void GuiContainerElement::setClientArea(glm::vec2 offset, glm::vec2 counterOffset) {

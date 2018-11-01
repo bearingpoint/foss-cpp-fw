@@ -23,28 +23,28 @@ TextField::TextField(glm::vec2 pos, glm::vec2 size, std::string initialText)
 TextField::~TextField() {
 }
 
-void TextField::keyDown(int keyCode) {
-
+bool TextField::keyDown(int keyCode) {
+	return false;
 }
 
-void TextField::draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) {
+void TextField::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	Shape2D::get()->drawRectangleFilled(
 			vec3xy(frameTranslation)+glm::vec2(2,2),
-			frameTranslation.z,
+			0,
 			(getSize()-glm::vec2(4,4)) * frameScale,
 			GuiTheme::getTextFieldColor());
 	Shape2D::get()->drawRectangle(
 			vec3xy(frameTranslation),
-			frameTranslation.z,
+			0,
 			getSize() * frameScale,
 			GuiTheme::getButtonFrameColor());
 	float tx = frameTranslation.x + 10;
 	float ty = frameTranslation.y + 20;
-	float tz = frameTranslation.z + 1;
+	float tz = 0.01f;
 	GLText::get()->print(textBuffer_, {tx, ty}, tz, 14, GuiTheme::getButtonTextColor());
 }
 
-void TextField::keyChar(char c) {
+bool TextField::keyChar(char c) {
 	if (bufSize_ < maxTextbufferSize-1) {
 		for (int i=bufPos_+1; i<=bufSize_; i++)
 			textBuffer_[i] = textBuffer_[i-1];
@@ -52,4 +52,5 @@ void TextField::keyChar(char c) {
 		textBuffer_[bufSize_] = 0;
 		textBuffer_[bufPos_++] = c;
 	}
+	return true;
 }

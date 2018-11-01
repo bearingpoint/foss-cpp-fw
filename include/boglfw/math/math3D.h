@@ -118,17 +118,19 @@ inline glm::vec2 operator * (glm::vec2 const& x, float f) {
 	return glm::vec2(x.x*f, x.y*f);
 }
 
-inline glm::vec2 vec3xy(glm::vec3 const &in) {
+template <class V3>
+inline glm::vec2 vec3xy(V3 const &in) {
 	return glm::vec2(in.x, in.y);
 }
 
-inline glm::vec2& vec3xy(glm::vec3 &in) {
+template <class V3>
+inline glm::vec2& vec3xy(V3 &in) {
 	return (glm::vec2&)in;
 }
 
-inline glm::vec2 vec3xy(glm::ivec3 const &in) {
+/*inline glm::vec2 vec3xy(glm::ivec3 const &in) {
 	return glm::vec2(in.x, in.y);
-}
+}*/
 
 inline glm::vec3 vec4xyz(glm::vec4 const& v) {
 	return {v.x, v.y, v.z};

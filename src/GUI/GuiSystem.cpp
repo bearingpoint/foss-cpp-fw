@@ -21,9 +21,6 @@
 void GuiSystem::addElement(std::shared_ptr<IGuiElement> e) {
 	elements_.push_back(e);
 	e->setCaptureManager(this);
-	if (elements_.size() > 1)
-		e->setZValue(elements_[0]->getZValue()+1);
-	normalizeZValuesAndSort(nullptr);
 }
 
 void GuiSystem::removeElement(std::shared_ptr<IGuiElement> e) {
@@ -36,27 +33,7 @@ void GuiSystem::draw(Viewport* vp) {
 	{
 		glm::vec2 bboxMin, bboxMax;
 		e->getBoundingBox(bboxMin, bboxMax);
-		e->draw(vp, glm::vec3(bboxMin, e->getZValue()), glm::vec2(1));
-	}
-}
-
-void GuiSystem::normalizeZValuesAndSort(IGuiElement* top) {
-	float maxZ = 0;
-	if (top)
-		maxZ = top->getZValue();
-	else
-		for (auto &e : elements_)
-			if (e->getZValue() > maxZ)
-				maxZ = e->getZValue();
-
-	// TODO find a better method because this will crowd all z-values towards zero
-
-	float invMax = maxZ ? 1.f / maxZ : 1;
-	for (unsigned i=0; i<elements_.size(); i++) {
-		for (unsigned j=i+1; j<elements_.size(); j++)
-			if (elements_[j]->getZValue() < elements_[i]->getZValue())
-				xchg(elements_[i], elements_[j]);
-		elements_[i]->setZValue(elements_[i]->getZValue() * invMax);
+		e->draw(vp, glm::vec3(bboxMin, 0), glm::vec2(1));
 	}
 }
 
@@ -66,20 +43,20 @@ void GuiSystem::handleInput(InputEvent &ev) {
 	switch (ev.type) {
 	case InputEvent::EV_KEY_DOWN:
 		if (pFocusedElement_) {
-			pFocusedElement_->keyDown(ev.key);
-			ev.consume();
+			if (pFocusedElement_->keyDown(ev.key))
+				ev.consume();
 		}
 		break;
 	case InputEvent::EV_KEY_UP:
 		if (pFocusedElement_) {
-			pFocusedElement_->keyUp(ev.key);
-			ev.consume();
+			if (pFocusedElement_->keyUp(ev.key))
+				ev.consume();
 		}
 		break;
 	case InputEvent::EV_KEY_CHAR:
 		if (pFocusedElement_) {
-			pFocusedElement_->keyChar(ev.ch);
-			ev.consume();
+			if (pFocusedElement_->keyChar(ev.ch))
+				ev.consume();
 		}
 		break;
 	case InputEvent::EV_MOUSE_DOWN:
@@ -89,16 +66,17 @@ void GuiSystem::handleInput(InputEvent &ev) {
 		} else {
 			if (lastUnderMouse) {
 				lastUnderMouse->mouseDown((MouseButtons)ev.mouseButton);
-				int lastZ = 1;
 				if (pFocusedElement_ != lastUnderMouse) {
 					if (pFocusedElement_) {
 						pFocusedElement_->focusLost();
-						lastZ += pFocusedElement_->getZValue();
 					}
 					pFocusedElement_ = lastUnderMouse;
 					pFocusedElement_->focusGot();
-					pFocusedElement_->setZValue(lastZ+1);
-					normalizeZValuesAndSort(pFocusedElement_);
+					// move the clicked element to the top:
+					auto it = std::find_if(elements_.begin(), elements_.end(), [&](auto sp) {
+						return sp.get() == pFocusedElement_;
+					});
+					elements_.splice(elements_.end(), elements_, it);
 				}
 				ev.consume();
 			}

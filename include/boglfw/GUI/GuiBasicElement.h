@@ -21,10 +21,10 @@ public:
 	virtual void setPosition(glm::vec2 position);
 	glm::vec2 getSize() { return size_; }
 	virtual void setSize(glm::vec2 size);
-	void setZValue(float z) override { zValue_ = z; }
+	//void setZIndex(int z) override { zIndex_ = z; }
 
-	float getZValue() override { return zValue_; }
-	void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) override { outMin = bboxMin_; outMax = bboxMax_; }
+	//int zIndex() const override { return zIndex_; }
+	void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const override { outMin = bboxMin_; outMax = bboxMax_; }
 
 	bool isMouseIn() { return isMouseIn_; }
 	bool isMousePressed(MouseButtons button) { return isMousePressed_[(int)button]; }
@@ -50,7 +50,7 @@ private:
 	glm::vec2 size_{0};
 	glm::vec2 bboxMin_{0};
 	glm::vec2 bboxMax_{0};
-	float zValue_ = 0;
+	//int zIndex_ = 0;
 	Anchors anchors_ = Anchors::Top | Anchors::Left;
 	bool isMouseIn_ = false;
 	bool isMousePressed_[3] {false};

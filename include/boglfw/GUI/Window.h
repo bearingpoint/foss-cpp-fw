@@ -15,7 +15,7 @@ public:
 	Window(glm::vec2 position, glm::vec2 size);
 	virtual ~Window();
 
-	virtual void draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) override;
+	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 	virtual void mouseDown(MouseButtons button) override;
 	virtual void mouseUp(MouseButtons button) override;
 	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) override;

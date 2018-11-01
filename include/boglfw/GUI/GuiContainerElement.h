@@ -26,14 +26,14 @@ protected:
 
 #warning "must change coordinate space for draw and mouse events"
 #warning "all coordinates must be in parent-space. Add support in shape2D for translation stack to simplify drawing code"
-	virtual void draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) override;
+	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 	virtual void mouseDown(MouseButtons button) override;
 	virtual void mouseUp(MouseButtons button) override;
 	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) override;
 	virtual void clicked(glm::vec2 clickPosition, MouseButtons button) override;
-	virtual void keyDown(int keyCode) override;
-	virtual void keyUp(int keyCode) override;
-	virtual void keyChar(char c) override;
+	virtual bool keyDown(int keyCode) override;
+	virtual bool keyUp(int keyCode) override;
+	virtual bool keyChar(char c) override;
 
 	void setClientArea(glm::vec2 offset, glm::vec2 counterOffset);
 	void getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize);

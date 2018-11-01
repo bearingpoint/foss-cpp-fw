@@ -10,7 +10,7 @@
 
 #include "ICaptureManager.h"
 #include <memory>
-#include <vector>
+#include <list>
 
 class IGuiElement;
 class Viewport;
@@ -26,18 +26,18 @@ public:
 	}
 
 	void addElement(std::shared_ptr<IGuiElement> e);
+	void addElement(...) = delete;
 	void removeElement(std::shared_ptr<IGuiElement> e);
 	void draw(Viewport* vp);
 	void handleInput(InputEvent &ev);
 
 private:
-	std::vector<std::shared_ptr<IGuiElement>> elements_;
+	std::list<std::shared_ptr<IGuiElement>> elements_;
 	IGuiElement *pFocusedElement_ = nullptr;
 	IGuiElement *pCaptured = nullptr;
 	IGuiElement *lastUnderMouse = nullptr;
 
 	IGuiElement* getElementUnderMouse(float x, float y);
-	void normalizeZValuesAndSort(IGuiElement* top);
 };
 
 #endif /* GUI_GUISYSTEM_H_ */

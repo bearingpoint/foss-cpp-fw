@@ -19,17 +19,17 @@ class IGuiElement {
 public:
 	virtual ~IGuiElement() {}
 
-	virtual void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) = 0;
-	virtual float getZValue() = 0;
-	virtual void setZValue(float z) = 0;
+	virtual void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const = 0;
+	//virtual int zIndex() const = 0;
+	//virtual void setZIndex(int z) = 0;
 
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
-	ICaptureManager* getCaptureManager() { return captureManager_; }
+	ICaptureManager* getCaptureManager() const { return captureManager_; }
 
 protected:
 	friend class GuiSystem;
 
-	virtual void draw(Viewport* vp, glm::vec3 frameTranslation, glm::vec2 frameScale) = 0;
+	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
 
 	virtual void mouseEnter() {}
 	virtual void mouseLeave() {}
@@ -37,9 +37,9 @@ protected:
 	virtual void mouseUp(MouseButtons button) {}
 	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) {}
 	virtual void mouseScroll(float delta) {}
-	virtual void keyDown(int keyCode) {}
-	virtual void keyUp(int keyCode) {}
-	virtual void keyChar(char c) {}
+	virtual bool keyDown(int keyCode) {return false;}	// return true if the key was consumed
+	virtual bool keyUp(int keyCode) {return false;}		// return true if the key was consumed
+	virtual bool keyChar(char c) {return false;}		// return true if the key was consumed
 
 	virtual void focusGot() {}
 	virtual void focusLost() {}
