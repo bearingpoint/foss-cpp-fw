@@ -21,13 +21,13 @@ public:
 	static T getTopElementAtPosition(C collection, float x, float y) {
 		if (!collection.size())
 			return {};
-		auto it = --collection.end();
+		auto it = collection.end();
 		do {
+			--it;
 			glm::vec2 min, max;
 			(*it)->getBoundingBox(min, max);
 			if (x >= min.x && y >= min.y && x <= max.x && y <= max.y)
 				return *it;
-			--it;
 		} while (it != collection.begin());
 		return {};
 		/*decltype(collection) vec;
