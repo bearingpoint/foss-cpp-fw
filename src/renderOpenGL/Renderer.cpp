@@ -11,7 +11,7 @@
 #include <boglfw/renderOpenGL/Shape3D.h>
 #include <boglfw/renderOpenGL/GLText.h>
 #include <boglfw/renderOpenGL/MeshRenderer.h>
-#include <boglfw/utils/DrawList.h>
+#include <boglfw/utils/drawable.h>
 #include <boglfw/utils/assert.h>
 
 #include <GL/gl.h>
@@ -62,7 +62,7 @@ void Renderer::deleteViewport(std::string const& name) {
 	viewports_.erase(it);
 }
 
-void Renderer::render(DrawList const& list) {
+void Renderer::render() {
 	for (auto &vp : viewports_) {
 		if (!vp.second->isEnabled())
 			continue;
@@ -76,7 +76,8 @@ void Renderer::render(DrawList const& list) {
 		glDisable(GL_SCISSOR_TEST);
 
 		// 2. build the render queue for this viewport
-		list.draw(vp.second.get());
+		for (auto &d : vp.second->drawList_)
+			d.draw(vp.second.get());
 
 		// 3. do the low-level rendering
 		for (auto r : renderComponents_) {

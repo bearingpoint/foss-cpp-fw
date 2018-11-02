@@ -10,10 +10,9 @@
 
 #include "IRenderable.h"
 #include "IViewportManager.h"
+
 #include <vector>
 #include <map>
-
-class DrawList;
 
 class Renderer : public IViewportManager {
 public:
@@ -30,7 +29,8 @@ public:
 	void deleteViewport(std::string const& name) override;
 	void clearViewports() override { viewports_.clear(); }
 
-	void render(DrawList const& list);
+	// renders all viewports, calling their associated drawLists and then doing the hardware rendering
+	void render();
 
 	void unload();
 

@@ -9,28 +9,48 @@
 #define DRAWABLE_H_
 
 #include <memory>
+#include <type_traits>
 
 class Viewport;
 
+// any type T for which a function void draw(T*, Viewport*) is defined can be treated as a drawable
 template<typename T> void draw(T* t, Viewport* vp);
 
-template<class Callable> void draw(Callable *fn, Viewport* vp) {
+// any callable object that has a void operator ()(Viewport*) is drawable
+template<class Callable>
+typename std::enable_if<std::is_void<typename std::result_of<Callable(Viewport*)>::type>::value, void>::type
+draw(Callable *fn, Viewport* vp) {
 	(*fn)(vp);
 }
 
-class drawable_wrap {
+// containers of drawables are also drawable
+template <class Container>
+typename std::enable_if<(sizeof(Container::value_type)>0), void>::type
+draw(Container* c, Viewport* vp) {
+	for (auto &e : *c) {
+		e.draw(vp);
+	}
+}
+
+// this class can be instantiated with any argument of type T* that satisfies the drawable requirements.
+// either one of these must be true:
+//	A. the type T is a class that defines a method
+//		void T::draw(Viewport*)
+//  B. there exists a global template specialization function for the one on top such as:
+//      void draw(T*, Viewport*)
+class drawable {
 public:
 	template<typename T>
-	drawable_wrap(T* t)
+	drawable(T* t)
 		: self_(new model_t<T>(t)) {
 	}
 
-	drawable_wrap(const drawable_wrap& w) : self_(w.self_->copy()) {}
-	drawable_wrap(drawable_wrap &&w) : self_(std::move(w.self_)) {}
-	drawable_wrap& operator = (drawable_wrap const &w) { self_ = decltype(self_)(w.self_->copy()); return *this; }
-	drawable_wrap& operator = (drawable_wrap &&w) { self_ = std::move(w.self_); return *this; }
+	drawable(const drawable& w) : self_(w.self_->copy()) {}
+	drawable(drawable &&w) : self_(std::move(w.self_)) {}
+	drawable& operator = (drawable const &w) { self_ = decltype(self_)(w.self_->copy()); return *this; }
+	drawable& operator = (drawable &&w) { self_ = std::move(w.self_); return *this; }
 
-	bool equal_value(drawable_wrap const& w) const {
+	bool equal_value(drawable const& w) const {
 		return self_->getRawPtr() == w.self_->getRawPtr();
 	}
 
