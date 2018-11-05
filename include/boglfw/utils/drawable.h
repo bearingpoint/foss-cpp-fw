@@ -13,23 +13,22 @@
 
 class Viewport;
 
-// any type T for which a function void draw(T*, Viewport*) is defined can be treated as a drawable
-template<typename T> void draw(T* t, Viewport* vp);
-
 // any callable object that has a void operator ()(Viewport*) is drawable
-template<class Callable>
-typename std::enable_if<std::is_void<typename std::result_of<Callable(Viewport*)>::type>::value, void>::type
-draw(Callable *fn, Viewport* vp) {
+template<class Callable, typename std::result_of<Callable(Viewport*)>::type* = nullptr>
+void draw(Callable *fn, Viewport* vp) {
 	(*fn)(vp);
 }
 
-// containers of drawables are also drawable
-template <class Container>
-typename std::enable_if<(sizeof(Container::value_type)>0), void>::type
-draw(Container* c, Viewport* vp) {
-	for (auto &e : *c) {
-		e.draw(vp);
-	}
+// special handling for plain function pointers:
+template<class FuncPointer, FuncPointer *fDummy=nullptr>
+decltype(fDummy((Viewport*)nullptr))
+draw(FuncPointer *fn, Viewport* vp) {
+	(*fn)(vp);
+}
+
+template<class C, decltype(&C::draw) dummy = nullptr>
+void draw(C* c, Viewport* vp) {
+	c->draw(vp);
 }
 
 // this class can be instantiated with any argument of type T* that satisfies the drawable requirements.
