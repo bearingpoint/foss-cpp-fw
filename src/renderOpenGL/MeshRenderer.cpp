@@ -57,7 +57,8 @@ void MeshRenderer::renderMesh(Mesh& mesh, glm::mat4 worldTransform) {
 	renderQueue_.push_back(meshRenderData(&mesh, worldTransform));
 }
 
-void MeshRenderer::render(Viewport* vp) {
+void MeshRenderer::render(Viewport* vp, unsigned batchId) {
+	assertDbg(batchId < batches_.size());
 	glUseProgram(meshShaderProgram_);
 	glEnableVertexAttribArray(indexPos_);
 	glEnableVertexAttribArray(indexNorm_);
@@ -66,7 +67,11 @@ void MeshRenderer::render(Viewport* vp) {
 
 	auto matPV = vp->camera()->matProjView();
 
-	for (auto &m : renderQueue_) {
+	unsigned nMeshes = batchId == batches_.size() - 1 ? renderQueue_.size() - batches_.back()
+		: batches_[batchId+1] - batches_[batchId];
+
+	for (unsigned i=0; i<nMeshes; i++) {
+		auto &m = renderQueue_[batches_[batchId] + i];
 		if (m.pMesh_->isDirty()) {
 			m.pMesh_->commitChanges();
 		}
@@ -86,6 +91,11 @@ void MeshRenderer::render(Viewport* vp) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void MeshRenderer::startBatch() {
+	batches_.push_back(renderQueue_.size());
+}
+
 void MeshRenderer::purgeRenderQueue() {
 	renderQueue_.clear();
+	batches_.clear();
 }

@@ -38,6 +38,7 @@ void Renderer::registerRenderable(IRenderable* r) {
 
 void Renderer::addViewport(std::string name, std::unique_ptr<Viewport> vp) {
 	vp->setName(name);
+	vp->setRenderer(this);
 	viewports_[name] = std::move(vp);
 }
 
@@ -76,16 +77,23 @@ void Renderer::render() {
 		glDisable(GL_SCISSOR_TEST);
 
 		// 2. build the render queue for this viewport
-		for (auto &d : vp.second->drawList_)
+		for (auto &d : vp.second->drawList_) {
+			startBatch();	// each element in the drawList has its own separate layer
 			d.draw(vp.second.get());
+		}
 
 		// 3. do the low-level rendering
-		for (auto r : renderComponents_) {
-			// TODO optimization: have two queues per IRenderable - one common and one per viewport and only rebuild the second
-			r->render(vp.second.get());
-			r->purgeRenderQueue();
+		for (unsigned i=0; i<batchCount_; i++) {
+			for (auto r : renderComponents_) {
+				// TODO optimization: have two queues per IRenderable - one common and one per viewport and only rebuild the second
+				r->render(vp.second.get(), i);
+			}
 		}
+		// 4. clear render queues
+		for (auto r : renderComponents_)
+			r->purgeRenderQueue();
 	}
+	batchCount_ = 0;
 }
 
 void Renderer::unload() {
@@ -93,4 +101,10 @@ void Renderer::unload() {
 		r->purgeRenderQueue();
 		r->unload();
 	}
+}
+
+void Renderer::startBatch() {
+	for (auto r : renderComponents_)
+		r->startBatch();
+	batchCount_++;
 }

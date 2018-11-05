@@ -34,9 +34,15 @@ public:
 
 	void unload();
 
+	// begins a new batch of rendering - all rendering components are instructed to treat all upcoming commands
+	// as a separate set which will be drawn in a separate pass from the ones before.
+	// This is usefull to achieve layered drawing.
+	void startBatch();
+
 protected:
 	std::vector<IRenderable*> renderComponents_;
 	std::map<std::string, std::unique_ptr<Viewport>> viewports_;
+	unsigned batchCount_ = 0;
 
 	int winW_ = 0;
 	int winH_ = 0;

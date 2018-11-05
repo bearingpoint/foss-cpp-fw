@@ -59,8 +59,10 @@ void Shape2D::unload() {
 	instance = nullptr;
 }
 
-void Shape2D::render(Viewport* vp) {
+void Shape2D::render(Viewport* vp, unsigned batchId) {
 	PERF_MARKER_FUNC;
+	assertDbg(batchId < batches_.size());
+
 	glUseProgram(lineShaderProgram_);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -83,20 +85,33 @@ void Shape2D::render(Viewport* vp) {
 	glEnableVertexAttribArray(indexPos_);
 	glEnableVertexAttribArray(indexColor_);
 
+	auto &b = batches_[batchId];
+	s_batch end {
+		batchId < batches_.size() - 1 ? batches_[batchId+1].lineStripOffset_ : lineStrips_.size(),
+		batchId < batches_.size() - 1 ? batches_[batchId+1].triangleOffset_ : indicesTri_.size()
+	};
+
 	// render triangle primitives:
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].pos);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].rgba);
-	glDisable(GL_CULL_FACE);
-	glDrawElements(GL_TRIANGLES, indicesTri_.size(), GL_UNSIGNED_SHORT, &indicesTri_[0]);
+	glDisable(GL_CULL_FACE); // TODO do we need this?
+	auto nTriIndices = end.triangleOffset_ - b.triangleOffset_;
+	glDrawElements(GL_TRIANGLES, nTriIndices, GL_UNSIGNED_SHORT, &indicesTri_[b.triangleOffset_]);
 
 	// render line primitives
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
-	for (auto &b : batches_) {
-		glDrawElements(GL_LINES, b.length, GL_UNSIGNED_SHORT, &indices_[b.offset]);
+	for (unsigned l=b.lineStripOffset_; l < end.lineStripOffset_; l++) {
+		glDrawElements(GL_LINES, lineStrips_[l].length, GL_UNSIGNED_SHORT, &indices_[lineStrips_[l].offset]);
 	}
 
 	glDisable(GL_BLEND);
+}
+
+void Shape2D::startBatch() {
+	auto lsoffs = batches_.empty() ? 0u : lineStrips_.size();
+	auto trioffs = batches_.empty() ? 0u : indicesTri_.size();
+	batches_.push_back({lsoffs, trioffs});
 }
 
 void Shape2D::purgeRenderQueue() {
@@ -104,6 +119,7 @@ void Shape2D::purgeRenderQueue() {
 	indices_.clear();
 	bufferTri_.clear();
 	indicesTri_.clear();
+	lineStrips_.clear();
 	batches_.clear();
 }
 
@@ -113,7 +129,7 @@ void Shape2D::drawLine(glm::vec2 point1, glm::vec2 point2, float z, glm::vec3 rg
 
 void Shape2D::drawLine(glm::vec2 point1, glm::vec2 point2, float z, glm::vec4 rgba) {
 	PERF_MARKER_FUNC;
-	batches_.push_back({
+	lineStrips_.push_back({
 		indices_.size(),
 		2
 	});
@@ -129,7 +145,7 @@ void Shape2D::drawLineList(glm::vec2 verts[], int nVerts, float z, glm::vec3 rgb
 
 void Shape2D::drawLineList(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba) {
 	PERF_MARKER_FUNC;
-	batches_.push_back({
+	lineStrips_.push_back({
 		indices_.size(),
 		nVerts
 	});
@@ -145,7 +161,7 @@ void Shape2D::drawLineStrip(glm::vec2 verts[], int nVerts, float z, glm::vec3 rg
 
 void Shape2D::drawLineStrip(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba) {
 	PERF_MARKER_FUNC;
-	batches_.push_back({
+	lineStrips_.push_back({
 		indices_.size(),
 		(nVerts-1) * 2
 	});
@@ -163,7 +179,7 @@ void Shape2D::drawPolygon(glm::vec2 verts[], int nVerts, float z, glm::vec3 rgb)
 
 void Shape2D::drawPolygon(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba) {
 	PERF_MARKER_FUNC;
-	batches_.push_back({
+	lineStrips_.push_back({
 		indices_.size(),
 		nVerts * 2
 	});

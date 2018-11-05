@@ -26,6 +26,7 @@ draw(FuncPointer *fn, Viewport* vp) {
 	(*fn)(vp);
 }
 
+// class types that define a draw(Viewport*) method are also drawables
 template<class C, decltype(&C::draw) dummy = nullptr>
 void draw(C* c, Viewport* vp) {
 	c->draw(vp);

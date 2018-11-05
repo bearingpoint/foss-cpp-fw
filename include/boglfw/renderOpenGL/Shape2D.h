@@ -60,9 +60,10 @@ protected:
 	Shape2D(Renderer* renderer);
 
 private:
-	void render(Viewport* vp) override;
+	void render(Viewport* vp, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
+	void startBatch() override;
 
 	struct s_lineVertex {
 		glm::vec2 pos;
@@ -76,15 +77,21 @@ private:
 	std::vector<s_lineVertex> buffer_;
 	std::vector<unsigned short> indices_;
 
-	struct s_batch {
+	struct s_lineStrip {
 		size_t offset;	// offset in index buffer
 		size_t length;	// number of indices
 	};
-	std::vector<s_batch> batches_;
+	std::vector<s_lineStrip> lineStrips_;
 
 	// triangle buffers
 	std::vector<s_lineVertex> bufferTri_;
 	std::vector<unsigned short> indicesTri_;
+
+	struct s_batch {
+		size_t lineStripOffset_;
+		size_t triangleOffset_;
+	};
+	std::vector<s_batch> batches_;
 
 	unsigned lineShaderProgram_;
 	unsigned indexPos_;

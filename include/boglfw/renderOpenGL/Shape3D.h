@@ -60,9 +60,10 @@ protected:
 	Shape3D(Renderer* renderer);
 
 private:
-	void render(Viewport* vp) override;
+	void render(Viewport* vp, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
+	void startBatch() override;
 
 	void transform(glm::vec3* v[], int n);
 	void transform(glm::vec3 v[], int n);
@@ -74,6 +75,7 @@ private:
 	// line buffers
 	std::vector<s_lineVertex> buffer_;
 	std::vector<unsigned short> indices_;
+	std::vector<unsigned> batches_;
 	glm::mat4 transform_ {1};
 	bool transformActive_ = false;
 

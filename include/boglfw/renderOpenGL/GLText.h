@@ -37,9 +37,10 @@ public:
 	glm::vec2 getTextRect(std::string const& text, int fontSize);
 
 protected:
-	void render(Viewport* pCrtViewport) override;
+	void render(Viewport* pCrtViewport, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
+	void startBatch() override;
 	GLText(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize);
 
 private:
@@ -64,6 +65,7 @@ private:
 	std::string viewportFilter_;
 	std::vector<std::string> viewportFilters_;
 	std::vector<int> verticesPerItem_;
+	std::vector<int> batches_;
 
 	static bool disableMipMaps_;
 };

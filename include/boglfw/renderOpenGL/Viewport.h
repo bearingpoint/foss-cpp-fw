@@ -11,6 +11,7 @@
 #include <vector>
 
 class Camera;
+class Renderer;
 
 class Viewport
 {
@@ -43,6 +44,7 @@ public:
 	void setUserData(long data) { userData_ = data; }
 
 	std::string name() const { return name_; }
+	Renderer* renderer() const { return renderer_; }
 
 protected:
 	long userData_ = 0;
@@ -51,13 +53,14 @@ protected:
 	bool enabled_ = true;
 	glm::vec3 backgroundColor_;
 	std::string name_ {"unnamed"};
-
 	std::vector<drawable> drawList_;
+	Renderer* renderer_ = nullptr;
 
 	mutable glm::mat4 mPV_cache_ {1};
 	mutable glm::mat4 mPV_inv_cache_ {1};
 
 	void setName(std::string name) { name_ = name; }
+	void setRenderer(Renderer* r) { renderer_ = r; }
 
 	friend class Renderer;
 };

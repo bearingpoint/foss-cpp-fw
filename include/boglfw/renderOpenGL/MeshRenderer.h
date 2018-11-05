@@ -28,9 +28,10 @@ protected:
 	MeshRenderer(Renderer* renderer);
 
 private:
-	void render(Viewport* pCrtViewport) override;
+	void render(Viewport* pCrtViewport, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
+	void startBatch() override;
 
 	struct meshRenderData {
 		Mesh* pMesh_;
@@ -42,6 +43,7 @@ private:
 		meshRenderData(meshRenderData &&) = default;
 	};
 	std::vector<meshRenderData> renderQueue_;
+	std::vector<unsigned> batches_;
 	unsigned meshShaderProgram_ = 0;
 	unsigned indexPos_ = 0;
 	unsigned indexNorm_ = 0;

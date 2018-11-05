@@ -1,3 +1,6 @@
 build/
 workspace/
 .vscode 
+GPATH 
+GRTAGS 
+GTAGS 

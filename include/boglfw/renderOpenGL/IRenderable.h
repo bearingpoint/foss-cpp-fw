@@ -14,9 +14,13 @@ class IRenderable {
 public:
 	virtual ~IRenderable() {}
 	/*
-	 * This is called on the object at each frame, for each active viewport.
+	 * This is called on the object at each frame, for each active viewport, for each draw batch
 	 */
-	virtual void render(Viewport* pCrtViewport) = 0;
+	virtual void render(Viewport* pCrtViewport, unsigned batchId) = 0;
+
+	// this signals the component to treat all following draw commands as a new batch, and render them
+	// in a separate pass to achieve layering
+	virtual void startBatch() = 0;
 
 	/**
 	 * Called once per frame, after viewports are finished, to clear queued data

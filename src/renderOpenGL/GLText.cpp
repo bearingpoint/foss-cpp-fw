@@ -191,7 +191,8 @@ void GLText::print(const std::string &text, ViewportCoord pos, int z, int size, 
 	verticesPerItem_.push_back(vertices_.size() - nPrevVertices);
 }
 
-void GLText::render(Viewport* pCrtViewport) {
+void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
+	assertDbg(batchId < batches_.size());
 	// Bind shader
 	glUseProgram(shaderID_);
 
@@ -228,8 +229,12 @@ void GLText::render(Viewport* pCrtViewport) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// do the drawing:
+	unsigned nItems = batchId == batches_.size() - 1 ? itemPositions_.size() - batches_.back()
+		: batches_[batchId+1] - batches_[batchId];
 	unsigned offset = 0;
-	for (unsigned i=0; i<itemPositions_.size(); i++) {
+	for (unsigned i=0; i<batches_[batchId]; i++)
+		offset += verticesPerItem_[i];
+	for (unsigned i=batches_[batchId]; i<nItems; i++) {
 		if (viewportFilters_[i].empty() || viewportFilters_[i] == pCrtViewport->name()) {
 			glm::vec2 translate(itemPositions_[i].x(pCrtViewport), itemPositions_[i].y(pCrtViewport));
 			glUniform2fv(translationID_, 1, &translate[0]);
@@ -246,10 +251,15 @@ void GLText::render(Viewport* pCrtViewport) {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void GLText::startBatch() {
+	batches_.push_back(itemPositions_.size());
+}
+
 void GLText::purgeRenderQueue() {
 	vertices_.clear();
 	UVs_.clear();
 	colors_.clear();
 	itemPositions_.clear();
 	verticesPerItem_.clear();
+	batches_.clear();
 }

@@ -57,7 +57,8 @@ void Shape3D::unload() {
 	instance = nullptr;
 }
 
-void Shape3D::render(Viewport* vp) {
+void Shape3D::render(Viewport* vp, unsigned batchId) {
+	assertDbg(batchId < batches_.size());
 	glUseProgram(lineShaderProgram_);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -70,16 +71,23 @@ void Shape3D::render(Viewport* vp) {
 	glEnableVertexAttribArray(indexColor_);
 
 	// render world-space line primitives:
+	unsigned nIndices = batchId == batches_.size() - 1 ? indices_.size() - batches_.back()
+		: batches_[batchId+1] - batches_[batchId];
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
-	glDrawElements(GL_LINES, indices_.size(), GL_UNSIGNED_SHORT, &indices_[0]);
+	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, &indices_[batches_[batchId]]);
 
 	glDisable(GL_BLEND);
+}
+
+void Shape3D::startBatch() {
+	batches_.push_back(indices_.size());
 }
 
 void Shape3D::purgeRenderQueue() {
 	buffer_.clear();
 	indices_.clear();
+	batches_.clear();
 }
 
 void Shape3D::drawLine(glm::vec3 point1, glm::vec3 point2, glm::vec3 rgb) {
