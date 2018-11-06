@@ -125,4 +125,3 @@ void ViewportCoord::debugPrintInternal(int indent) {
 	LOGLN(std::string(indent, ' ') << "}");
 }
 #endif
-

@@ -57,6 +57,11 @@ public:
 	ViewportCoord operator*(float s) const { return scale(s); }
 	ViewportCoord operator/(float s) const { return scale(1.f / s); }
 
+	ViewportCoord operator+=(ViewportCoord x) { *this = *this + x; return *this; }
+	ViewportCoord operator-=(ViewportCoord x) { *this = *this + x; return *this; }
+	ViewportCoord operator*=(float s) { *this = *this * s; return *this; }
+	ViewportCoord operator/=(float s) { *this = *this / s; return *this; }
+
 	// get only x or y component:
 	ViewportCoord x() const;
 	ViewportCoord y() const;
