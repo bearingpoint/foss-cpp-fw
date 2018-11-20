@@ -22,6 +22,9 @@ public:
 	glm::vec2 getSize() { return size_; }
 	virtual void setSize(glm::vec2 size);
 	//void setZIndex(int z) override { zIndex_ = z; }
+	bool isVisible() const { return visible_; }
+	void show() { visible_ = true; }
+	void hide() { visible_ = false; }
 
 	//int zIndex() const override { return zIndex_; }
 	void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const override { outMin = bboxMin_; outMax = bboxMax_; }
@@ -56,6 +59,7 @@ private:
 	bool isMousePressed_[3] {false};
 	glm::vec2 lastMousePosition_ {0};
 	glm::vec2 mouseTravel_[3] {glm::vec2(0)};
+	bool visible_ = true;
 
 	void updateBBox();
 };

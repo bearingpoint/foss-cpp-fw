@@ -22,6 +22,7 @@ public:
 	virtual void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const = 0;
 	//virtual int zIndex() const = 0;
 	//virtual void setZIndex(int z) = 0;
+	virtual bool isVisible() const = 0;
 
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
 	ICaptureManager* getCaptureManager() const { return captureManager_; }

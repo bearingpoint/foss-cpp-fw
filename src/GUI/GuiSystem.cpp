@@ -31,9 +31,11 @@ void GuiSystem::removeElement(std::shared_ptr<IGuiElement> e) {
 void GuiSystem::draw(Viewport* vp) {
 	for (auto &e : elements_)
 	{
-		glm::vec2 bboxMin, bboxMax;
-		e->getBoundingBox(bboxMin, bboxMax);
-		e->draw(vp, glm::vec3(bboxMin, 0), glm::vec2(1));
+		if (e->isVisible()) {
+			glm::vec2 bboxMin, bboxMax;
+			e->getBoundingBox(bboxMin, bboxMax);
+			e->draw(vp, glm::vec3(bboxMin, 0), glm::vec2(1));
+		}
 	}
 }
 
@@ -42,7 +44,7 @@ void GuiSystem::handleInput(InputEvent &ev) {
 		return;
 	switch (ev.type) {
 	case InputEvent::EV_KEY_DOWN:
-		if (pFocusedElement_) {
+		if (pFocusedElement_ && pFocusedElement_->isVisible()) {
 			if (pFocusedElement_->keyDown(ev.key))
 				ev.consume();
 		}
