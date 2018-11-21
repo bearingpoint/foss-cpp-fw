@@ -8,9 +8,12 @@
 #ifndef GUI_GUIHELPER_H_
 #define GUI_GUIHELPER_H_
 
+#include "IGuiElement.h"
+
+#include <glm/vec2.hpp>
+
 #include <memory>
 #include <vector>
-#include <glm/vec2.hpp>
 
 class IGuiElement;
 class GuiBasicElement;
@@ -27,26 +30,16 @@ public:
 			glm::vec2 min, max;
 			(*it)->getBoundingBox(min, max);
 			if (x >= min.x && y >= min.y && x <= max.x && y <= max.y)
-				return *it;
+				if ((*it)->containsPoint({x, y}))
+					return *it;
 		} while (it != collection.begin());
 		return {};
-		/*decltype(collection) vec;
-		for (auto &e : collection) {
-			glm::vec2 min, max;
-			e->getBoundingBox(min, max);
-			if (x >= min.x && y >= min.y && x <= max.x && y <= max.y)
-				vec.push_back(e);
-		}
-		if (!vec.size())
-			return {};
-		T &top = vec.front();
-		int topZ = top->zIndex();
-		for (auto &e : vec)
-			if (e->zIndex() >= topZ) {
-				topZ = e->zIndex();
-				top = e;
-			}
-		return top;*/
+	}
+
+	static glm::vec2 parentToLocal(IGuiElement* el, glm::vec2 pcoord) {
+		glm::vec2 bm, bM;
+		el->getBoundingBox(bm, bM);
+		return pcoord - bm;
 	}
 };
 

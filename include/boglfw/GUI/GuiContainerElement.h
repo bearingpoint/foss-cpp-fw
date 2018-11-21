@@ -17,10 +17,16 @@ public:
 	GuiContainerElement(glm::vec2 position, glm::vec2 size);
 	virtual ~GuiContainerElement();
 
+	virtual bool containsPoint(glm::vec2 const& p) const override;
+
 	void addElement(std::shared_ptr<GuiBasicElement> e);
 	void removeElement(std::shared_ptr<GuiBasicElement> e);
 	void setSize(glm::vec2 size) override;
 	std::shared_ptr<GuiBasicElement> getPointedElement() { return elementUnderMouse_; }
+
+	// transparent background will be invisible and will not consume mouse events - they will fall through to the underlying elements
+	// by default the background is not transparent.
+	void setTransparentBackground(bool transp) { transparentBackground_ = transp; }
 
 protected:
 
@@ -42,6 +48,7 @@ private:
 	glm::vec2 clientAreaOffset_{0};	// (positive) offset from top left corner of container to top-left corner of client area
 	glm::vec2 clientAreaCounterOffset_{0}; // (positive) offset from bottom-right corner of client area to corner of container
 	glm::vec2 clientAreaSize_{0};
+	bool transparentBackground_ = false;
 	std::vector<std::shared_ptr<GuiBasicElement>> children_;
 	std::shared_ptr<GuiBasicElement> elementUnderMouse_ = nullptr;
 	std::shared_ptr<GuiBasicElement> focusedElement_ = nullptr;

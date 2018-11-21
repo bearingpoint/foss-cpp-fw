@@ -19,10 +19,12 @@ class IGuiElement {
 public:
 	virtual ~IGuiElement() {}
 
-	virtual void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const = 0;
+	virtual void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const = 0; // return a bounding box in parent's client space
 	//virtual int zIndex() const = 0;
 	//virtual void setZIndex(int z) = 0;
 	virtual bool isVisible() const = 0;
+	virtual bool containsPoint(glm::vec2 const& p) const = 0;
+
 
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
 	ICaptureManager* getCaptureManager() const { return captureManager_; }
@@ -36,7 +38,7 @@ protected:
 	virtual void mouseLeave() {}
 	virtual void mouseDown(MouseButtons button) {}
 	virtual void mouseUp(MouseButtons button) {}
-	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) {}
+	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) {}	// position is relative to element's coordinates
 	virtual void mouseScroll(float delta) {}
 	virtual bool keyDown(int keyCode) {return false;}	// return true if the key was consumed
 	virtual bool keyUp(int keyCode) {return false;}		// return true if the key was consumed

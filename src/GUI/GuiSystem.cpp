@@ -10,7 +10,8 @@
 #include <boglfw/GUI/GuiHelper.h>
 #include <boglfw/input/InputEvent.h>
 #include <boglfw/utils/log.h>
-#include <boglfw/renderOpenGL/Shape2D.h>
+#include <boglfw/renderOpenGL/Viewport.h>
+#include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/math/math3D.h>
 
 #include <glm/vec2.hpp>
@@ -32,9 +33,10 @@ void GuiSystem::draw(Viewport* vp) {
 	for (auto &e : elements_)
 	{
 		if (e->isVisible()) {
+			vp->renderer()->startBatch();
 			glm::vec2 bboxMin, bboxMax;
 			e->getBoundingBox(bboxMin, bboxMax);
-			e->draw(vp, glm::vec3(bboxMin, 0), glm::vec2(1));
+			e->draw(vp, bboxMin, glm::vec2(1));
 		}
 	}
 }
@@ -97,7 +99,7 @@ void GuiSystem::handleInput(InputEvent &ev) {
 		break;
 	case InputEvent::EV_MOUSE_MOVED:
 		if (pCaptured) {
-			pCaptured->mouseMoved(glm::vec2(ev.dx, ev.dy), glm::vec2(ev.x, ev.y));
+			pCaptured->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(pCaptured, glm::vec2{ev.x, ev.y}));
 			ev.consume();
 		} else {
 			IGuiElement *crt = getElementUnderMouse(ev.x, ev.y);
@@ -110,7 +112,7 @@ void GuiSystem::handleInput(InputEvent &ev) {
 				}
 			}
 			if (lastUnderMouse)
-				lastUnderMouse->mouseMoved(glm::vec2(ev.dx, ev.dy), glm::vec2(ev.x, ev.y));
+				lastUnderMouse->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(lastUnderMouse, glm::vec2{ev.x, ev.y}));
 		}
 		break;
 	case InputEvent::EV_MOUSE_SCROLL:

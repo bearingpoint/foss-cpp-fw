@@ -7,6 +7,10 @@
 
 #include <boglfw/GUI/GuiContainerElement.h>
 #include <boglfw/GUI/GuiHelper.h>
+#include <boglfw/GUI/GuiTheme.h>
+#include <boglfw/renderOpenGL/Viewport.h>
+#include <boglfw/renderOpenGL/Renderer.h>
+#include <boglfw/renderOpenGL/Shape2D.h>
 #include <glm/vec3.hpp>
 #include <algorithm>
 
@@ -19,10 +23,24 @@ GuiContainerElement::~GuiContainerElement() {
 	children_.clear();
 }
 
+bool GuiContainerElement::containsPoint(glm::vec2 const& p) const {
+	return GuiBasicElement::containsPoint(p) &&
+		(!transparentBackground_ || elementUnderMouse_ != nullptr);
+}
+
 void GuiContainerElement::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
+	// draw background:
+	if (!transparentBackground_) {
+		Shape2D::get()->drawRectangle(frameTranslation, 0, getSize(), GuiTheme::getContainerFrameColor());
+		Shape2D::get()->drawRectangleFilled(frameTranslation + glm::vec2{1, 1}, 0, getSize() - glm::vec2{2, 2}, GuiTheme::getContainerBackgroundColor());
+	}
+
 	// draw all children relative to the client area
 	frameTranslation += clientAreaOffset_;
 	for (auto &e : children_) {
+		if (!e->isVisible())
+			continue;
+		vp->renderer()->startBatch();
 		e->draw(vp, frameTranslation + e->getPosition(), frameScale);
 	}
 	// TODO draw frame around focused element:

@@ -25,6 +25,8 @@ public:
 	static glm::vec4 getButtonFrameColor() { return activeTheme_->buttonFrameColor; }
 	static glm::vec4 getButtonTextColor() { return activeTheme_->buttonTextColor; }
 	static glm::vec4 getTextFieldColor() { return activeTheme_->textFieldColor; }
+	static glm::vec4 getContainerFrameColor() { return activeTheme_->containerFrameColor; }
+	static glm::vec4 getContainerBackgroundColor() { return activeTheme_->containerBackgroundColor; }
 
 protected:
 	glm::vec4 windowColor;
@@ -37,6 +39,8 @@ protected:
 	glm::vec4 buttonFrameColor;
 	glm::vec4 buttonTextColor;
 	glm::vec4 textFieldColor;
+	glm::vec4 containerFrameColor;
+	glm::vec4 containerBackgroundColor;
 
 private:
 	static std::shared_ptr<GuiTheme> activeTheme_;
