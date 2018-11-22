@@ -8,7 +8,7 @@
 #ifndef GUI_WINDOW_H_
 #define GUI_WINDOW_H_
 
-#include "GuiContainerElement.h"
+#include <boglfw/GUI/GuiContainerElement.h>
 
 class Window: public GuiContainerElement {
 public:

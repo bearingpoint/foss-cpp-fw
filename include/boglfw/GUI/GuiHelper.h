@@ -8,7 +8,7 @@
 #ifndef GUI_GUIHELPER_H_
 #define GUI_GUIHELPER_H_
 
-#include "IGuiElement.h"
+#include <boglfw/GUI/IGuiElement.h>
 
 #include <glm/vec2.hpp>
 

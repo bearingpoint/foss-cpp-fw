@@ -8,8 +8,8 @@
 #ifndef GUI_GUIBASICELEMENT_H_
 #define GUI_GUIBASICELEMENT_H_
 
-#include "IGuiElement.h"
-#include "constants.h"
+#include <boglfw/GUI/IGuiElement.h>
+#include <boglfw/GUI/constants.h>
 
 class GuiBasicElement: public IGuiElement {
 public:

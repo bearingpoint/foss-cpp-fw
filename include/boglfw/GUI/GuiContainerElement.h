@@ -8,7 +8,7 @@
 #ifndef GUI_GUICONTAINERELEMENT_H_
 #define GUI_GUICONTAINERELEMENT_H_
 
-#include "GuiBasicElement.h"
+#include <boglfw/GUI/GuiBasicElement.h>
 #include <vector>
 #include <memory>
 

@@ -8,8 +8,8 @@
 #ifndef GUI_CONTROLS_BUTTON_H_
 #define GUI_CONTROLS_BUTTON_H_
 
-#include "../GuiBasicElement.h"
-#include "../../utils/Event.h"
+#include <boglfw/GUI/GuiBasicElement.h>
+#include <boglfw/utils/Event.h>
 #include <string>
 
 class Button: public GuiBasicElement {
@@ -18,6 +18,9 @@ public:
 	virtual ~Button() override;
 
 	Event<void(Button*)> onClick;
+
+	using buttonHandler = decltype(Button::onClick)::handler_type;
+	buttonHandler foo;
 
 	void setText(std::string text) { text_ = text; }
 	void setIcon(...);

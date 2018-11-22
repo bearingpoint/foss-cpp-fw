@@ -17,13 +17,15 @@ template <typename T>
 class Event {
 public:
 
+	using handler_type = std::function<T>;
+
 	Event() = default;
 
 	Event(Event &&e)
 		: callbackList_(std::move(e.callbackList_)) {
 	}
 
-	int add(std::function<T> fn) {
+	int add(handler_type fn) {
 		callbackList_.push_back(fn);
 		return callbackList_.size() - 1;
 	}
@@ -50,7 +52,7 @@ public:
 	}
 
 protected:
-	std::vector<std::function<T>> callbackList_;
+	std::vector<handler_type> callbackList_;
 };
 
 #endif /* EVENT_H_ */

@@ -8,7 +8,7 @@
 #ifndef GUI_DEFAULTTHEME_H_
 #define GUI_DEFAULTTHEME_H_
 
-#include "GuiTheme.h"
+#include <boglfw/GUI/GuiTheme.h>
 
 class DefaultTheme : public GuiTheme {
 public:

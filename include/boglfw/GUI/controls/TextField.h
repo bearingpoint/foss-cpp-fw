@@ -8,8 +8,8 @@
 #ifndef GUI_CONTROLS_TEXTFIELD_H_
 #define GUI_CONTROLS_TEXTFIELD_H_
 
-#include "../GuiBasicElement.h"
-#include "../../utils/Event.h"
+#include <boglfw/GUI/GuiBasicElement.h>
+#include <boglfw/utils/Event.h>
 #include <string>
 
 class TextField: public GuiBasicElement {

@@ -8,7 +8,7 @@
 #ifndef GUI_GUISYSTEM_H_
 #define GUI_GUISYSTEM_H_
 
-#include "ICaptureManager.h"
+#include <boglfw/GUI/ICaptureManager.h>
 #include <memory>
 #include <list>
 

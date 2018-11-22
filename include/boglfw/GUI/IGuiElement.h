@@ -8,7 +8,7 @@
 #ifndef GUI_IGUIELEMENT_H_
 #define GUI_IGUIELEMENT_H_
 
-#include "constants.h"
+#include <boglfw/GUI/constants.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
