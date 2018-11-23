@@ -27,6 +27,8 @@ public:
 		auto it = collection.end();
 		do {
 			--it;
+			if (!(*it)->isVisible())
+				continue;
 			glm::vec2 min, max;
 			(*it)->getBoundingBox(min, max);
 			if (x >= min.x && y >= min.y && x <= max.x && y <= max.y)
