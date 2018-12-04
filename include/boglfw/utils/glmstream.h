@@ -10,7 +10,7 @@
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 inline std::ostream& operator <<(std::ostream& str, glm::fquat const& q) {
 	return str << "{" << q.x << ", " << q.y << ", " << q.z << ", " << q.w << "}";

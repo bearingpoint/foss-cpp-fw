@@ -20,13 +20,13 @@ template<typename T> constexpr T abs(T const& x) { return x < 0 ? -x : x; }
 
 // returns the normal vector of a 2D vector in the same plane, pointing towards the positive subspace of the initial vector (left)
 // as if crossing the original vector with a 3D upwards vector
-glm::vec2 getNormalVector(glm::vec2 v) { return glm::vec2(-v.y, v.x); }
+inline glm::vec2 getNormalVector(glm::vec2 v) { return glm::vec2(-v.y, v.x); }
 
 float constexpr eqEps(float f1, float f2) { return abs(f1 - f2) < EPS; }
 float constexpr eqEps(float f1, float f2, float eps) { return abs(f1 - f2) < eps; }
 
 // returns the cross product of two 2D vectors, as a scalar (positive if v2 is clockwise from v1 and negative otherwise)
-float cross2D(const glm::vec2 &v1, const glm::vec2 &v2) {
+inline float cross2D(const glm::vec2 &v1, const glm::vec2 &v2) {
 	return (v1.x*v2.y) - (v1.y*v2.x);
 }
 
