@@ -96,7 +96,7 @@ void OperationPan::handleInputEvent(InputEvent& ev) {
 
 void OperationPan::update(float dt) {
 	if (isFlyActive) {
-		pContext->pViewport->camera()->move({flySpeed * dt, 0});
+		pContext->pViewport->camera()->move(glm::vec3{flySpeed * dt, 0.f});
 		flySpeed /= frictionFactor;
 		if (glm::length(flySpeed) * pContext->pViewport->camera()->getOrthoZoom() < 5) // less than 5 screen pixels per second, then stop
 			isFlyActive = false;

@@ -48,7 +48,7 @@ void PhysicsDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, con
 
 /// Draw a line segment.
 void PhysicsDebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
-	Shape3D::get()->drawLine({b2g(p1), 0}, {b2g(p2), 0}, b2g(color));
+	Shape3D::get()->drawLine(glm::vec3{b2g(p1), 0}, glm::vec3{b2g(p2), 0}, b2g(color));
 }
 
 /// Draw a transform. Choose your own length scale.

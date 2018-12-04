@@ -4,3 +4,6 @@ workspace/
 GPATH 
 GRTAGS 
 GTAGS 
+.codelite
+boglfw.project
+boglfw.workspace

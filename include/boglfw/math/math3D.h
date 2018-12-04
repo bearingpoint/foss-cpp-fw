@@ -10,7 +10,7 @@
 
 #include <utility>
 
-template<typename T> constexpr T sqr(T const &x) { return x*x; }
+template<typename T> T sqr(T const &x) { return x*x; }
 template<typename T> inline void xchg(T &x1, T &x2) { T aux(x1); x1 = x2; x2 = aux; }
 template<typename T> inline void xchg(T &&x1, T &&x2) { T aux(std::move(x1)); x1 = std::move(x2); x2 = std::move(aux); }
 template<typename T> constexpr T min(T const &x, T const &y) { return x < y ? x : y; }
@@ -20,13 +20,13 @@ template<typename T> constexpr T abs(T const& x) { return x < 0 ? -x : x; }
 
 // returns the normal vector of a 2D vector in the same plane, pointing towards the positive subspace of the initial vector (left)
 // as if crossing the original vector with a 3D upwards vector
-constexpr glm::vec2 getNormalVector(glm::vec2 v) { return glm::vec2(-v.y, v.x); }
+glm::vec2 getNormalVector(glm::vec2 v) { return glm::vec2(-v.y, v.x); }
 
 float constexpr eqEps(float f1, float f2) { return abs(f1 - f2) < EPS; }
 float constexpr eqEps(float f1, float f2, float eps) { return abs(f1 - f2) < eps; }
 
 // returns the cross product of two 2D vectors, as a scalar (positive if v2 is clockwise from v1 and negative otherwise)
-constexpr float cross2D(const glm::vec2 &v1, const glm::vec2 &v2) {
+float cross2D(const glm::vec2 &v1, const glm::vec2 &v2) {
 	return (v1.x*v2.y) - (v1.y*v2.x);
 }
 

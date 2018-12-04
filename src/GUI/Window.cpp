@@ -41,7 +41,7 @@ void Window::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale
 			clientSize, GuiTheme::getClientFrameColor());
 
 	// now draw contents:
-	GuiContainerElement::draw(vp, glm::vec3(trans.x, trans.y, z), frameScale);
+	GuiContainerElement::draw(vp, glm::vec2(trans.x, trans.y), frameScale);
 }
 
 void Window::mouseDown(MouseButtons button) {
