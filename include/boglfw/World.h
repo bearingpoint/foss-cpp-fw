@@ -127,4 +127,3 @@ private:
 };
 
 #endif /* WORLD_H_ */
-
