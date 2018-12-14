@@ -50,11 +50,11 @@ public:
 	void drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec3 rgb);
 	void drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba);
 	// draw a circle
-	void drawCircle(glm::vec2 pos, float radius, float , int nSides, glm::vec3 rgb);
-	void drawCircle(glm::vec2 pos, float radius, float , int nSides, glm::vec4 rgba);
+	void drawCircle(glm::vec2 pos, float radius, float z, int nSides, glm::vec3 rgb);
+	void drawCircle(glm::vec2 pos, float radius, float z, int nSides, glm::vec4 rgba);
 	// draw a filled circle
-	void drawCircleFilled(glm::vec2 pos, float radius, float , int nSides, glm::vec3 rgb);
-	void drawCircleFilled(glm::vec2 pos, float radius, float , int nSides, glm::vec4 rgba);
+	void drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec3 rgb);
+	void drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec4 rgba);
 
 protected:
 	Shape2D(Renderer* renderer);

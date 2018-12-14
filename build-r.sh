@@ -11,7 +11,7 @@ if [ "$1" = "-R" ]; then
 else
 	printf "\nPass -R to force a full rebuild (clean all first)\n\n"
 fi
-make -j4
+make -j4 && make install
 
 RESULT=$?
 

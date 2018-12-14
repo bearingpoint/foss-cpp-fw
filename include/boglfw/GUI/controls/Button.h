@@ -20,7 +20,6 @@ public:
 	Event<void(Button*)> onClick;
 
 	using buttonHandler = decltype(Button::onClick)::handler_type;
-	buttonHandler foo;
 
 	void setText(std::string text) { text_ = text; }
 	void setIcon(...);
@@ -28,6 +27,7 @@ public:
 protected:
 	virtual void clicked(glm::vec2 clickPosition, MouseButtons button) override;
 	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
+	const std::string& text() const { return text_; }
 
 private:
 	std::string text_;
