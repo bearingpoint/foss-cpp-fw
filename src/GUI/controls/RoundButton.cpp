@@ -25,8 +25,8 @@ RoundButton::~RoundButton() {
 void RoundButton::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	glm::vec4 fillColor = isMouseIn() ? isMousePressed(MouseButtons::Left) ? GuiTheme::getButtonColorPressed() : GuiTheme::getButtonColorHover() : GuiTheme::getButtonColor();
 	Shape2D::get()->drawCircleFilled(
-			vec3xy(frameTranslation) + glm::vec2{radius_, radius_ } + glm::vec2(2,2),	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
-			radius_ - 4,
+			vec3xy(frameTranslation) + glm::vec2{radius_, radius_ },	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
+			radius_,
 			0.f,	// z
 			16,		// nSides
 			fillColor);

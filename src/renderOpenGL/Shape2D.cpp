@@ -258,20 +258,37 @@ void Shape2D::drawRectangleFilled(glm::vec2 pos, float z, glm::vec2 size, glm::v
 	drawPolygonFilled(coords, 4, z, rgba);
 }
 
+void makeCircle(glm::vec2 pos, float radius, int nSides, glm::vec2* outV) {
+	PERF_MARKER_FUNC;
+	// make a polygon out of the circle
+	float phiStep = 2 * PI * 1.f / nSides;
+	float phi = 0;
+	for (int i=0; i<nSides; i++) {
+		outV[i] = pos + glm::vec2{cosf(phi) * radius, sinf(phi) * radius};
+		phi += phiStep;
+	}
+}
+
 void Shape2D::drawCircle(glm::vec2 pos, float radius, float z, int nSides, glm::vec3 rgb) {
 	drawCircle(pos, radius, z, nSides, glm::vec4(rgb, 1));
 }
 
 void Shape2D::drawCircle(glm::vec2 pos, float radius, float z, int nSides, glm::vec4 rgba) {
 	PERF_MARKER_FUNC;
-	// make a polygon out of the circle
-	float phiStep = 2 * PI * 1.f / nSides;
 	glm::vec2 *v = new glm::vec2[nSides];
-	float phi = 0;
-	for (int i=0; i<nSides; i++) {
-		v[i] = pos + glm::vec2{cosf(phi) * radius, sinf(phi) * radius};
-		phi += phiStep;
-	}
+	makeCircle(pos, radius, nSides, v);
 	drawPolygon(v, nSides, z, rgba);
+	delete [] v;
+}
+
+void Shape2D::drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec3 rgb) {
+	drawCircleFilled(pos, radius, z, nSides, glm::vec4{rgb, 1});
+}
+
+void Shape2D::drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec4 rgba) {
+	PERF_MARKER_FUNC;
+	glm::vec2 *v = new glm::vec2[nSides];
+	makeCircle(pos, radius, nSides, v);
+	drawPolygonFilled(v, nSides, z, rgba);
 	delete [] v;
 }
