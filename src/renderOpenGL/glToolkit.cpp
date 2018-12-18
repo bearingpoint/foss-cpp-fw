@@ -1,5 +1,6 @@
 #include <boglfw/renderOpenGL/glToolkit.h>
 #include <boglfw/renderOpenGL/shader.hpp>
+#include <boglfw/utils/log.h>
 
 #include <GLFW/glfw3.h>
 
@@ -30,6 +31,7 @@ bool initGLEW() {
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+	checkGLError();
 	return true;
 }
 
@@ -63,6 +65,7 @@ void gltBegin(glm::vec4 clearColor)
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClearDepth(1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	checkGLError();
 }
 
 // finishes a frame and displays the result
@@ -87,4 +90,13 @@ bool gltInitWithSDL(SDL_Window* window) {
 	SDL_GL_MakeCurrent(window, context);
 	boundToSDL = true;
 	return initGLEW();
+}
+
+bool checkGLError() {
+	auto err = glGetError();
+	if (err != GL_NO_ERROR) {
+		ERROR("GL code " << err << " : " << glGetString(err));
+		return true;
+	} else
+		return false;
 }

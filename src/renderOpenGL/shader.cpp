@@ -1,4 +1,5 @@
 #include <boglfw/renderOpenGL/shader.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 #include <boglfw/utils/log.h>
 
 #include <GL/glew.h>
@@ -28,11 +29,14 @@ std::string Shaders::readShaderFile(const char* path) {
 
 unsigned Shaders::createAndCompileShader(std::string const &code, unsigned shaderType) {
 	unsigned shaderID = glCreateShader(shaderType);
+	if (!shaderID || checkGLError())
+		return 0;
 	GLint Result = GL_FALSE;
 	// Compile Shader
 	const char* sourcePointer = code.c_str();
 	glShaderSource(shaderID, 1, &sourcePointer, NULL);
 	glCompileShader(shaderID);
+	checkGLError();
 
 	// Check Shader
 	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &Result);
@@ -96,10 +100,13 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 	// Link the program
 	LOG("Linking program . . .");
 	unsigned programID = glCreateProgram();
+	if (checkGLError())
+		return 0;
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, geomShaderID);
 	glAttachShader(programID, fragmentShaderID);
 	glLinkProgram(programID);
+	checkGLError();
 
 	// Check the program
 	GLint Result = GL_FALSE;
@@ -120,8 +127,10 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 	}
 
 	glDeleteShader(vertexShaderID);
-	glDeleteShader(geomShaderID);
+	if (geomShaderID)
+		glDeleteShader(geomShaderID);
 	glDeleteShader(fragmentShaderID);
+	checkGLError();
 
 	return programID;
 }
