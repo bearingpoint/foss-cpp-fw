@@ -26,7 +26,11 @@ void Button::clicked(glm::vec2 clickPosition, MouseButtons button) {
 }
 
 void Button::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
-	glm::vec4 fillColor = isMouseIn() ? isMousePressed(MouseButtons::Left) ? GuiTheme::getButtonColorPressed() : GuiTheme::getButtonColorHover() : GuiTheme::getButtonColor();
+	glm::vec4 fillColor = isMouseIn() ? (
+							isMousePressed(MouseButtons::Left) ?
+								GuiTheme::getButtonColorPressed()
+							: GuiTheme::getButtonColorHover()
+						) : GuiTheme::getButtonColor();
 	Shape2D::get()->drawRectangleFilled(
 			vec3xy(frameTranslation) + glm::vec2(2,2),	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
 			0,

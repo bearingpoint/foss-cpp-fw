@@ -21,9 +21,7 @@ public:
 	GuiSystem() = default;
 	virtual ~GuiSystem() = default;
 
-	void setMouseCapture(IGuiElement *elementOrNull) override {
-		pCaptured = elementOrNull;
-	}
+	void setMouseCapture(IGuiElement* elementOrNull) override;
 
 	void addElement(std::shared_ptr<IGuiElement> e);
 	void addElement(...) = delete;
@@ -33,11 +31,11 @@ public:
 
 private:
 	std::list<std::shared_ptr<IGuiElement>> elements_;
-	IGuiElement *pFocusedElement_ = nullptr;
-	IGuiElement *pCaptured = nullptr;
-	IGuiElement *lastUnderMouse = nullptr;
+	std::weak_ptr<IGuiElement> pFocusedElement_;
+	std::weak_ptr<IGuiElement> pCaptured_;
+	std::weak_ptr<IGuiElement> lastUnderMouse_;
 
-	IGuiElement* getElementUnderMouse(float x, float y);
+	std::shared_ptr<IGuiElement> getElementUnderMouse(float x, float y);
 };
 
 #endif /* GUI_GUISYSTEM_H_ */

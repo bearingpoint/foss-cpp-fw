@@ -17,6 +17,7 @@ public:
 	GuiContainerElement(glm::vec2 position, glm::vec2 size);
 	virtual ~GuiContainerElement();
 
+	// hit-test a point IN LOCAL COORDINATES
 	virtual bool containsPoint(glm::vec2 const& p) const override;
 
 	void addElement(std::shared_ptr<GuiBasicElement> e);

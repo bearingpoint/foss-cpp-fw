@@ -29,6 +29,17 @@ void GuiSystem::removeElement(std::shared_ptr<IGuiElement> e) {
 	e->setCaptureManager(nullptr);
 }
 
+void GuiSystem::setMouseCapture(IGuiElement* elementOrNull) {
+	if (!elementOrNull)
+		pCaptured_ = {};
+	else {
+		auto it = std::find_if(elements_.begin(), elements_.end(), [elementOrNull](auto &e) {
+			return e.get() == elementOrNull;
+		});
+		pCaptured_ = it == elements_.end() ? nullptr : *it;
+	}
+}
+
 void GuiSystem::draw(Viewport* vp) {
 	for (auto &e : elements_)
 	{
@@ -46,82 +57,89 @@ void GuiSystem::handleInput(InputEvent &ev) {
 		return;
 	switch (ev.type) {
 	case InputEvent::EV_KEY_DOWN:
-		if (pFocusedElement_ && pFocusedElement_->isVisible()) {
-			if (pFocusedElement_->keyDown(ev.key))
-				ev.consume();
-		}
+		if (auto pf = pFocusedElement_.lock())
+			if (pf->isVisible()) {
+				if (pf->keyDown(ev.key))
+					ev.consume();
+			}
 		break;
 	case InputEvent::EV_KEY_UP:
-		if (pFocusedElement_) {
-			if (pFocusedElement_->keyUp(ev.key))
+		if (auto pf = pFocusedElement_.lock()) {
+			if (pf->keyUp(ev.key))
 				ev.consume();
 		}
 		break;
 	case InputEvent::EV_KEY_CHAR:
-		if (pFocusedElement_) {
-			if (pFocusedElement_->keyChar(ev.ch))
-				ev.consume();
-		}
+		if (auto pf = pFocusedElement_.lock())
+			if (pf->isVisible()) {
+				if (pf->keyChar(ev.ch))
+					ev.consume();
+			}
 		break;
 	case InputEvent::EV_MOUSE_DOWN:
-		if (pCaptured) {
-			pCaptured->mouseDown((MouseButtons)ev.mouseButton);
+		if (auto pc = pCaptured_.lock()) {
+			pc->mouseDown((MouseButtons)ev.mouseButton);
 			ev.consume();
 		} else {
-			if (lastUnderMouse) {
-				lastUnderMouse->mouseDown((MouseButtons)ev.mouseButton);
-				if (pFocusedElement_ != lastUnderMouse) {
-					if (pFocusedElement_) {
-						pFocusedElement_->focusLost();
-					}
-					pFocusedElement_ = lastUnderMouse;
-					pFocusedElement_->focusGot();
+			if (auto pl = lastUnderMouse_.lock()) {	// clicked on something
+				pl->mouseDown((MouseButtons)ev.mouseButton);
+				auto pf = pFocusedElement_.lock();
+				if (pf != pl) {
+					if (pf)
+						pf->focusLost();
+					pFocusedElement_ = pl;
+					pl->focusGot();
 					// move the clicked element to the top:
-					auto it = std::find_if(elements_.begin(), elements_.end(), [&](auto sp) {
-						return sp.get() == pFocusedElement_;
-					});
+					auto it = std::find(elements_.begin(), elements_.end(), pl);
 					elements_.splice(elements_.end(), elements_, it);
 				}
 				ev.consume();
+			} else {	// clicked on nothing
+				lastUnderMouse_ = {};
+				if (auto pf = pFocusedElement_.lock()) {
+					pf->focusLost();
+				} else
+					pFocusedElement_ = {};
 			}
 		}
 		break;
 	case InputEvent::EV_MOUSE_UP:
-		if (pCaptured) {
-			pCaptured->mouseUp((MouseButtons)ev.mouseButton);
+		if (auto pc = pCaptured_.lock()) {
+			pc->mouseUp((MouseButtons)ev.mouseButton);
 			ev.consume();
 		} else {
-			if (lastUnderMouse) {
-				lastUnderMouse->mouseUp((MouseButtons)ev.mouseButton);
+			if (auto pl = lastUnderMouse_.lock()) {
+				pl->mouseUp((MouseButtons)ev.mouseButton);
 				ev.consume();
 			}
 		}
 		break;
 	case InputEvent::EV_MOUSE_MOVED:
-		if (pCaptured) {
-			pCaptured->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(pCaptured, glm::vec2{ev.x, ev.y}));
+		if (auto pc = pCaptured_.lock()) {
+			pc->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(pc.get(), glm::vec2{ev.x, ev.y}));
 			ev.consume();
 		} else {
-			IGuiElement *crt = getElementUnderMouse(ev.x, ev.y);
-			if (crt != lastUnderMouse) {
-				if (lastUnderMouse)
-					lastUnderMouse->mouseLeave();
-				lastUnderMouse = crt;
-				if (lastUnderMouse) {
-					lastUnderMouse->mouseEnter();
+			auto crt = getElementUnderMouse(ev.x, ev.y);
+			auto last = lastUnderMouse_.lock();
+			if (crt != last) {
+				if (last)
+					last->mouseLeave();
+				lastUnderMouse_ = crt;
+				if (crt) {
+					crt->mouseEnter();
 				}
 			}
-			if (lastUnderMouse)
-				lastUnderMouse->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(lastUnderMouse, glm::vec2{ev.x, ev.y}));
+			if (crt)
+				crt->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(crt.get(), glm::vec2{ev.x, ev.y}));
 		}
 		break;
 	case InputEvent::EV_MOUSE_SCROLL:
-		if (pCaptured) {
-			pCaptured->mouseScroll(ev.dz);
+		if (auto pc = pCaptured_.lock()) {
+			pc->mouseScroll(ev.dz);
 			ev.consume();
 		} else {
-			if (lastUnderMouse) {
-				lastUnderMouse->mouseScroll(ev.dz);
+			if (auto pl = lastUnderMouse_.lock()) {
+				pl->mouseScroll(ev.dz);
 				ev.consume();
 			}
 		}
@@ -131,6 +149,6 @@ void GuiSystem::handleInput(InputEvent &ev) {
 	}
 }
 
-IGuiElement* GuiSystem::getElementUnderMouse(float x, float y) {
-	return GuiHelper::getTopElementAtPosition(elements_, x, y).get();
+std::shared_ptr<IGuiElement> GuiSystem::getElementUnderMouse(float x, float y) {
+	return GuiHelper::getTopElementAtPosition(elements_, x, y);
 }
