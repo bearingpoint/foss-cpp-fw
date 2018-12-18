@@ -29,6 +29,8 @@ public:
 
 	// called once when the renderer is destroyed to release all resources associated with this renderable.
 	virtual void unload() = 0;
+
+	virtual const char* getName() const = 0;
 };
 
 

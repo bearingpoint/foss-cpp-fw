@@ -73,10 +73,11 @@ void Shape3D::render(Viewport* vp, unsigned batchId) {
 	// render world-space line primitives:
 	unsigned nIndices = batchId == batches_.size() - 1 ? indices_.size() - batches_.back()
 		: batches_[batchId+1] - batches_[batchId];
-	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
-	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
-	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, &indices_[batches_[batchId]]);
-
+	if (nIndices) {
+		glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
+		glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
+		glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, &indices_[batches_[batchId]]);
+	}
 	glDisable(GL_BLEND);
 }
 

@@ -11,6 +11,7 @@
 #include <boglfw/renderOpenGL/Shape3D.h>
 #include <boglfw/renderOpenGL/GLText.h>
 #include <boglfw/renderOpenGL/MeshRenderer.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 #include <boglfw/utils/drawable.h>
 #include <boglfw/utils/assert.h>
 
@@ -75,6 +76,7 @@ void Renderer::render() {
 		glEnable(GL_SCISSOR_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glDisable(GL_SCISSOR_TEST);
+		checkGLError("viewport clear");
 
 		// 2. build the render queue for this viewport
 		for (auto &d : vp.second->drawList_) {
@@ -87,6 +89,7 @@ void Renderer::render() {
 			for (auto r : renderComponents_) {
 				// TODO optimization: have two queues per IRenderable - one common and one per viewport and only rebuild the second
 				r->render(vp.second.get(), i);
+				checkGLError(r->getName());
 			}
 		}
 		// 4. clear render queues

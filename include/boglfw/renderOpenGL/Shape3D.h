@@ -56,6 +56,11 @@ public:
 	void setTransform(glm::mat4 mat);
 	void resetTransform();
 
+	const char* getName() const override {
+		static char name[] = "Shape3D";
+		return name;
+	}
+
 protected:
 	Shape3D(Renderer* renderer);
 

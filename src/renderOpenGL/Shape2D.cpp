@@ -96,7 +96,8 @@ void Shape2D::render(Viewport* vp, unsigned batchId) {
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].rgba);
 	glDisable(GL_CULL_FACE); // TODO do we need this?
 	auto nTriIndices = end.triangleOffset_ - b.triangleOffset_;
-	glDrawElements(GL_TRIANGLES, nTriIndices, GL_UNSIGNED_SHORT, &indicesTri_[b.triangleOffset_]);
+	if (nTriIndices)
+		glDrawElements(GL_TRIANGLES, nTriIndices, GL_UNSIGNED_SHORT, &indicesTri_[b.triangleOffset_]);
 
 	// render line primitives
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);

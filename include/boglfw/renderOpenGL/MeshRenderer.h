@@ -24,6 +24,11 @@ public:
 
 	void renderMesh(Mesh& mesh, glm::mat4 worldTransform = glm::mat4(1));
 
+	const char* getName() const override {
+		static char name[] = "MeshRenderer";
+		return name;
+	}
+
 protected:
 	MeshRenderer(Renderer* renderer);
 

@@ -56,6 +56,11 @@ public:
 	void drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec3 rgb);
 	void drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec4 rgba);
 
+	const char* getName() const override {
+		static char name[] = "Shape2D";
+		return name;
+	}
+
 protected:
 	Shape2D(Renderer* renderer);
 

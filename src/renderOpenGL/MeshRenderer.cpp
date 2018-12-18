@@ -11,6 +11,8 @@
 #include <boglfw/renderOpenGL/Mesh.h>
 #include <boglfw/renderOpenGL/shader.hpp>
 #include <boglfw/renderOpenGL/Camera.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
+#include <boglfw/utils/log.h>
 
 #include <boglfw/utils/assert.h>
 
@@ -37,6 +39,7 @@ void MeshRenderer::unload() {
 }
 
 MeshRenderer::MeshRenderer(Renderer* renderer) {
+	LOGPREFIX("MeshRenderer::ctor");
 	renderer->registerRenderable(this);
 	meshShaderProgram_ = Shaders::createProgram("data/shaders/mesh.vert", "data/shaders/mesh-texture.frag");
 	if (meshShaderProgram_ == 0) {
@@ -47,6 +50,7 @@ MeshRenderer::MeshRenderer(Renderer* renderer) {
 	indexUV1_ = glGetAttribLocation(meshShaderProgram_, "vUV1");
 	indexColor_ = glGetAttribLocation(meshShaderProgram_, "vColor");
 	indexMatPVW_ = glGetUniformLocation(meshShaderProgram_, "mPVW");
+	checkGLError("getAttribs");
 }
 
 MeshRenderer::~MeshRenderer() {
@@ -58,12 +62,14 @@ void MeshRenderer::renderMesh(Mesh& mesh, glm::mat4 worldTransform) {
 }
 
 void MeshRenderer::render(Viewport* vp, unsigned batchId) {
+	LOGPREFIX("MeshRenderer::render");
 	assertDbg(batchId < batches_.size());
 	glUseProgram(meshShaderProgram_);
 	glEnableVertexAttribArray(indexPos_);
 	glEnableVertexAttribArray(indexNorm_);
 	glEnableVertexAttribArray(indexUV1_);
 	glEnableVertexAttribArray(indexColor_);
+	checkGLError("enable attrib arrays");
 
 	auto matPV = vp->camera()->matProjView();
 

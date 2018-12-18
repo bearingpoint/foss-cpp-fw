@@ -37,6 +37,11 @@ public:
 
 	glm::vec2 getTextRect(std::string const& text, int fontSize);
 
+	const char* getName() const override {
+		static char name[] = "GLText";
+		return name;
+	}
+
 protected:
 	void render(Viewport* pCrtViewport, unsigned batchId) override;
 	void purgeRenderQueue() override;
