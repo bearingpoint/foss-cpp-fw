@@ -31,9 +31,12 @@ public:
 				continue;
 			glm::vec2 min, max;
 			(*it)->getBoundingBox(min, max);
-			if (x >= min.x && y >= min.y && x <= max.x && y <= max.y)
-				if ((*it)->containsPoint({x, y}))
+			if (x >= min.x && y >= min.y && x <= max.x && y <= max.y) {
+				float lx = x - min.x;	// transform to local coordinates
+				float ly = y - min.y;	// transform to local coordinates
+				if ((*it)->containsPoint({lx, ly}))
 					return *it;
+			}
 		} while (it != collection.begin());
 		return {};
 	}

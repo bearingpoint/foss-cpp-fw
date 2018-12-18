@@ -20,11 +20,7 @@ GuiBasicElement::~GuiBasicElement() {
 }
 
 bool GuiBasicElement::containsPoint(glm::vec2 const& p) const {
-	return
-		p.x >= bboxMin_.x &&
-		p.y >= bboxMin_.y &&
-		p.x <= bboxMax_.x &&
-		p.y <= bboxMax_.y;
+	return true; // default to rectangular shape which contains all points within the bounding box
 }
 
 void GuiBasicElement::setPosition(glm::vec2 position) {

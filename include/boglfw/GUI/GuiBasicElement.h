@@ -28,6 +28,7 @@ public:
 
 	//int zIndex() const override { return zIndex_; }
 	void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const override { outMin = bboxMin_; outMax = bboxMax_; }
+	// hit-test a point IN LOCAL COORDINATES
 	virtual bool containsPoint(glm::vec2 const& p) const override;
 
 	bool isMouseIn() const { return isMouseIn_; }

@@ -23,6 +23,10 @@ public:
 	//virtual int zIndex() const = 0;
 	//virtual void setZIndex(int z) = 0;
 	virtual bool isVisible() const = 0;
+
+	// return true if the point IN LOCAL COORDINATES is contained within the element's shape;
+	// this allows hit-testing on arbitrary shapes, even with holes in them;
+	// it is assumed that the bounding box test has been performed prior to this call, the callee is not required to recheck that.
 	virtual bool containsPoint(glm::vec2 const& p) const = 0;
 
 

@@ -14,7 +14,7 @@ class ICaptureManager {
 public:
 	virtual ~ICaptureManager() {}
 
-	virtual void setMouseCapture(IGuiElement *elementOrNull) = 0;
+	virtual void setMouseCapture(IGuiElement* elementOrNull) = 0;
 };
 
 #endif /* GUI_ICAPTUREMANAGER_H_ */
