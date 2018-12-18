@@ -29,14 +29,14 @@ std::string Shaders::readShaderFile(const char* path) {
 
 unsigned Shaders::createAndCompileShader(std::string const &code, unsigned shaderType) {
 	unsigned shaderID = glCreateShader(shaderType);
-	if (!shaderID || checkGLError())
+	if (!shaderID || checkGLError("create shader"))
 		return 0;
 	GLint Result = GL_FALSE;
 	// Compile Shader
 	const char* sourcePointer = code.c_str();
 	glShaderSource(shaderID, 1, &sourcePointer, NULL);
 	glCompileShader(shaderID);
-	checkGLError();
+	checkGLError("compile shader");
 
 	// Check Shader
 	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &Result);
@@ -100,13 +100,18 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 	// Link the program
 	LOG("Linking program . . .");
 	unsigned programID = glCreateProgram();
-	if (checkGLError())
+	if (checkGLError("create program"))
 		return 0;
 	glAttachShader(programID, vertexShaderID);
-	glAttachShader(programID, geomShaderID);
+	checkGLError("attach shader");
+	if (geomShaderID != 0) {
+		glAttachShader(programID, geomShaderID);
+		checkGLError("attach shader");
+	}
 	glAttachShader(programID, fragmentShaderID);
+	checkGLError("attach shader");
 	glLinkProgram(programID);
-	checkGLError();
+	checkGLError("link program");
 
 	// Check the program
 	GLint Result = GL_FALSE;
@@ -130,7 +135,7 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 	if (geomShaderID)
 		glDeleteShader(geomShaderID);
 	glDeleteShader(fragmentShaderID);
-	checkGLError();
+	checkGLError("delete shaders");
 
 	return programID;
 }

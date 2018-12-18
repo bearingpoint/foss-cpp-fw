@@ -31,7 +31,7 @@ bool initGLEW() {
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-	checkGLError();
+	checkGLError("init GLEW");
 	return true;
 }
 
@@ -62,19 +62,22 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 // begins a frame
 void gltBegin(glm::vec4 clearColor)
 {
+	LOGPREFIX("gltBegin");
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClearDepth(1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	checkGLError();
+	checkGLError("clear");
 }
 
 // finishes a frame and displays the result
 void gltEnd()
 {
+	LOGPREFIX("gltEnd");
 	if (boundToSDL)
 		SDL_GL_SwapWindow(sdl_window);
 	else
 		glfwSwapBuffers(window);
+	checkGLError("swap buffers");
 }
 
 bool gltInitWithSDL(SDL_Window* window) {
@@ -92,11 +95,17 @@ bool gltInitWithSDL(SDL_Window* window) {
 	return initGLEW();
 }
 
-bool checkGLError() {
-	auto err = glGetError();
-	if (err != GL_NO_ERROR) {
-		ERROR("GL code " << err << " : " << glGetString(err));
-		return true;
-	} else
-		return false;
+bool checkGLError(char* operationName) {
+	bool errorDetected = false;
+	GLenum err;
+	do {
+		err = glGetError();
+		if (err != GL_NO_ERROR) {
+			static char buf[32];
+			snprintf(buf, sizeof(buf), "%#6x", err);
+			ERROR("GL error in [" << (operationName ? operationName : "") << "] code " << buf);
+			errorDetected = true;
+		}
+	} while (err != GL_NO_ERROR);
+	return errorDetected;
 }

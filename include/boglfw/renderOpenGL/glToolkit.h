@@ -24,6 +24,6 @@ bool gltInitWithSDL(SDL_Window* window);
 
 // checks if an OpenGL error has occured and prints it on stderr if so;
 // returns true if error, false if no error
-bool checkGLError();
+bool checkGLError(char* operationName = nullptr);
 
 #endif //__glToolkit_h__
