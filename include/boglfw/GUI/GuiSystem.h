@@ -9,33 +9,32 @@
 #define GUI_GUISYSTEM_H_
 
 #include <boglfw/GUI/ICaptureManager.h>
+#include <boglfw/GUI/GuiContainerElement.h>
 #include <memory>
-#include <list>
 
-class IGuiElement;
+class GuiBasicElement;
 class Viewport;
 class InputEvent;
 
 class GuiSystem : public ICaptureManager {
 public:
-	GuiSystem() = default;
+	// initialize the GUI System on a specified area of the viewport
+	GuiSystem(glm::vec2 position, glm::vec2 size);
 	virtual ~GuiSystem() = default;
 
-	void setMouseCapture(IGuiElement* elementOrNull) override;
+	void setMouseCapture(GuiBasicElement* elementOrNull) override;
 
-	void addElement(std::shared_ptr<IGuiElement> e);
+	void addElement(std::shared_ptr<GuiBasicElement> e);
 	void addElement(...) = delete;
-	void removeElement(std::shared_ptr<IGuiElement> e);
+	void removeElement(std::shared_ptr<GuiBasicElement> e);
 	void draw(Viewport* vp);
 	void handleInput(InputEvent &ev);
 
 private:
-	std::list<std::shared_ptr<IGuiElement>> elements_;
-	std::weak_ptr<IGuiElement> pFocusedElement_;
-	std::weak_ptr<IGuiElement> pCaptured_;
-	std::weak_ptr<IGuiElement> lastUnderMouse_;
-
-	std::shared_ptr<IGuiElement> getElementUnderMouse(float x, float y);
+	GuiContainerElement rootElement_;
+	std::weak_ptr<GuiBasicElement> pFocusedElement_;
+	std::weak_ptr<GuiBasicElement> pCaptured_;
+	std::weak_ptr<GuiBasicElement> lastUnderMouse_;
 };
 
 #endif /* GUI_GUISYSTEM_H_ */

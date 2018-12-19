@@ -6,7 +6,6 @@
  */
 
 #include <boglfw/GUI/GuiSystem.h>
-#include <boglfw/GUI/IGuiElement.h>
 #include <boglfw/GUI/GuiHelper.h>
 #include <boglfw/input/InputEvent.h>
 #include <boglfw/utils/log.h>
@@ -19,37 +18,33 @@
 
 #include <algorithm>
 
-void GuiSystem::addElement(std::shared_ptr<IGuiElement> e) {
-	elements_.push_back(e);
+GuiSystem::GuiSystem(glm::vec2 position, glm::vec2 size)
+	: rootElement_(position, size) {
+	rootElement_.setTransparentBackground(true);
+}
+
+void GuiSystem::addElement(std::shared_ptr<GuiBasicElement> e) {
+	rootElement_.addElement(e);
 	e->setCaptureManager(this);
 }
 
-void GuiSystem::removeElement(std::shared_ptr<IGuiElement> e) {
-	elements_.erase(std::find(elements_.begin(), elements_.end(), e));
+void GuiSystem::removeElement(std::shared_ptr<GuiBasicElement> e) {
 	e->setCaptureManager(nullptr);
+	rootElement_.removeElement(e);
 }
 
-void GuiSystem::setMouseCapture(IGuiElement* elementOrNull) {
+void GuiSystem::setMouseCapture(GuiBasicElement* elementOrNull) {
 	if (!elementOrNull)
 		pCaptured_ = {};
 	else {
-		auto it = std::find_if(elements_.begin(), elements_.end(), [elementOrNull](auto &e) {
-			return e.get() == elementOrNull;
-		});
-		pCaptured_ = it == elements_.end() ? nullptr : *it;
+		assert(elementOrNull->parent());
+		pCaptured_ = elementOrNull->parent()->findElement(elementOrNull);
+		assert(pCaptured_);
 	}
 }
 
 void GuiSystem::draw(Viewport* vp) {
-	for (auto &e : elements_)
-	{
-		if (e->isVisible()) {
-			vp->renderer()->startBatch();
-			glm::vec2 bboxMin, bboxMax;
-			e->getBoundingBox(bboxMin, bboxMax);
-			e->draw(vp, bboxMin, glm::vec2(1));
-		}
-	}
+	rootElement_.draw(vp, {0.f, 0.f}, {1.f, 1.f});
 }
 
 void GuiSystem::handleInput(InputEvent &ev) {
@@ -90,8 +85,8 @@ void GuiSystem::handleInput(InputEvent &ev) {
 					pFocusedElement_ = pl;
 					pl->focusGot();
 					// move the clicked element to the top:
-					auto it = std::find(elements_.begin(), elements_.end(), pl);
-					elements_.splice(elements_.end(), elements_, it);
+					//auto it = std::find(elements_.begin(), elements_.end(), pl);
+					//elements_.splice(elements_.end(), elements_, it);
 				}
 				ev.consume();
 			} else {	// clicked on nothing
@@ -147,8 +142,4 @@ void GuiSystem::handleInput(InputEvent &ev) {
 	default:
 		LOGLN("unknown event type: " << ev.type);
 	}
-}
-
-std::shared_ptr<IGuiElement> GuiSystem::getElementUnderMouse(float x, float y) {
-	return GuiHelper::getTopElementAtPosition(elements_, x, y);
 }

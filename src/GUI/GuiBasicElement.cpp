@@ -16,7 +16,7 @@ GuiBasicElement::GuiBasicElement(glm::vec2 position, glm::vec2 size)
 }
 
 GuiBasicElement::~GuiBasicElement() {
-
+	assert(!parent || !parent_->findElement(this));
 }
 
 bool GuiBasicElement::containsPoint(glm::vec2 const& p) const {

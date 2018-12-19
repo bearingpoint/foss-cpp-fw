@@ -24,13 +24,14 @@ GuiContainerElement::~GuiContainerElement() {
 }
 
 bool GuiContainerElement::containsPoint(glm::vec2 const& p) const {
-	if (!transparentBackground_)
+	/*if (!transparentBackground_)
 		return true;
 	else {
 		glm::vec2 clientPos = p - clientAreaOffset_;
 		std::shared_ptr<GuiBasicElement> crt = GuiHelper::getTopElementAtPosition(children_, clientPos.x, clientPos.y);
 		return crt != nullptr;
-	}
+	}*/
+	return !transparentBackground_;
 }
 
 void GuiContainerElement::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
@@ -66,14 +67,24 @@ void GuiContainerElement::updateClientArea() {
 
 void GuiContainerElement::addElement(std::shared_ptr<GuiBasicElement> e) {
 	children_.push_back(e);
+	e->parent_ = this;
 	e->setCaptureManager(getCaptureManager());
 }
 
 void GuiContainerElement::removeElement(std::shared_ptr<GuiBasicElement> e) {
+	assert(e && e->parent_ == this && findElement(e.get()));
+	e->parent_ = nullptr;
 	children_.erase(std::find(children_.begin(), children_.end(), e));
 }
 
-void GuiContainerElement::mouseDown(MouseButtons button) {
+std::shared_ptr<GuiBasicElement> GuiContainerElement::findElement(GuiBasicElement* target) {
+	auto it = std::find_if(children_.begin(), children_.end(), [target] (auto &e) {
+		return e.get() == target;
+	});
+	return it == children_.end() ? {} : *it;
+}
+
+/*void GuiContainerElement::mouseDown(MouseButtons button) {
 	GuiBasicElement::mouseDown(button);
 	if (elementUnderMouse_) {
 		if (elementUnderMouse_ != focusedElement_) {
@@ -132,7 +143,7 @@ bool GuiContainerElement::keyChar(char c) {
 		return focusedElement_->keyChar(c);
 	else
 		return false;
-}
+}*/
 
 void GuiContainerElement::setClientArea(glm::vec2 offset, glm::vec2 counterOffset) {
 	clientAreaOffset_ = offset;
