@@ -19,7 +19,7 @@ class InputEvent;
 class GuiSystem : public ICaptureManager {
 public:
 	// initialize the GUI System on a specified area of the viewport
-	GuiSystem(glm::vec2 position, glm::vec2 size);
+	GuiSystem(Viewport* viewport, glm::vec2 position, glm::vec2 size);
 	virtual ~GuiSystem() = default;
 
 	void setMouseCapture(GuiBasicElement* elementOrNull) override;
@@ -31,10 +31,13 @@ public:
 	void handleInput(InputEvent &ev);
 
 private:
+	Viewport* viewport_;
 	GuiContainerElement rootElement_;
 	std::weak_ptr<GuiBasicElement> pFocusedElement_;
 	std::weak_ptr<GuiBasicElement> pCaptured_;
 	std::weak_ptr<GuiBasicElement> lastUnderMouse_;
+	
+	glm::vec2 screenToViewport(glm::vec2 sp) const;
 };
 
 #endif /* GUI_GUISYSTEM_H_ */

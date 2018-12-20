@@ -18,8 +18,9 @@
 
 #include <algorithm>
 
-GuiSystem::GuiSystem(glm::vec2 position, glm::vec2 size)
-	: rootElement_(position, size) {
+GuiSystem::GuiSystem(Viewport* viewport, glm::vec2 position, glm::vec2 size)
+	: viewport_(viewport)
+	, rootElement_(position, size) {
 	rootElement_.setTransparentBackground(true);
 }
 
@@ -38,18 +39,25 @@ void GuiSystem::setMouseCapture(GuiBasicElement* elementOrNull) {
 		pCaptured_ = {};
 	else {
 		assert(elementOrNull->parent());
-		pCaptured_ = elementOrNull->parent()->findElement(elementOrNull);
-		assert(pCaptured_);
+		auto captured = elementOrNull->parent()->findElement(elementOrNull);
+		assert(captured);
+		pCaptured_ = captured;
 	}
 }
 
 void GuiSystem::draw(Viewport* vp) {
-	rootElement_.draw(vp, {0.f, 0.f}, {1.f, 1.f});
+	if (vp == viewport_)
+		rootElement_.draw(vp, {0.f, 0.f}, {1.f, 1.f});
+}
+
+glm::vec2 GuiSystem::screenToViewport(glm::vec2 sp) const {
+	return sp - viewport_->position();
 }
 
 void GuiSystem::handleInput(InputEvent &ev) {
 	if (ev.isConsumed())
 		return;
+	glm::vec2 mousePos = screenToViewport({ev.x, ev.y});
 	switch (ev.type) {
 	case InputEvent::EV_KEY_DOWN:
 		if (auto pf = pFocusedElement_.lock())
@@ -111,10 +119,10 @@ void GuiSystem::handleInput(InputEvent &ev) {
 		break;
 	case InputEvent::EV_MOUSE_MOVED:
 		if (auto pc = pCaptured_.lock()) {
-			pc->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(pc.get(), glm::vec2{ev.x, ev.y}));
+			pc->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::viewportToLocal(*pc.get(), mousePos));
 			ev.consume();
 		} else {
-			auto crt = getElementUnderMouse(ev.x, ev.y);
+			auto crt = GuiHelper::getTopElementAtPosition(rootElement_, mousePos.x, mousePos.y);
 			auto last = lastUnderMouse_.lock();
 			if (crt != last) {
 				if (last)
@@ -125,7 +133,7 @@ void GuiSystem::handleInput(InputEvent &ev) {
 				}
 			}
 			if (crt)
-				crt->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::parentToLocal(crt.get(), glm::vec2{ev.x, ev.y}));
+				crt->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::viewportToLocal(*crt.get(), mousePos));
 		}
 		break;
 	case InputEvent::EV_MOUSE_SCROLL:

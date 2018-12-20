@@ -44,7 +44,7 @@ void Window::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale
 	GuiContainerElement::draw(vp, glm::vec2(trans.x, trans.y), frameScale);
 }
 
-void Window::mouseDown(MouseButtons button) {
+/*void Window::mouseDown(MouseButtons button) {
 	if (button == MouseButtons::Left) {
 		downPosition_ = getLastMousePosition();
 		if (getPointedElement() == nullptr)
@@ -64,4 +64,4 @@ void Window::mouseMoved(glm::vec2 delta, glm::vec2 position) {
 		setPosition(getPosition() + delta);
 	else
 		GuiContainerElement::mouseMoved(delta, position);
-}
+}*/

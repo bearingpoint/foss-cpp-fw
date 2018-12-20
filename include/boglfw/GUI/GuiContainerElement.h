@@ -29,12 +29,17 @@ public:
 	// transparent background will be invisible and will not consume mouse events - they will fall through to the underlying elements
 	// by default the background is not transparent.
 	void setTransparentBackground(bool transp) { transparentBackground_ = transp; }
-
-protected:
-
+	
+	void setClientArea(glm::vec2 offset, glm::vec2 counterOffset);
+	void getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const;
+	glm::vec2 getClientOffset() const { return clientAreaOffset_; }
+	
 	virtual bool isContainer() const override { return true; }
 	virtual size_t childrenCount() const { return children_.size(); }
-	virtual std::shared_ptr<IGuiElement> nthChild(size_t n) const { return children_[n]; }
+	virtual std::shared_ptr<GuiBasicElement> nthChild(size_t n) const { return children_[n]; }
+
+protected:
+	friend class GuiSystem;
 
 #warning "must change coordinate space for draw and mouse events"
 #warning "all coordinates must be in parent-space. Add support in shape2D for translation stack to simplify drawing code"
@@ -46,9 +51,6 @@ protected:
 	//virtual bool keyDown(int keyCode) override;
 	//virtual bool keyUp(int keyCode) override;
 	//virtual bool keyChar(char c) override;
-
-	void setClientArea(glm::vec2 offset, glm::vec2 counterOffset);
-	void getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize);
 
 private:
 	glm::vec2 clientAreaOffset_{0};	// (positive) offset from top left corner of container to top-left corner of client area

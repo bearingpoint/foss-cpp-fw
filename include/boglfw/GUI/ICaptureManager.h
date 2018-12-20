@@ -8,13 +8,13 @@
 #ifndef GUI_ICAPTUREMANAGER_H_
 #define GUI_ICAPTUREMANAGER_H_
 
-class IGuiElement;
+class GuiBasicElement;
 
 class ICaptureManager {
 public:
 	virtual ~ICaptureManager() {}
 
-	virtual void setMouseCapture(IGuiElement* elementOrNull) = 0;
+	virtual void setMouseCapture(GuiBasicElement* elementOrNull) = 0;
 };
 
 #endif /* GUI_ICAPTUREMANAGER_H_ */

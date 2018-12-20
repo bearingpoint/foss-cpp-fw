@@ -10,7 +10,12 @@
 
 #include <boglfw/GUI/constants.h>
 
+#include <glm/vec2.hpp>
+
+class GuiSystem;
 class GuiContainerElement;
+class ICaptureManager;
+class Viewport;
 
 class GuiBasicElement {
 public:
@@ -20,9 +25,9 @@ public:
 	GuiContainerElement* parent() const { return parent_; }
 
 	void setAnchors(Anchors anch) { anchors_ = anch; }
-	glm::vec2 getPosition() { return position_; }
+	glm::vec2 getPosition() const { return position_; }
 	virtual void setPosition(glm::vec2 position);
-	glm::vec2 getSize() { return size_; }
+	glm::vec2 getSize() const { return size_; }
 	virtual void setSize(glm::vec2 size);
 	//void setZIndex(int z) override { zIndex_ = z; }
 	bool isVisible() const { return visible_; }
@@ -35,20 +40,21 @@ public:
 	// return true if the point IN LOCAL COORDINATES is contained within the element's shape;
 	// this allows hit-testing on arbitrary shapes, even with holes in them;
 	// it is assumed that the bounding box test has been performed prior to this call, the callee is not required to recheck that.
-	virtual bool containsPoint(glm::vec2 const& p) const override;
+	virtual bool containsPoint(glm::vec2 const& p) const;
 
 	bool isMouseIn() const { return isMouseIn_; }
 	bool isMousePressed(MouseButtons button) const { return isMousePressed_[(int)button]; }
 	glm::vec2 getLastMousePosition() const { return lastMousePosition_; }
+	
+	virtual bool isContainer() const { return false; }
 
 protected:
 	friend class GuiContainerElement;
+	friend class GuiSystem;
 	GuiContainerElement* parent_ = nullptr;
 	
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
 	ICaptureManager* getCaptureManager() const { return captureManager_; }
-	
-	virtual bool isContainer() const { return false; }
 	
 	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
 	

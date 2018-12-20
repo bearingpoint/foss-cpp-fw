@@ -77,11 +77,11 @@ void GuiContainerElement::removeElement(std::shared_ptr<GuiBasicElement> e) {
 	children_.erase(std::find(children_.begin(), children_.end(), e));
 }
 
-std::shared_ptr<GuiBasicElement> GuiContainerElement::findElement(GuiBasicElement* target) {
+std::shared_ptr<GuiBasicElement> GuiContainerElement::findElement(GuiBasicElement* target) const {
 	auto it = std::find_if(children_.begin(), children_.end(), [target] (auto &e) {
 		return e.get() == target;
 	});
-	return it == children_.end() ? {} : *it;
+	return it == children_.end() ? nullptr : *it;
 }
 
 /*void GuiContainerElement::mouseDown(MouseButtons button) {
@@ -151,7 +151,7 @@ void GuiContainerElement::setClientArea(glm::vec2 offset, glm::vec2 counterOffse
 	updateClientArea();
 }
 
-void GuiContainerElement::getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) {
+void GuiContainerElement::getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const {
 	outOffset = clientAreaOffset_;
 	outSize = clientAreaSize_;
 }

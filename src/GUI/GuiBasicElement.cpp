@@ -6,6 +6,7 @@
  */
 
 #include <boglfw/GUI/GuiBasicElement.h>
+#include <boglfw/GUI/GuiContainerElement.h>
 #include <glm/geometric.hpp>
 
 GuiBasicElement::GuiBasicElement(glm::vec2 position, glm::vec2 size)
@@ -16,7 +17,7 @@ GuiBasicElement::GuiBasicElement(glm::vec2 position, glm::vec2 size)
 }
 
 GuiBasicElement::~GuiBasicElement() {
-	assert(!parent || !parent_->findElement(this));
+	assert(!parent_ || !parent_->findElement(this));
 }
 
 bool GuiBasicElement::containsPoint(glm::vec2 const& p) const {
