@@ -50,13 +50,15 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 	//glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
 	window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
-	checkGLError("glfwCreateWindow");
+	if (!checkGLError("glfwCreateWindow"))
+		return false;
 	if (!window) {
 		cerr << "FAILED creating window" << endl;
 		return false;
 	}
 	glfwMakeContextCurrent(window);
-	checkGLError("glfwMakeContextCurrent");
+	if (!checkGLError("glfwMakeContextCurrent"))
+		return false;
 
 	return initGLEW();
 }
@@ -91,11 +93,13 @@ bool gltInitWithSDL(SDL_Window* window) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	auto context = SDL_GL_CreateContext(window);
-	checkSDLError("SDL_GL_CreateContext");
+	if (checkSDLError("SDL_GL_CreateContext"))
+		return false;
 	if (!context)
 		return false;
 	SDL_GL_MakeCurrent(window, context);
-	checkSDLError("SDL_GL_MakeCurrent");
+	if (checkSDLError("SDL_GL_MakeCurrent"))
+		return false;
 	boundToSDL = true;
 	return initGLEW();
 }
