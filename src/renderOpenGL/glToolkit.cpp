@@ -50,14 +50,12 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 	//glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
 	window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
-	if (!checkGLError("glfwCreateWindow"))
-		return false;
 	if (!window) {
 		cerr << "FAILED creating window" << endl;
 		return false;
 	}
 	glfwMakeContextCurrent(window);
-	if (!checkGLError("glfwMakeContextCurrent"))
+	if (checkGLError("glfwMakeContextCurrent"))
 		return false;
 
 	return initGLEW();
