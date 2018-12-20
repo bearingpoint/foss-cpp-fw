@@ -44,17 +44,19 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 		return false;
 	}
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	//glfwWindowHint(GLFW_DEPTH_BITS, 24);
 	//glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
 	window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
+	checkGLError("glfwCreateWindow");
 	if (!window) {
 		cerr << "FAILED creating window" << endl;
 		return false;
 	}
 	glfwMakeContextCurrent(window);
+	checkGLError("glfwMakeContextCurrent");
 
 	return initGLEW();
 }
@@ -84,13 +86,16 @@ bool gltInitWithSDL(SDL_Window* window) {
 	assert(window);
 	sdl_window = window;
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-//	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); // only set this for >=3.2 profiles using VAOs, not user memory
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	auto context = SDL_GL_CreateContext(window);
+	checkSDLError("SDL_GL_CreateContext");
 	if (!context)
 		return false;
 	SDL_GL_MakeCurrent(window, context);
+	checkSDLError("SDL_GL_MakeCurrent");
 	boundToSDL = true;
 	return initGLEW();
 }
@@ -108,4 +113,14 @@ bool checkGLError(const char* operationName) {
 		}
 	} while (err != GL_NO_ERROR);
 	return errorDetected;
+}
+
+bool checkSDLError(const char* operationName) {
+	auto err = SDL_GetError();
+	if (err[0]) {
+		ERROR("SDL error in [" << (operationName ? operationName : "") << "]:");
+		ERROR(err);
+		return true;
+	} else
+		return false;
 }

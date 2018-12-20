@@ -81,6 +81,18 @@ unsigned Shaders::loadFragmentShader(const char* path) {
 	return createAndCompileShader(vertexShaderCode, GL_FRAGMENT_SHADER);
 }
 
+void printProgramInfoLog(int programID) {
+	int InfoLogLength;
+	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	if (InfoLogLength > 0) {
+		std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
+		glGetProgramInfoLog(programID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+		ERROR(&ProgramErrorMessage[0]);
+	} else {
+		ERROR("(no error description)");
+	}
+}
+
 unsigned Shaders::createProgram(const char* vertex_file_path, const char* fragment_file_path) {
 	return createProgramGeom(vertex_file_path, nullptr, fragment_file_path);
 }
@@ -118,17 +130,17 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 	glGetProgramiv(programID, GL_LINK_STATUS, &Result);
 	if (Result != GL_TRUE) {
 		ERROR("Shader link ERROR!!!");
-		int InfoLogLength;
-		glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-		if (InfoLogLength > 0) {
-			std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
-			glGetProgramInfoLog(programID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-			ERROR(&ProgramErrorMessage[0]);
-		} else {
-			ERROR("(no error description)");
-		}
+		printProgramInfoLog(programID);
 	} else {
 		LOGNP("OK\n");
+		// validate program
+		glValidateProgram(programID);
+		int validResult;
+		glGetProgramiv(programID, GL_VALIDATE_STATUS, &validResult);
+		if (validResult != GL_TRUE) {
+			ERROR("Shader program validation failed!");
+			printProgramInfoLog(programID);
+		}
 	}
 
 	glDeleteShader(vertexShaderID);

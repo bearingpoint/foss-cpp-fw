@@ -193,6 +193,12 @@ void GLText::print(const std::string &text, ViewportCoord pos, int z, int size, 
 
 void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 	assertDbg(batchId < batches_.size());
+	
+	unsigned nItems = batchId == batches_.size() - 1 ? itemPositions_.size() - batches_.back()
+		: batches_[batchId+1] - batches_[batchId];
+	if (!nItems)
+		return;
+	
 	// Bind shader
 	glUseProgram(shaderID_);
 
@@ -229,8 +235,6 @@ void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// do the drawing:
-	unsigned nItems = batchId == batches_.size() - 1 ? itemPositions_.size() - batches_.back()
-		: batches_[batchId+1] - batches_[batchId];
 	unsigned offset = 0;
 	for (unsigned i=0; i<batches_[batchId]; i++)
 		offset += verticesPerItem_[i];

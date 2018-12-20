@@ -59,6 +59,12 @@ void Shape3D::unload() {
 
 void Shape3D::render(Viewport* vp, unsigned batchId) {
 	assertDbg(batchId < batches_.size());
+	
+	unsigned nIndices = batchId == batches_.size() - 1 ? indices_.size() - batches_.back()
+		: batches_[batchId+1] - batches_[batchId];
+	if (!nIndices)
+		return;
+	
 	glUseProgram(lineShaderProgram_);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -71,13 +77,10 @@ void Shape3D::render(Viewport* vp, unsigned batchId) {
 	glEnableVertexAttribArray(indexColor_);
 
 	// render world-space line primitives:
-	unsigned nIndices = batchId == batches_.size() - 1 ? indices_.size() - batches_.back()
-		: batches_[batchId+1] - batches_[batchId];
-	if (nIndices) {
-		glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
-		glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
-		glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, &indices_[batches_[batchId]]);
-	}
+	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
+	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
+	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, &indices_[batches_[batchId]]);
+	
 	glDisable(GL_BLEND);
 }
 

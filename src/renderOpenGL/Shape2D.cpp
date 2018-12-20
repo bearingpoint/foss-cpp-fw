@@ -9,6 +9,7 @@
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/shader.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/tesselate-vec2.h>
 #include <boglfw/utils/log.h>
@@ -82,28 +83,31 @@ void Shape2D::render(Viewport* vp, unsigned batchId) {
 	glm::mat4x4 matVP_to_Uniform(glm::translate(matVP_to_UniformScale,
 			glm::vec3(-vpw/2, -vph/2, 0)));
 	glUniformMatrix4fv(indexMatViewport_, 1, GL_FALSE, glm::value_ptr(matVP_to_Uniform));
-	glEnableVertexAttribArray(indexPos_);
-	glEnableVertexAttribArray(indexColor_);
 
 	auto &b = batches_[batchId];
 	s_batch end {
 		batchId < batches_.size() - 1 ? batches_[batchId+1].lineStripOffset_ : lineStrips_.size(),
 		batchId < batches_.size() - 1 ? batches_[batchId+1].triangleOffset_ : indicesTri_.size()
 	};
+	
+	checkGLError("Shape2D::render() : setup");
 
 	// render triangle primitives:
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].pos);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &bufferTri_[0].rgba);
 	glDisable(GL_CULL_FACE); // TODO do we need this?
 	auto nTriIndices = end.triangleOffset_ - b.triangleOffset_;
-	if (nTriIndices)
+	if (nTriIndices) {
 		glDrawElements(GL_TRIANGLES, nTriIndices, GL_UNSIGNED_SHORT, &indicesTri_[b.triangleOffset_]);
+		checkGLError("Shape2D::render() : glDrawElements #1");
+	}
 
 	// render line primitives
 	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
 	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
 	for (unsigned l=b.lineStripOffset_; l < end.lineStripOffset_; l++) {
 		glDrawElements(GL_LINES, lineStrips_[l].length, GL_UNSIGNED_SHORT, &indices_[lineStrips_[l].offset]);
+		checkGLError("Shape2D::render() : glDrawElements #2");
 	}
 
 	glDisable(GL_BLEND);

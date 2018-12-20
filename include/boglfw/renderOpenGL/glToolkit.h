@@ -26,4 +26,8 @@ bool gltInitWithSDL(SDL_Window* window);
 // returns true if error, false if no error
 bool checkGLError(const char* operationName = nullptr);
 
+// checks if an SDL error has occured and prints it on stderr if so;
+// returns true if error, false if no error
+bool checkSDLError(const char* operationName = nullptr);
+
 #endif //__glToolkit_h__
