@@ -118,10 +118,12 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 	checkGLError("attach shader");
 	if (geomShaderID != 0) {
 		glAttachShader(programID, geomShaderID);
-		checkGLError("attach shader");
+		if (checkGLError("attach shader"))
+			return 0;
 	}
 	glAttachShader(programID, fragmentShaderID);
-	checkGLError("attach shader");
+	if (checkGLError("attach shader"))
+		return 0;
 	glLinkProgram(programID);
 	checkGLError("link program");
 
@@ -131,6 +133,7 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 	if (Result != GL_TRUE) {
 		ERROR("Shader link ERROR!!!");
 		printProgramInfoLog(programID);
+		return 0;
 	} else {
 		LOGNP("OK\n");
 		// validate program
@@ -140,6 +143,7 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 		if (validResult != GL_TRUE) {
 			ERROR("Shader program validation failed!");
 			printProgramInfoLog(programID);
+			return 0;
 		}
 	}
 
