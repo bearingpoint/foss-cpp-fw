@@ -38,12 +38,26 @@ bool GLFWInput::checkInput() {
 	return glfwWindowShouldClose(window) == 0;
 }
 
+InputEvent::MOUSE_BUTTON GLFWInput::translateMouseButton(int glfwBtn) {
+	switch (glfwBtn) {
+		case GLFW_MOUSE_BUTTON_LEFT:
+			return InputEvent::MB_LEFT;
+		case GLFW_MOUSE_BUTTON_MIDDLE:
+			return InputEvent::MB_MIDDLE;
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			return InputEvent::MB_RIGHT;
+		default:
+			return InputEvent::MB_NONE;
+	}
+}
+
 void GLFWInput::glfwMouseScroll(GLFWwindow* win, double x, double y) {
 	eventQueue.push_back(InputEvent(InputEvent::EV_MOUSE_SCROLL, lastMousePos.x, lastMousePos.y, 0, 0, y, InputEvent::MB_NONE, 0, 0));
 }
 void GLFWInput::glfwMouseButton(GLFWwindow* win, int button, int action, int mods) {
 	InputEvent::EVENT_TYPE evType = action == GLFW_PRESS ? InputEvent::EV_MOUSE_DOWN : InputEvent::EV_MOUSE_UP;
-	eventQueue.push_back(InputEvent(evType, lastMousePos.x, lastMousePos.y, 0, 0, 0, (InputEvent::MOUSE_BUTTON)button, 0, 0));
+	auto btn = translateMouseButton(button);
+	eventQueue.push_back(InputEvent(evType, lastMousePos.x, lastMousePos.y, 0, 0, 0, btn, 0, 0));
 }
 void GLFWInput::glfwMousePos(GLFWwindow* win, double x, double y) {
 	glm::vec2 delta = glm::vec2(x, y) - lastMousePos;

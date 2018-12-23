@@ -8,12 +8,12 @@
 #ifndef INPUT_GLFWINPUT_H_
 #define INPUT_GLFWINPUT_H_
 
+#include "InputEvent.h"
 #include "../utils/Event.h"
 #include <functional>
 #include <glm/vec2.hpp>
 #include <vector>
 
-class InputEvent;
 class GLFWwindow;
 
 class GLFWInput {
@@ -31,6 +31,8 @@ private:
 	static void glfwMousePos(GLFWwindow* win, double x, double y);
 	static void glfwKey(GLFWwindow* win, int key, int scancode, int action, int mods);
 	static void glfwChar(GLFWwindow* win, unsigned int ch);
+
+	static InputEvent::MOUSE_BUTTON translateMouseButton(int glfwBtn);
 
 	static std::vector<InputEvent> eventQueue;
 	static GLFWwindow *window;

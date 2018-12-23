@@ -25,13 +25,8 @@ public:
 	enum MOUSE_BUTTON {
 		MB_NONE=-1,
 		MB_LEFT=0,
-#ifdef __WIN32__
-		MB_RIGHT,
 		MB_MIDDLE,
-#else
-		MB_MIDDLE,
-		MB_RIGHT,
-#endif
+		MB_RIGHT
 	} mouseButton;
 	int key;
 	char ch;
