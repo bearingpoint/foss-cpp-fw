@@ -65,10 +65,11 @@ protected:
 	Shape2D(Renderer* renderer);
 
 private:
+	void startBatch() override;
+	void setupFrameData() override;
 	void render(Viewport* vp, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
-	void startBatch() override;
 
 	struct s_lineVertex {
 		glm::vec2 pos;
@@ -79,8 +80,8 @@ private:
 			: pos(pos), z(z), rgba(rgba) {}
 	};
 	// line buffers
-	std::vector<s_lineVertex> buffer_;
-	std::vector<unsigned short> indices_;
+	std::vector<s_lineVertex> lineBuffer_;
+	std::vector<unsigned short> lineIndices_;
 
 	struct s_lineStrip {
 		size_t offset;	// offset in index buffer
@@ -89,8 +90,8 @@ private:
 	std::vector<s_lineStrip> lineStrips_;
 
 	// triangle buffers
-	std::vector<s_lineVertex> bufferTri_;
-	std::vector<unsigned short> indicesTri_;
+	std::vector<s_lineVertex> triangleBuffer_;
+	std::vector<unsigned short> triangleIndices_;
 
 	struct s_batch {
 		size_t lineStripOffset_;
@@ -98,10 +99,14 @@ private:
 	};
 	std::vector<s_batch> batches_;
 
-	unsigned lineShaderProgram_;
-	unsigned indexPos_;
-	unsigned indexColor_;
-	unsigned indexMatViewport_;
+	unsigned shaderProgram_ = 0;
+	unsigned indexMatViewport_ = 0;
+	unsigned lineVBO_ = 0;
+	unsigned lineIBO_ = 0;
+	unsigned lineVAO_ = 0;
+	unsigned triangleVBO_ = 0;
+	unsigned triangleIBO_ = 0;
+	unsigned triangleVAO_ = 0;
 };
 
 #endif /* RENDEROPENGL_SHAPE2D_H_ */

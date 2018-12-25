@@ -32,24 +32,36 @@ Shape3D* Shape3D::get() {
 	return instance;
 }
 
-Shape3D::Shape3D(Renderer* renderer)
-	: lineShaderProgram_(0)
-	, indexPos_(0)
-	, indexColor_(0)
-	, indexMatProjView_(0)
-{
+Shape3D::Shape3D(Renderer* renderer) {
 	renderer->registerRenderable(this);
 	lineShaderProgram_ = Shaders::createProgram("data/shaders/shape3d.vert", "data/shaders/shape3d.frag");
 	if (lineShaderProgram_ == 0) {
 		throw std::runtime_error("Unable to load shape3D shaders!!");
 	}
-	indexPos_ = glGetAttribLocation(lineShaderProgram_, "vPos");
-	indexColor_ = glGetAttribLocation(lineShaderProgram_, "vColor");
 	indexMatProjView_ = glGetUniformLocation(lineShaderProgram_, "mProjView");
+
+	unsigned indexPos = glGetAttribLocation(lineShaderProgram_, "vPos");
+	unsigned indexColor = glGetAttribLocation(lineShaderProgram_, "vColor");
+
+	glGenVertexArrays(1, &VAO_);
+	glBindVertexArray(VAO_);
+	glGenBuffers(1, &VBO_);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+	glGenBuffers(1, &IBO_);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+	glEnableVertexAttribArray(indexPos);
+	glEnableVertexAttribArray(indexColor);
+	glVertexAttribPointer(indexPos, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertex), (void*)offsetof(s_vertex, pos));
+	glVertexAttribPointer(indexColor, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertex), (void*)offsetof(s_vertex, rgba));
+
+	glBindVertexArray(0);
 }
 
 Shape3D::~Shape3D() {
 	glDeleteProgram(lineShaderProgram_);
+	glDeleteVertexArrays(1, &VAO_);
+	glDeleteBuffers(1, &VBO_);
+	glDeleteBuffers(1, &IBO_);
 }
 
 void Shape3D::unload() {
@@ -65,27 +77,30 @@ void Shape3D::render(Viewport* vp, unsigned batchId) {
 	if (!nIndices)
 		return;
 	
-	glUseProgram(lineShaderProgram_);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glBlendEquation(GL_BLEND_EQUATION_ALPHA);
 
+	glUseProgram(lineShaderProgram_);
+	glBindVertexArray(VAO_);
 	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(vp->camera()->matProjView()));
-	glEnableVertexAttribArray(indexPos_);
-	glEnableVertexAttribArray(indexColor_);
-
-	// render world-space line primitives:
-	glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].pos);
-	glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), &buffer_[0].rgba);
-	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, &indices_[batches_[batchId]]);
+	
+	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, (void*)(sizeof(indices_[0]) * batches_[batchId]));
 	
 	glDisable(GL_BLEND);
 }
 
 void Shape3D::startBatch() {
 	batches_.push_back(indices_.size());
+}
+
+void Shape3D::setupFrameData() {
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertex) * buffer_.size(), &buffer_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_[0]) * indices_.size(), &indices_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Shape3D::purgeRenderQueue() {
@@ -181,7 +196,7 @@ void Shape3D::drawRectangleXOYCentered(glm::vec2 pos, glm::vec2 size, float rota
 	};
 	transform(v, 4);
 
-	s_lineVertex sVertex;
+	s_vertex sVertex;
 	sVertex.rgba = rgba;
 	// top left
 	sVertex.pos = v[0];

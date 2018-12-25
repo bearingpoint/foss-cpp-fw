@@ -33,10 +33,11 @@ protected:
 	MeshRenderer(Renderer* renderer);
 
 private:
+	void startBatch() override;
+	void setupFrameData() override;
 	void render(Viewport* pCrtViewport, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
-	void startBatch() override;
 
 	struct meshRenderData {
 		Mesh* pMesh_;

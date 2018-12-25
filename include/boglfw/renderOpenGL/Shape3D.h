@@ -65,29 +65,31 @@ protected:
 	Shape3D(Renderer* renderer);
 
 private:
+	void startBatch() override;
+	void setupFrameData() override;
 	void render(Viewport* vp, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
-	void startBatch() override;
 
 	void transform(glm::vec3* v[], int n);
 	void transform(glm::vec3 v[], int n);
 
-	struct s_lineVertex {
+	struct s_vertex {
 		glm::vec3 pos;
 		glm::vec4 rgba; 	// color
 	};
 	// line buffers
-	std::vector<s_lineVertex> buffer_;
+	std::vector<s_vertex> buffer_;
 	std::vector<unsigned short> indices_;
 	std::vector<unsigned> batches_;
 	glm::mat4 transform_ {1};
 	bool transformActive_ = false;
 
-	unsigned lineShaderProgram_;
-	unsigned indexPos_;
-	unsigned indexColor_;
-	unsigned indexMatProjView_;
+	unsigned lineShaderProgram_ = 0;
+	unsigned indexMatProjView_ = 0;
+	unsigned VAO_ = 0;
+	unsigned VBO_ = 0;
+	unsigned IBO_ = 0;
 };
 
 #endif /* RENDEROPENGL_SHAPE3D_H_ */

@@ -43,26 +43,28 @@ public:
 	}
 
 protected:
+	void startBatch() override;
+	void setupFrameData() override;
 	void render(Viewport* pCrtViewport, unsigned batchId) override;
 	void purgeRenderQueue() override;
 	void unload() override;
-	void startBatch() override;
 	GLText(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize);
 
 private:
-	unsigned textureID_;             	// Texture containing the font
-	unsigned vertexBufferID_;         	// Buffer containing the vertices
-	unsigned UVBufferID_;             	// UVs
-	unsigned colorBufferID_;					// vertex colors
-	unsigned shaderID_;               	// Program used to disaply the text
-	unsigned vertexPosition_screenspaceID_; 	// Location of the program's "vertexPosition_screenspace" attribute
-	unsigned vertexUVID_;                   	// Location of the program's "vertexUV" attribute
-	unsigned vertexColorID_;
-	unsigned viewportHalfSizeID_;
-	unsigned translationID_;
-	unsigned u_textureID_;              	// Location of the program's texture attribute
+	unsigned textureID_;            // Texture containing the font
+	unsigned VAO_;
+	unsigned posVBO_;         		// Buffer containing the vertices
+	unsigned uvVBO_;             	// UVs
+	unsigned colorVBO_;				// vertex colors
+	unsigned shaderProgram_;               		// Program used to disaply the text
+	//unsigned vertexPosition_screenspaceID_; 	// Location of the program's "vertexPosition_screenspace" attribute
+	//unsigned vertexUVID_;                   	// Location of the program's "vertexUV" attribute
+	//unsigned vertexColorID_;
+	unsigned indexViewportHalfSize_;
+	unsigned indexTranslation_;
+	unsigned u_textureID_;              // Location of the program's texture attribute
 	int rows_, cols_, firstChar_;
-	float cellRatio_; 						// cellWeight / cellHidth
+	float cellRatio_; 					// cellWeight / cellHidth
 	int defaultSize_;					// text size from the texture
 	std::vector<glm::vec3> vertices_;	// these are relative to item's position (below)
 	std::vector<glm::vec2> UVs_;

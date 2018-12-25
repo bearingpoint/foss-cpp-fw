@@ -78,11 +78,15 @@ void Renderer::render() {
 		glDisable(GL_SCISSOR_TEST);
 		checkGLError("viewport clear");
 
-		// 2. build the render queue for this viewport
+		// 2.a. build the render queue for this viewport
 		for (auto &d : vp.second->drawList_) {
 			startBatch();	// each element in the drawList has its own separate layer
 			d.draw(vp.second.get());
 		}
+
+		// 2.b. setup render data:
+		for (auto r : renderComponents_)
+			r->setupFrameData();
 
 		// 3. do the low-level rendering
 		for (unsigned i=0; i<batchCount_; i++) {

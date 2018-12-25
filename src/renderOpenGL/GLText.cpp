@@ -54,38 +54,57 @@ GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	}
 
-	// Initialize VBO
-	glGenBuffers(1, &vertexBufferID_);
-	glGenBuffers(1, &UVBufferID_);
-	glGenBuffers(1, &colorBufferID_);
-
 	// Initialize Shader
-	shaderID_ = Shaders::createProgram("data/shaders/text.vert", "data/shaders/text.frag");
-	if (!shaderID_)
+	shaderProgram_ = Shaders::createProgram("data/shaders/text.vert", "data/shaders/text.frag");
+	if (!shaderProgram_)
 		throw std::runtime_error("Could not load text shaders!");
 
 	// Get a handle for our buffers
-	vertexPosition_screenspaceID_ = glGetAttribLocation(shaderID_, "vertexPosition_screenspace");
-	vertexUVID_ = glGetAttribLocation(shaderID_, "vertexUV");
-	vertexColorID_ = glGetAttribLocation(shaderID_, "vertexColor");
+	unsigned vertexPosition_screenspaceID_ = glGetAttribLocation(shaderProgram_, "vertexPosition_screenspace");
+	unsigned vertexUVID_ = glGetAttribLocation(shaderProgram_, "vertexUV");
+	unsigned vertexColorID_ = glGetAttribLocation(shaderProgram_, "vertexColor");
 
 	// Initialize uniforms' IDs
-	viewportHalfSizeID_ = glGetUniformLocation(shaderID_, "viewportHalfSize");
-	translationID_ = glGetUniformLocation(shaderID_, "translation");
-	u_textureID_ = glGetUniformLocation( shaderID_, "myTextureSampler" );
+	indexViewportHalfSize_ = glGetUniformLocation(shaderProgram_, "viewportHalfSize");
+	indexTranslation_ = glGetUniformLocation(shaderProgram_, "translation");
+	u_textureID_ = glGetUniformLocation( shaderProgram_, "myTextureSampler" );
+
+	// Initialize VAO & VBOs
+	glGenVertexArrays(1, &VAO_);
+	glBindVertexArray(VAO_);
+	glGenBuffers(1, &posVBO_);
+	glGenBuffers(1, &uvVBO_);
+	glGenBuffers(1, &colorVBO_);
+
+	glBindBuffer(GL_ARRAY_BUFFER, posVBO_);
+	glEnableVertexAttribArray(vertexPosition_screenspaceID_);
+	glVertexAttribPointer(vertexPosition_screenspaceID_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uvVBO_);
+	glEnableVertexAttribArray(vertexUVID_);
+	glVertexAttribPointer(vertexUVID_, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	// 3rd attribute buffer : vertex colors
+	glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
+	glEnableVertexAttribArray(vertexColorID_);
+	glVertexAttribPointer(vertexColorID_, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindVertexArray(0);
 }
 
 GLText::~GLText() {
 	// Delete buffers
-	glDeleteBuffers(1, &vertexBufferID_);
-	glDeleteBuffers(1, &UVBufferID_);
-	glDeleteBuffers(1, &colorBufferID_);
+	glDeleteBuffers(1, &posVBO_);
+	glDeleteBuffers(1, &uvVBO_);
+	glDeleteBuffers(1, &colorVBO_);
+
+	glDeleteVertexArrays(1, &VAO_);
 
 	// Delete texture
 	glDeleteTextures(1, &textureID_);
 
 	// Delete shader
-	glDeleteProgram(shaderID_);
+	glDeleteProgram(shaderProgram_);
 }
 
 void GLText::setViewportFilter(std::string viewportName) {
@@ -200,7 +219,7 @@ void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 		return;
 	
 	// Bind shader
-	glUseProgram(shaderID_);
+	glUseProgram(shaderProgram_);
 
 	// Bind texture
 	glActiveTexture(GL_TEXTURE0);
@@ -211,25 +230,9 @@ void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 	glUniform1i(u_textureID_, 0);
 
 	vec2 halfVP(pCrtViewport->width() / 2, pCrtViewport->height() / 2);
-	glUniform2fv(viewportHalfSizeID_, 1, &halfVP[0]);
+	glUniform2fv(indexViewportHalfSize_, 1, &halfVP[0]);
 
-	// 1st attribute buffer : vertices
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID_);
-	glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(vertices_[0]), &vertices_[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(vertexPosition_screenspaceID_);
-	glVertexAttribPointer(vertexPosition_screenspaceID_, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
-
-	// 2nd attribute buffer : UVs
-	glBindBuffer(GL_ARRAY_BUFFER, UVBufferID_);
-	glBufferData(GL_ARRAY_BUFFER, UVs_.size() * sizeof(UVs_[0]), &UVs_[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(vertexUVID_);
-	glVertexAttribPointer(vertexUVID_, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
-
-	// 3rd attribute buffer : vertex colors
-	glBindBuffer(GL_ARRAY_BUFFER, colorBufferID_);
-	glBufferData(GL_ARRAY_BUFFER, colors_.size() * sizeof(colors_[0]), &colors_[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(vertexColorID_);
-	glVertexAttribPointer(vertexColorID_, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glBindVertexArray(VAO_);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -241,22 +244,30 @@ void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 	for (unsigned i=batches_[batchId]; i<batches_[batchId] + nItems; i++) {
 		if (viewportFilters_[i].empty() || viewportFilters_[i] == pCrtViewport->name()) {
 			glm::vec2 translate(itemPositions_[i].x(pCrtViewport), itemPositions_[i].y(pCrtViewport));
-			glUniform2fv(translationID_, 1, &translate[0]);
+			glUniform2fv(indexTranslation_, 1, &translate[0]);
 			glDrawArrays(GL_TRIANGLES, offset, verticesPerItem_[i] );
 		}
 		offset += verticesPerItem_[i];
 	}
 
 	glDisable(GL_BLEND);
-
-	glDisableVertexAttribArray(vertexPosition_screenspaceID_);
-	glDisableVertexAttribArray(vertexUVID_);
-	glDisableVertexAttribArray(vertexColorID_);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 void GLText::startBatch() {
 	batches_.push_back(itemPositions_.size());
+}
+
+void GLText::setupFrameData() {
+	glBindBuffer(GL_ARRAY_BUFFER, posVBO_);
+	glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(vertices_[0]), &vertices_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, uvVBO_);
+	glBufferData(GL_ARRAY_BUFFER, UVs_.size() * sizeof(UVs_[0]), &UVs_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
+	glBufferData(GL_ARRAY_BUFFER, colors_.size() * sizeof(colors_[0]), &colors_[0], GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void GLText::purgeRenderQueue() {

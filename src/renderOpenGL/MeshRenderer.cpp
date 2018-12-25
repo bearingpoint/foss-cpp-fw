@@ -104,6 +104,11 @@ void MeshRenderer::startBatch() {
 	batches_.push_back(renderQueue_.size());
 }
 
+void MeshRenderer::setupFrameData() {
+	// nothing
+	// TODO -> if we have dynamic meshes, then call update on them or something
+}
+
 void MeshRenderer::purgeRenderQueue() {
 	renderQueue_.clear();
 	batches_.clear();
