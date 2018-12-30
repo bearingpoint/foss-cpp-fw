@@ -65,15 +65,21 @@ void Renderer::deleteViewport(std::string const& name) {
 }
 
 void Renderer::render() {
+	SSDescriptor ssDesc;
+	bool ssEnabled = getSuperSampleInfo(ssDesc);
+	// when super sample is enabled we must adjust the viewports accordingly
+	unsigned vpfx = ssEnabled ? ssDesc.fragments_xr : 1;
+	unsigned vpfy = ssEnabled ? ssDesc.fragments_yr : 1;
+
 	for (auto &vp : viewports_) {
 		if (!vp.second->isEnabled())
 			continue;
 		// 1. clear viewport:
 		auto vpp = vp.second->position();
-		glViewport(vpp.x, vpp.y, vp.second->width(), vp.second->height());
-		glClearColor(vp.second->backgroundColor_.r, vp.second->backgroundColor_.g, vp.second->backgroundColor_.b, 0);
-		glScissor(vpp.x, vpp.y, vp.second->width(), vp.second->height());
+		glViewport(vpp.x * vpfx, vpp.y * vpfy, vp.second->width() * vpfx, vp.second->height() * vpfy);
+		glScissor(vpp.x * vpfx, vpp.y * vpfx, vp.second->width() * vpfx, vp.second->height() * vpfx);
 		glEnable(GL_SCISSOR_TEST);
+		glClearColor(vp.second->backgroundColor_.r, vp.second->backgroundColor_.g, vp.second->backgroundColor_.b, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glDisable(GL_SCISSOR_TEST);
 		checkGLError("viewport clear");
