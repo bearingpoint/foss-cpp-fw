@@ -130,15 +130,11 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	ss_shaderUTexture = glGetUniformLocation(ss_shaderProgram, "frameBufferTexture");
 
 	// create screen quad:
-	float htU = 0.5f / ss_bufferW;	// half-texel U
-	float htV = 0.5f / ss_bufferH;	// half-texel V
-	float Upp = 2 * htU * descriptor.getLinearSampleFactor();	// U increase per screen pixel
-	float Vpp = 2 * htV * descriptor.getLinearSampleFactor();	// U increase per screen pixel
 	float screenQuadUV[] {
-		htU * descriptor.getLinearSampleFactor(),	// U0
-		htV * descriptor.getLinearSampleFactor(),	// V0
-		htU * descriptor.getLinearSampleFactor() + (ss_bufferVPW-1)*Upp,	// U2
-		htV * descriptor.getLinearSampleFactor() + (ss_bufferVPH-1)*Vpp,	// V2
+		0.f,
+		0.f,
+		ss_bufferVPW / (float)ss_bufferW,
+		ss_bufferVPH / (float)ss_bufferH,
 	};
 	float screenQuadPosUV[] {
 		-1.f, -1.f, screenQuadUV[0], screenQuadUV[1], 	// bottom-left
@@ -171,6 +167,8 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 
 	// compute sample offsets - offsets are considered from the pixel's default UV coordinates:
 	// (we use built-in linear interpolation to reduce the number of sample points needed)
+	float htU = 0.5f / ss_bufferW;	// half-texel U
+	float htV = 0.5f / ss_bufferH;	// half-texel V
 	if (descriptor.mode == SSDescriptor::SS_4X) {
 		/* nothing to do here, the default sample point is already correctly positioned at the intersection of the 4 texels
 		 * +---+---+--
@@ -198,7 +196,7 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 		ss_sampleOffsets[4] = +htU;		// #2
 		ss_sampleOffsets[5] = +htV * 2;
 		ss_sampleOffsets[6] = -htU * 2;	// #3
-		ss_sampleOffsets[7] = -htV * 2;
+		ss_sampleOffsets[7] = +htV * 2;
 	} else if (descriptor.mode == SSDescriptor::SS_16X) {
 		// 4 sample points, each in the middle of the 4x4 quarters
 		ss_sampleOffsets[0] = -htU * 2;	// #0
@@ -210,10 +208,6 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 		ss_sampleOffsets[6] = -htU * 2;	// #3
 		ss_sampleOffsets[7] = +htV * 2;
 	}
-
-	// adjust line rendering
-	glLineWidth(descriptor.getLinearSampleFactor());
-	//glEnable(GL_LINE_SMOOTH);
 
 	ss_enabled = true;
 }
@@ -270,8 +264,10 @@ void gltBegin(glm::vec4 clearColor) {
 
 static void ssFBToScreen() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, ss_framebuffer);
-	//glBlitFramebuffer(0, 0, ss_bufferW, ss_bufferH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+//	glBindFramebuffer(GL_READ_FRAMEBUFFER, ss_framebuffer);
+//	glBlitFramebuffer(0, 0, ss_bufferW, ss_bufferH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+//	return;
+	glViewport(0, 0, windowW, windowH);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, ss_texture);
 	glUseProgram(ss_shaderProgram);
