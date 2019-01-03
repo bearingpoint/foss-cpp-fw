@@ -20,6 +20,8 @@ GuiContainerElement::GuiContainerElement(glm::vec2 position, glm::vec2 size)
 }
 
 GuiContainerElement::~GuiContainerElement() {
+	for (auto &c : children_)
+		c->parent_ = nullptr;
 	children_.clear();
 }
 
