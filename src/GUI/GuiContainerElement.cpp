@@ -26,14 +26,13 @@ GuiContainerElement::~GuiContainerElement() {
 }
 
 bool GuiContainerElement::containsPoint(glm::vec2 const& p) const {
-	/*if (!transparentBackground_)
+	if (!transparentBackground_)
 		return true;
 	else {
 		glm::vec2 clientPos = p - clientAreaOffset_;
-		std::shared_ptr<GuiBasicElement> crt = GuiHelper::getTopElementAtPosition(children_, clientPos.x, clientPos.y);
+		std::shared_ptr<GuiBasicElement> crt = GuiHelper::getTopElementAtPosition(*this, clientPos.x, clientPos.y);
 		return crt != nullptr;
-	}*/
-	return !transparentBackground_;
+	}
 }
 
 void GuiContainerElement::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
