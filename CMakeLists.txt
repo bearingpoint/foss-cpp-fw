@@ -51,5 +51,6 @@ INSTALL (
 INSTALL (
 	FILES ${CMAKE_SOURCE_DIR}/src/main.cpp
 		  ${CMAKE_SOURCE_DIR}/fw-version
+		  ${CMAKE_SOURCE_DIR}/client.cmake.txt
 	DESTINATION ${CMAKE_BINARY_DIR}/dist/
 )
