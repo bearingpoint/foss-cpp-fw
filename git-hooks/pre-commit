@@ -1,0 +1,7 @@
+#!/bin/bash
+versionString=$(cat fw-version)
+IFS='.' read -ra versionNo <<< "$versionString"
+typeset -i major=${versionNo[0]}
+typeset -i minor=${versionNo[1]}
+minor=$minor+1
+echo $major.$minor > fw-version
