@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# optional parameters:
+#
+# -R			Rebuild (clean before build)
+# --with-SDL	build with SDL support
+# --no-GLFW		build without GLFW support
+# --release		perform a RELEASE build instead of DEBUG
+#
+# By default the script builds with GLFW support
+
 function updateVersion {
 	versionString=$(cat fw-version)
 	IFS='.' read -ra versionNo <<< "$versionString"
@@ -7,16 +16,62 @@ function updateVersion {
 	typeset -i minor=${versionNo[1]}
 	minor=$minor+1
 	echo $major.$minor > build/dist/fw-version
-
 }
 
-printf "\n Building Debug...\n\n"
+REBUILD=0
+WITH_SDL=0
+WITH_GLFW=1
+RELEASE=0
+while test $# -gt 0
+do
+	echo "arg $1"
+	
+    case "$1" in
+		--release) RELEASE=1
+			;;
+		-R) REBUILD=1
+            ;;
+        --with-SDL) WITH_SDL=1
+            ;;
+		--no-GLFW) WITH_GLFW=0
+			;;
+        --*) echo "bad option $1"
+            ;;
+    esac
+    shift
+done
+
+if [ $RELEASE = 1 ]; then
+	printf "\n Building Release...\n\n"
+else
+	printf "\n Building Debug...\n\n"
+fi
+
 if [ ! -d build ]; then
     mkdir build
 fi
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+CMAKE_PARAM=""
+if [ $WITH_SDL = 1 ]; then
+	printf "Building with SDL support.\n"
+	CMAKE_PARAM="$CMAKE_PARAM -DWITH_SDL=ON"
+else
+	CMAKE_PARAM="$CMAKE_PARAM -DWITH_SDL=OFF"
+fi
+if [ $WITH_GLFW = 1 ]; then
+	printf "Building with GLFW support.\n"
+	CMAKE_PARAM="$CMAKE_PARAM -DWITH_GLFW=ON"
+else
+	CMAKE_PARAM="$CMAKE_PARAM -DWITH_GLFW=OFF"
+fi
+
+CMAKE_BUILD_TYPE="Debug"
+if [ $RELEASE = 1 ]; then
+	CMAKE_BUILD_TYPE="Release"
+fi
+
+cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE $CMAKE_PARAM -G "Unix Makefiles" ..
 RESULT=$?
 
 if [[ $RESULT != 0 ]]; then
@@ -24,7 +79,7 @@ if [[ $RESULT != 0 ]]; then
 	exit 1
 fi
 
-if [[ "$1" = "-R" ]]; then
+if [ $REBUILD = 1 ]; then
 	printf "\nFull rebuild, performing clean...\n\n"
 	make clean
 else

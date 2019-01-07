@@ -1,12 +1,14 @@
 # Specify the minimum version for CMake
-
 cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 
-# Project's name
+OPTION(WITH_SDL "Build with SDL support" OFF)
+OPTION(WITH_GLFW "Build with GLFW support" ON)
 
+# Project's name
 project(boglfw)
+
 # Set the output folder where your program will be created
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/dist/lib)
@@ -29,8 +31,17 @@ list(REMOVE_ITEM sources ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
 add_library(boglfw ${sources} ${data})
 
+set(WINDOWING_API "")
+if (WITH_SDL)
+	set(WINDOWING_API ${WINDOWING_API} -DWITH_SDL)
+endif()
+if (WITH_GLFW)
+	set(WINDOWING_API ${WINDOWING_API} -DWITH_GLFW)
+endif()
+
 set_property(TARGET boglfw PROPERTY CXX_STANDARD 14)
-target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14)
+target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14 ${WINDOWING_API})
+
 
 if (WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__WIN32__")

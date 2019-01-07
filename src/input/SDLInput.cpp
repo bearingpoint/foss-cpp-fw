@@ -5,6 +5,8 @@
  *      Author: bog
  */
 
+#ifdef WITH_SDL
+
 #include <boglfw/input/SDLInput.h>
 #include <boglfw/input/InputEvent.h>
 #include <SDL2/SDL_events.h>
@@ -60,3 +62,5 @@ bool SDLInput::translate(SDL_Event const& e, InputEvent &out) {
 		return false;
 	}
 }
+
+#endif //WITH_SDL

@@ -8,6 +8,8 @@
 #ifndef INPUT_GLFWINPUT_H_
 #define INPUT_GLFWINPUT_H_
 
+#ifdef WITH_GLFW
+
 #include "InputEvent.h"
 #include "../utils/Event.h"
 #include <functional>
@@ -38,5 +40,9 @@ private:
 	static GLFWwindow *window;
 	static glm::vec2 lastMousePos;
 };
+
+#else
+#error "GLFW support not enabled in this build, use -DWITH_GLFW to enable it."
+#endif // WITH_GLFW
 
 #endif /* INPUT_GLFWINPUT_H_ */

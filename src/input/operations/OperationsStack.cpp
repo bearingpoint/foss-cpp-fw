@@ -1,7 +1,17 @@
 #include <boglfw/input/operations/OperationsStack.h>
 #include <boglfw/input/operations/OperationContext.h>
 #include <boglfw/input/operations/IOperation.h>
+
+#ifdef WITH_GLFW
 #include <boglfw/input/GLFWInput.h>
+#endif
+#ifdef WITH_SDL
+#include <boglfw/input/SDLInput.h>
+#endif
+#if !defined(WITH_GLFW) && !defined(WITH_SDL)
+#error "No input API available (neither GLFW nor SDL)"
+#endif
+
 
 #include <cassert>
 
@@ -13,7 +23,12 @@ OperationsStack::OperationsStack(Viewport* pViewport, IOperationSpatialLocator* 
 	: m_context(new OperationContext(pViewport, this, locator, physics))
 	, m_stack()
 {
+#ifdef WITH_GLFW
 	GLFWInput::onInputEvent.add(std::bind(&OperationsStack::handleInputEvent, this, std::placeholders::_1));
+#endif
+#ifdef WITH_SDL
+	SDLInput::onInputEvent.add(std::bind(&OperationsStack::handleInputEvent, this, std::placeholders::_1));
+#endif
 }
 
 OperationsStack::~OperationsStack()

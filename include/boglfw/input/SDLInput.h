@@ -8,6 +8,8 @@
 #ifndef __SDLINPUT_H__
 #define __SDLINPUT_H__
 
+#ifdef WITH_SDL
+
 #include <boglfw/input/InputEvent.h>
 #include <boglfw/utils/Event.h>
 
@@ -27,5 +29,9 @@ private:
 	static bool translate(SDL_Event const& ev, InputEvent &out);
 	static InputEvent::MOUSE_BUTTON translateMouseButton(int sdl_but);
 };
+
+#else
+#error "SDL support not enabled in this build, use -DWITH_SDL to enable it."
+#endif // WITH_SDL
 
 #endif // __SDLINPUT_H__

@@ -2,10 +2,14 @@
 #include <boglfw/renderOpenGL/shader.hpp>
 #include <boglfw/utils/log.h>
 
+#ifdef WITH_GLFW
 #include <GLFW/glfw3.h>
+#endif
 
+#ifdef WITH_SDL
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_opengl.h>
+#endif
 
 #include <iostream>
 using namespace std;
@@ -13,9 +17,13 @@ using namespace std;
 #include <math.h>
 #include <cassert>
 
+#ifdef WITH_GLFW
 static GLFWwindow* window = NULL;
+#endif
 static bool boundToSDL = false;
+#ifdef WITH_SDL
 static SDL_Window* sdl_window = nullptr;
+#endif
 static unsigned windowW = 0;
 static unsigned windowH = 0;
 
@@ -37,9 +45,11 @@ static float ss_sampleOffsets[8];
 static unsigned ss_quadVAO = 0;
 static SSDescriptor ss_descriptor;
 
+#ifdef WITH_GLFW
 GLFWwindow* gltGetWindow() {
 	return window;
 }
+#endif
 
 bool getSuperSampleInfo(SSDescriptor& outDesc) {
 	if (!ss_enabled)
@@ -212,8 +222,9 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	ss_enabled = true;
 }
 
-// initializes openGL an' all
-bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle[]) {
+#ifdef WITH_GLFW
+// initializes GLFW, openGL an' all
+bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowTitle[]) {
 	// initialize GLFW and set-up window an' all:
 	if (!glfwInit()) {
 		cerr << "FAILED glfwInit" << endl;
@@ -244,12 +255,13 @@ bool gltInit(unsigned windowWidth, unsigned windowHeight, const char windowTitle
 	return initGLEW();
 }
 
-bool gltInitSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor descriptor, const char windowTitle[]) {
-	if (!gltInit(windowWidth, windowHeight, windowTitle))
+bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor descriptor, const char windowTitle[]) {
+	if (!gltInitGLFW(windowWidth, windowHeight, windowTitle))
 		return false;
 	setupSSFramebuffer(descriptor);
 	return true;
 }
+#endif // WITH_GLFW
 
 // begins a frame
 void gltBegin(glm::vec4 clearColor) {
@@ -286,14 +298,19 @@ void gltEnd() {
 	if (ss_enabled) {
 		ssFBToScreen(); // render the off-screen framebuffer to the display backbuffer
 	}
+#ifdef WITH_SDL
 	if (boundToSDL)
 		SDL_GL_SwapWindow(sdl_window);
-	else
+#endif
+#ifdef WITH_GLFW
+	if (!boundToSDL)
 		glfwSwapBuffers(window);
+#endif
 	checkGLError("swap buffers");
 }
 
-bool gltInitWithSDL(SDL_Window* window) {
+#ifdef WITH_SDL
+bool gltInitSDL(SDL_Window* window) {
 	assert(window);
 	sdl_window = window;
 	SDL_GetWindowSize(window, (int*)&windowW, (int*)&windowH);
@@ -316,12 +333,13 @@ bool gltInitWithSDL(SDL_Window* window) {
 	return initGLEW();
 }
 
-bool gltInitWithSDLSupersampled(SDL_Window* window, SSDescriptor descriptor) {
-	if (!gltInitWithSDL(window))
+bool gltInitSDLSupersampled(SDL_Window* window, SSDescriptor descriptor) {
+	if (!gltInitSDL(window))
 		return false;
 	setupSSFramebuffer(descriptor);
 	return true;
 }
+#endif
 
 bool checkGLError(const char* operationName) {
 	bool errorDetected = false;
@@ -338,6 +356,7 @@ bool checkGLError(const char* operationName) {
 	return errorDetected;
 }
 
+#ifdef WITH_SDL
 bool checkSDLError(const char* operationName) {
 	auto err = SDL_GetError();
 	if (err[0]) {
@@ -347,3 +366,4 @@ bool checkSDLError(const char* operationName) {
 	} else
 		return false;
 }
+#endif

@@ -4,6 +4,8 @@
  *  Created on: Nov 7, 2014
  *      Author: bog
  */
+ 
+#ifdef WITH_GLFW
 
 #include <boglfw/input/GLFWInput.h>
 #include <boglfw/input/InputEvent.h>
@@ -74,3 +76,5 @@ void GLFWInput::glfwKey(GLFWwindow* win, int key, int scancode, int action, int 
 void GLFWInput::glfwChar(GLFWwindow* win, unsigned int ch) {
 	eventQueue.push_back(InputEvent(InputEvent::EV_KEY_CHAR, 0, 0, 0, 0, 0, InputEvent::MB_NONE, 0, (char)ch));
 }
+
+#endif // WITH_GLFW
