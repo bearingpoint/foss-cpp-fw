@@ -38,16 +38,6 @@ endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
-#increments the version in the fw-version file as a result of build
-FUNCTION(updateVersion)
-	file(STRINGS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit verStr)
-	string(REPLACE "." ";" verNo ${verStr})
-	list(GET verNo 0 verMajor)
-	list(GET verNo 1 verMinor)
-	math(EXPR verMinor "${verMinor}+1")
-	file(WRITE ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit "${verMajor}.${verMinor}")
-ENDFUNCTION()
-
 INSTALL (
 	DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 	DESTINATION ${CMAKE_BINARY_DIR}/dist/include/

@@ -5,3 +5,5 @@ typeset -i major=${versionNo[0]}
 typeset -i minor=${versionNo[1]}
 minor=$minor+1
 echo $major.$minor > fw-version
+
+git add fw-version
