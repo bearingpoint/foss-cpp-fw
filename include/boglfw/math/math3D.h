@@ -13,17 +13,17 @@
 template<typename T> T sqr(T const &x) { return x*x; }
 template<typename T> inline void xchg(T &x1, T &x2) { T aux(x1); x1 = x2; x2 = aux; }
 template<typename T> inline void xchg(T &&x1, T &&x2) { T aux(std::move(x1)); x1 = std::move(x2); x2 = std::move(aux); }
-template<typename T> constexpr T min(T const &x, T const &y) { return x < y ? x : y; }
-template<typename T> constexpr T max(T const &x, T const &y) { return x > y ? x : y; }
-template<typename T> constexpr T sign(T const& x) { return x > 0 ? T(+1) : (x < 0 ? T(-1) : T(0)); }
-template<typename T> constexpr T abs(T const& x) { return x < 0 ? -x : x; }
+template<typename T> T min(T const &x, T const &y) { return x < y ? x : y; }
+template<typename T> T max(T const &x, T const &y) { return x > y ? x : y; }
+template<typename T> T sign(T const& x) { return x > 0 ? T(+1) : (x < 0 ? T(-1) : T(0)); }
+template<typename T> T abs(T const& x) { return x < 0 ? -x : x; }
 
 // returns the normal vector of a 2D vector in the same plane, pointing towards the positive subspace of the initial vector (left)
 // as if crossing the original vector with a 3D upwards vector
 inline glm::vec2 getNormalVector(glm::vec2 v) { return glm::vec2(-v.y, v.x); }
 
-float constexpr eqEps(float f1, float f2) { return abs(f1 - f2) < EPS; }
-float constexpr eqEps(float f1, float f2, float eps) { return abs(f1 - f2) < eps; }
+float eqEps(float f1, float f2) { return abs(f1 - f2) < EPS; }
+float eqEps(float f1, float f2, float eps) { return abs(f1 - f2) < eps; }
 
 // returns the cross product of two 2D vectors, as a scalar (positive if v2 is clockwise from v1 and negative otherwise)
 inline float cross2D(const glm::vec2 &v1, const glm::vec2 &v2) {
@@ -161,7 +161,7 @@ inline float distPointLine(glm::vec2 P, glm::vec2 lineOrigin, glm::vec2 lineDire
 	return glm::length(OP - lineDirection * glm::dot(OP, lineDirection));
 }
 
-template<typename T> T constexpr clamp(T x, T a, T b) {
+template<typename T> T clamp(T x, T a, T b) {
 	return x < a ? a : (x > b ? b : x);
 }
 
@@ -170,7 +170,7 @@ template<typename T> T constexpr clamp(T x, T a, T b) {
  * t is assumed to be in [0.0, 1.0]
  * use clamp on t before calling if unsure
  */
-template<typename T> T constexpr lerp(T a, T b, float t) {
+template<typename T> T lerp(T a, T b, float t) {
 	return a * (1-t) + b*t;
 }
 
