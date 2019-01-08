@@ -75,7 +75,7 @@ void SpatialCache::getCachedEntities(std::vector<Entity*> &out, glm::vec2 const&
 	float right = pos.x + radius;
 	float top = pos.y + radius;
 	float bottom = pos.y - radius;
-	aabb area(glm::vec2(left, bottom), glm::vec2(right, top));
+	aabb area(glm::vec3(left, bottom, 0), glm::vec3(right, top, 0));
 
 	int i1 = clamp<int>(floorf(top_ - top) / cellHeight_, 0, height_-1);
 	int i2 = clamp<int>(ceilf(top_ - bottom) / cellHeight_, 0, height_-1);
@@ -101,7 +101,7 @@ void SpatialCache::getCachedEntities(std::vector<Entity*> &out, glm::vec2 const&
 				aabb eAABB = e->getAABB();
 				if (eAABB.intersect(area).empty())
 					continue;
-				if (clipToCircle && !eAABB.intersectCircle(pos, radius))
+				if (clipToCircle && !eAABB.intersectSphere(glm::vec3(pos, 0), radius))
 					continue;
 				// user validation:
 				if (!validFn(e))

@@ -8,7 +8,6 @@
 #include <boglfw/World.h>
 #include <boglfw/entities/Entity.h>
 #include <boglfw/math/math3D.h>
-#include <boglfw/math/box2glm.h>
 #include <boglfw/Infrastructure.h>
 #include <boglfw/renderOpenGL/Shape3D.h>
 
@@ -22,6 +21,7 @@
 #include <glm/glm.hpp>
 
 #ifdef WITH_BOX2D
+#include <boglfw/math/box2glm.h>
 #include <boglfw/physics/PhysicsBody.h>
 #include <Box2D/Box2D.h>
 #endif
@@ -63,6 +63,8 @@ World::World()
 	extentXp_ = config.extent_Xp;
 	extentYn_ = config.extent_Yn;
 	extentYp_ = config.extent_Yp;
+	extentZn_ = config.extent_Zn;
+	extentZp_ = config.extent_Zp;
 	initialized.store(true);
 }
 
@@ -84,13 +86,17 @@ World::~World() {
 	reset();
 }
 
-void World::setBounds(float left, float right, float top, float bottom) {
+void World::setBounds(float left, float right, float top, float bottom, float front, float back) {
 	extentXn_ = left;
 	extentXp_ = right;
 	extentYp_ = top;
 	extentYn_ = bottom;
+	extentZn_ = back;
+	extentZp_ = front;
+#ifdef WITH_BOX2D
 	// reconfigure cache:
 	spatialCache_ = SpatialCache(left, right, top, bottom);
+#endif
 }
 
 void World::reset() {
@@ -305,31 +311,37 @@ void World::draw(Viewport* vp) {
 	}
 }
 
-bool World::testEntity(Entity &e, EntityType filterTypes, Entity::FunctionalityFlags filterFlags) {
-	return (e.getEntityType() & filterTypes) != 0 &&
-		((e.getFunctionalityFlags() & filterFlags) == filterFlags);
+bool World::testEntity(Entity &e, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags) {
+	if ((e.getFunctionalityFlags() & filterFlags) != filterFlags)
+		return false;
+	if (filterTypesCount == 0)
+		return true;
+	for (unsigned i=0; i<filterTypesCount; i++)
+		if (e.getEntityType() == filterTypes[i])
+			return true;
+	return false;
 }
 
 
-void World::getEntities(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags) {
+void World::getEntities(std::vector<Entity*> &out, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags) {
 	PERF_MARKER_FUNC;
 	for (auto &e : entities) {
-		if (!e->isZombie() && testEntity(*e, filterTypes, filterFlags))
+		if (!e->isZombie() && testEntity(*e, filterTypes, filterTypesCount, filterFlags))
 			out.push_back(e.get());
 	}
 	for (auto &e : entsToTakeOver) {
-		if (!e->isZombie() && testEntity(*e, filterTypes, filterFlags))
+		if (!e->isZombie() && testEntity(*e, filterTypes, filterTypesCount, filterFlags))
 			out.push_back(e.get());
 	}
 }
 
 #ifdef WITH_BOX2D
-void World::getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags,
+void World::getEntitiesInBox(std::vector<Entity*> &out, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags,
 		glm::vec2 const& pos, float radius, bool clipToCircle)
 {
 	PERF_MARKER_FUNC;
 	spatialCache_.getCachedEntities(out, pos, radius, clipToCircle, frameNumber_,
-		[this, filterTypes, filterFlags] (glm::vec2 const& pos, float radius, std::vector<Entity*> &out)
+		[this, filterTypes, filterTypesCount, filterFlags] (glm::vec2 const& pos, float radius, std::vector<Entity*> &out)
 	{
 		static thread_local std::vector<b2Body*> bodies;
 		bodies.clear();
@@ -343,7 +355,7 @@ void World::getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, 
 				out.push_back(ent);
 		}
 	}, [this, filterTypes, filterFlags] (Entity *e) {
-		return testEntity(*e, filterTypes, filterFlags);
+		return testEntity(*e, filterTypes, filterTypesCount, filterFlags);
 	});
 }
 #endif // WITH_BOX2D

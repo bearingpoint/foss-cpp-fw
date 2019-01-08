@@ -75,26 +75,44 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 	glEnableVertexAttribArray(indexNorm_);
 	glEnableVertexAttribArray(indexUV1_);
 	glEnableVertexAttribArray(indexColor_);
-	checkGLError("enable attrib arrays");
+	checkGLError("attrib arrays setup");
 
 	auto matPV = vp->camera()->matProjView();
 
 	for (unsigned i=0; i<nMeshes; i++) {
 		auto &m = renderQueue_[batches_[batchId] + i];
-		if (m.pMesh_->isDirty()) {
-			m.pMesh_->commitChanges();
-		}
 		auto matPVW = matPV * m.wldTransform_;
 		glUniformMatrix4fv(indexMatPVW_, 1, GL_FALSE, glm::value_ptr(matPVW));
 
-		glBindBuffer(GL_ARRAY_BUFFER, m.pMesh_->getVertexBuffer());
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.pMesh_->getIndexBuffer());
-		glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, position));
-		glVertexAttribPointer(indexNorm_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, normal));
-		glVertexAttribPointer(indexUV1_, 2, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, UV1));
-		glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, color));
-
-		glDrawElements(GL_TRIANGLES, m.pMesh_->getIndexCount(), GL_UNSIGNED_SHORT, 0);
+		glBindVertexArray(m.pMesh_->getVAO());
+		if (!m.pMesh_->vertexAttribsSet_) {
+			glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, position));
+			glVertexAttribPointer(indexNorm_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, normal));
+			glVertexAttribPointer(indexUV1_, 2, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, UV1));
+			glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, color));
+			m.pMesh_->vertexAttribsSet_ = true;
+		}
+		// decide what to draw:
+		unsigned drawMode = 0;
+		switch (m.pMesh_->mode_) {
+			case Mesh::RENDER_MODE_POINTS:
+				drawMode = GL_POINTS; break;
+			case Mesh::RENDER_MODE_LINES:
+				drawMode = GL_LINES; break;
+			case Mesh::RENDER_MODE_TRIANGLES:
+			case Mesh::RENDER_MODE_TRIANGLES_WIREFRAME:
+				drawMode = GL_TRIANGLES; break;
+			default:
+				assert(false && "Unknown mesh draw mode!");
+		}
+		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+		glDrawElements(drawMode, m.pMesh_->getElementsCount(), GL_UNSIGNED_SHORT, 0);
+		glBindVertexArray(0);
+		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

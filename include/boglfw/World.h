@@ -39,6 +39,8 @@ struct WorldConfig {
 	float extent_Xp = 10;
 	float extent_Yn = -10;
 	float extent_Yp = 10;
+	float extent_Zn = -10;
+	float extent_Zp = 10;
 };
 
 class World 
@@ -52,13 +54,11 @@ public:
 	static World& getInstance();
 	virtual ~World();
 
-	/**
-	 * delete all entities and reset state.
-	 * set new world spatial extents
-	 */
+	// delete all entities and reset state.
 	void reset();
 
-	void setBounds(float left, float right, float top, float bottom);
+	// set new world spatial extents
+	void setBounds(float left, float right, float top, float bottom, float front, float back);
 
 #ifdef WITH_BOX2D
 	b2Body* getBodyAtPos(glm::vec2 const& pos) override;
@@ -75,11 +75,11 @@ public:
 	void destroyEntity(Entity* e);
 
 	// get all entities that match ALL of the requested features
-	void getEntities(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags = Entity::FunctionalityFlags::NONE);
+	void getEntities(std::vector<Entity*> &out, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags = Entity::FunctionalityFlags::NONE);
 
 #ifdef WITH_BOX2D
 	// get all entities in a specific area that match ALL of the requested features
-	void getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags, glm::vec2 const& pos, float radius, bool clipToCircle);
+	void getEntitiesInBox(std::vector<Entity*> &out, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags, glm::vec2 const& pos, float radius, bool clipToCircle);
 #endif // WITH_BOX2D
 
 	void update(float dt);
@@ -111,6 +111,7 @@ protected:
 	b2World* physWld;
 	b2Body* groundBody;
 	PhysDestroyListener *destroyListener_ = nullptr;
+	SpatialCache spatialCache_;
 #endif // WITH_BOX2D
 	
 	std::vector<std::unique_ptr<Entity>> entities;
@@ -119,8 +120,7 @@ protected:
 	MTVector<Entity*> entsToDestroy;
 	MTVector<std::unique_ptr<Entity>> entsToTakeOver;
 	int frameNumber_ = 0;
-	float extentXn_, extentXp_, extentYn_, extentYp_;
-	SpatialCache spatialCache_;
+	float extentXn_, extentXp_, extentYn_, extentYp_, extentZn_, extentZp_;
 #ifdef DEBUG
 	std::thread::id ownerThreadId_;
 #endif
@@ -139,7 +139,7 @@ protected:
 	void getFixtures(std::vector<b2Fixture*> &out, b2AABB const& aabb);
 #endif // WITH_BOX2D
 
-	bool testEntity(Entity &e, EntityType filterTypes, Entity::FunctionalityFlags filterFlags);
+	bool testEntity(Entity &e, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags);
 
 private:
 	World();

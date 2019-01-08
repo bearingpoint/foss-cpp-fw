@@ -8,8 +8,9 @@
 #ifndef ENTITIES_BOX_H_
 #define ENTITIES_BOX_H_
 
-#include "Entity.h"
-#include "../renderOpenGL/Mesh.h"
+#include <boglfw/entities/Entity.h>
+#include <boglfw/entities/enttypes.h>
+#include <boglfw/renderOpenGL/Mesh.h>
 //#include "../physics/DynamicBody.h"
 
 class Box: public Entity {
@@ -17,7 +18,7 @@ public:
 	Box(float width, float height, float depth, glm::vec3 offset = glm::vec3(0));
 	virtual ~Box();
 
-	EntityType getEntityType() const override { return EntityType::BOX; }
+	unsigned getEntityType() const override { return EntityTypes::BOX; }
 	FunctionalityFlags getFunctionalityFlags() const override { return FunctionalityFlags::DRAWABLE | FunctionalityFlags::UPDATABLE; }
 
 	void update(float dt) override;

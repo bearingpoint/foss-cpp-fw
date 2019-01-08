@@ -4,6 +4,10 @@
  *  Created on: Nov 27, 2014
  *      Author: bog
  */
+ 
+#ifndef WITH_BOX2D
+#error "Box2D support has not been enabled and this is a requirement for using the OperationsStack"
+#endif
 
 #ifndef MATH_BOX2GLM_H_
 #define MATH_BOX2GLM_H_

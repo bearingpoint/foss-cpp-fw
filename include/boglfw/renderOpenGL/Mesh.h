@@ -14,26 +14,37 @@
 
 class Mesh {
 public:
+
+	enum RENDER_MODES {
+		RENDER_MODE_POINTS,
+		RENDER_MODE_LINES,
+		RENDER_MODE_TRIANGLES,
+		RENDER_MODE_TRIANGLES_WIREFRAME
+	};
+
 	Mesh();
 	virtual ~Mesh();
 
 	void createBox(glm::vec3 center, float width, float height, float depth);
 	void createSphere(glm::vec3 center, float radius, int detail=10);
+	void createGizmo(float axisLength);
+	
+	void setRenderMode(RENDER_MODES mode) { mode_ = mode; }
 
-	unsigned getVertexBuffer() const { return vertexBuffer_; }
-	unsigned getIndexBuffer() const { return indexBuffer_; }
-	unsigned getVertexCount() const { return vertexCount_; }
-	unsigned getIndexCount() const { return indexCount_; }
+	unsigned getVAO() const { return VAO_; }
+	//unsigned getIBO() const { return IBO_; }
+	unsigned getRenderMode() const;
+	unsigned getElementsCount() const { return indexCount_; }
 
 private:
 	friend class MeshRenderer;
 
-	unsigned vertexBuffer_ = 0;
-	unsigned indexBuffer_ = 0;
-	unsigned vertexCount_ = 0;
+	unsigned VAO_ = 0;
+	unsigned VBO_ = 0;
+	unsigned IBO_ = 0;
 	unsigned indexCount_ = 0;
-
-	bool dirty_ = true;
+	bool vertexAttribsSet_ = false;
+	RENDER_MODES mode_ = RENDER_MODE_TRIANGLES;
 
 	struct s_Vertex {
 		glm::vec3 position;
@@ -41,12 +52,6 @@ private:
 		glm::vec2 UV1;
 		glm::vec3 color;
 	};
-
-	std::vector<s_Vertex> vertices_;
-	std::vector<uint16_t> indices_;
-
-	bool isDirty() const { return dirty_; }
-	void commitChanges();
 };
 
 #endif /* RENDEROPENGL_MESH_H_ */

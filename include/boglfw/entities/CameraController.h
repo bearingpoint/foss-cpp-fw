@@ -8,10 +8,9 @@
 #ifndef ENTITIES_CAMERACONTROLLER_H_
 #define ENTITIES_CAMERACONTROLLER_H_
 
-#include "Entity.h"
-#include "enttypes.h"
-
-#include "../utils/path-lerper.h"
+#include <boglfw/entities/Entity.h>
+#include <boglfw/entities/enttypes.h>
+#include <boglfw/utils/path-lerper.h>
 
 #include <glm/vec3.hpp>
 
@@ -24,7 +23,7 @@ public:
 	CameraController(Camera* target);
 	virtual ~CameraController();
 
-	EntityType getEntityType() const override { return EntityType::CAMERA_CTRL; }
+	unsigned getEntityType() const override { return EntityTypes::CAMERA_CTRL; }
 	// these flags MUST NOT change during the life time of the object, or else UNDEFINED BEHAVIOUR
 	FunctionalityFlags getFunctionalityFlags() const override { return FunctionalityFlags::UPDATABLE; }
 

@@ -1,11 +1,24 @@
 #pragma once
 
+/*
+ * 4x4 Matrices are row-major and row-axis-aligned
+ * (each row of the matrix represents the local space's X/Y/Z/W axis)
+ * Translation is encoded as the last element of each of the first 3 rows
+ * 
+ * Thus, for transformation we use
+ * 
+ * MATRIX * Vector 
+ * 
+ * multiplication order, the right-most matrix in the composition being the first to be applied to the vector
+ */
+
 #include "constants.h"
 #include "../utils/assert.h"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/geometric.hpp>
 
 #include <utility>
@@ -150,6 +163,11 @@ inline float vec2lenSq(glm::vec2 const& v) {
 
 inline float vec2len(glm::vec2 const& v) {
 	return vec3len(glm::vec3(v, 0));
+}
+
+// extract translation from a transformation matrix
+inline glm::vec3 m4Translation(glm::mat4 const& m4) {
+	return {m4[0][3], m4[1][3], m4[2][3]};
 }
 
 /**

@@ -8,8 +8,7 @@
 #ifndef ENTITIES_ENTITY_H_
 #define ENTITIES_ENTITY_H_
 
-#include "enttypes.h"
-#include "../utils/bitFlags.h"
+#include <boglfw/utils/bitFlags.h>
 
 #include <glm/vec3.hpp>
 #include <atomic>
@@ -39,7 +38,7 @@ public:
 	virtual void draw(Viewport* vp) {}
 	virtual void serialize(BinaryStream &stream) const;
 	virtual int getSerializationType() const;
-	virtual EntityType getEntityType() const = 0;
+	virtual unsigned getEntityType() const = 0;
 
 	// specify requirePrecise to force a precise recomputation of the bounding box (performance penalty)
 	// leave this value false in order to allow faster retrieval via caching or slightly less accurate optimizations

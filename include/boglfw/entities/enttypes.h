@@ -8,21 +8,22 @@
 #ifndef ENTITIES_ENTTYPES_H_
 #define ENTITIES_ENTTYPES_H_
 
-enum class EntityType {	// bitfield
-	BUG					= 0x01,
-	GAMETE				= 0x02,
-	WALL				= 0x04,
-	FOOD_DISPENSER		= 0x08,
-	FOOD_CHUNK			= 0x10,
-	LABEL				= 0x20,
+namespace EntityTypes {
+enum EType : unsigned {
+	BUG					= 1,
+	GAMETE				= 2,
+	WALL				= 3,
+	FOOD_DISPENSER		= 4,
+	FOOD_CHUNK			= 5,
+	LABEL				= 6,
 
-	CAMERA_CTRL			= 0x40,
-	PATH_CONTROLLER		= 0x80,
-	BOX					= 0x100,
-	SIGNAL_VIEWER		= 0x200,
-
-	ALL					= 0xFFFF,
+	CAMERA_CTRL			= 7,
+	PATH_CONTROLLER		= 8,
+	BOX					= 9,
+	SIGNAL_VIEWER		= 10,
+	GIZMO				= 11,
 };
+} // namespace
 
 #endif /* ENTITIES_ENTTYPES_H_ */
 

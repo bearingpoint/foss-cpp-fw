@@ -8,9 +8,10 @@
 #ifndef PHYSICS_PATHCONTROLLER_H_
 #define PHYSICS_PATHCONTROLLER_H_
 
-#include "Entity.h"
-#include "../utils/path-lerper.h"
-#include "../utils/glmstream.h"
+#include <boglfw/entities/Entity.h>
+#include <boglfw/entities/enttypes.h>
+#include <boglfw/utils/path-lerper.h>
+#include <boglfw/utils/glmstream.h>
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -57,7 +58,7 @@ public:
 		}
 	};
 
-	EntityType getEntityType() const override { return EntityType::PATH_CONTROLLER; }
+	unsigned getEntityType() const override { return EntityTypes::PATH_CONTROLLER; }
 	FunctionalityFlags getFunctionalityFlags() const { return FunctionalityFlags::UPDATABLE; }
 
 	PathController(physics::DynamicBody *body);

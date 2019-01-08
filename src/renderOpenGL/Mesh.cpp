@@ -8,17 +8,22 @@
 #include <boglfw/renderOpenGL/Mesh.h>
 
 #include <GL/glew.h>
-#include <GL/gl.h>
 
 Mesh::Mesh() {
 	unsigned bufs[2];
 	glGenBuffers(2, bufs);
-	vertexBuffer_ = bufs[0];
-	indexBuffer_ = bufs[1];
+	VBO_ = bufs[0];
+	IBO_ = bufs[1];
+	glGenVertexArrays(1, &VAO_);
+	glBindVertexArray(VAO_);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+	glBindVertexArray(0);
 }
 
 Mesh::~Mesh() {
-	unsigned bufs[] { vertexBuffer_, indexBuffer_ };
+	glDeleteVertexArrays(1, &VAO_);
+	unsigned bufs[] { VBO_, IBO_ };
 	glDeleteBuffers(2, bufs);
 }
 
@@ -36,8 +41,7 @@ void Mesh::createBox(glm::vec3 center, float width, float height, float depth) {
 	glm::vec3 nTop(0, 1, 0);
 	glm::vec3 nBottom(0, -1, 0);
 	glm::vec3 white(1, 1, 1);
-	vertices_.clear();
-	vertices_.assign({
+	s_Vertex vertices[] {
 	// back face
 		// #0 back bottom left
 		{
@@ -140,17 +144,20 @@ void Mesh::createBox(glm::vec3 center, float width, float height, float depth) {
 		{
 			{right, bottom, back}, nRight, {1, 0}, white
 		}
-	});
+	};
 
 #if (1)	// debug vertices with colors
 	glm::vec3 c[] { {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 0} };
-	for (unsigned i=0; i<vertices_.size(); i++) {
-		vertices_[i].color = c[i % (sizeof(c) / sizeof(c[0]))];
+	for (unsigned i=0; i<sizeof(vertices) / sizeof(vertices[0]); i++) {
+		vertices[i].color = c[i % (sizeof(c) / sizeof(c[0]))];
 	}
 #endif
 
-	indices_.clear();
-	indices_.assign({
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	uint16_t indices[] {
 		// back face
 		0, 1, 2, 0, 2, 3,
 		// top face
@@ -163,25 +170,43 @@ void Mesh::createBox(glm::vec3 center, float width, float height, float depth) {
 		16, 17, 18, 16, 18, 19,
 		// right face
 		20, 21, 22, 20, 22, 23
-	});
-
-	dirty_ = true;
+	};
+	indexCount_ = sizeof(indices) / sizeof(indices[0]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
+	mode_ = RENDER_MODE_TRIANGLES;
 }
 
 void Mesh::createSphere(glm::vec3 center, float radius, int detail) {
 
 }
 
-void Mesh::commitChanges() {
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer_);
-	glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(vertices_[0]), vertices_.data(), GL_STATIC_DRAW);
+void Mesh::createGizmo(float axisLength) {
+	float axl = axisLength;
+	s_Vertex verts[] {
+		// X axis
+		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.5f, 0.f, 0.f} },
+		{ {axl, 0.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {1.0f, 0.f, 0.f} },
+		// Y axis
+		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.f, 0.5f, 0.f} },
+		{ {0.f, axl, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {0.f, 1.0f, 0.f} },
+		// Z axis
+		{ {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f}, {0.f, 0.f}, {0.f, 0.f, 0.5f} },
+		{ {0.f, 0.f, axl}, {0.f, 1.f, 0.f}, {1.f, 0.f}, {0.f, 0.f, 1.0f} },
+	};
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	vertexCount_ = vertices_.size();
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer_);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_.size() * sizeof(indices_[0]), indices_.data(), GL_STATIC_DRAW);
+	
+	uint16_t inds[] {
+		0, 1, 2, 3, 4, 5
+	};
+	indexCount_ = sizeof(inds) / sizeof(inds[0]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(inds), inds, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	indexCount_ = indices_.size();
-
-	dirty_ = false;
+	
+	mode_ = RENDER_MODE_LINES;
 }
