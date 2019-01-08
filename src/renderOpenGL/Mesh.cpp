@@ -16,8 +16,6 @@ Mesh::Mesh() {
 	IBO_ = bufs[1];
 	glGenVertexArrays(1, &VAO_);
 	glBindVertexArray(VAO_);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
 	glBindVertexArray(0);
 }
 

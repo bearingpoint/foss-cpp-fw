@@ -71,11 +71,6 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 		return;
 	
 	glUseProgram(meshShaderProgram_);
-	glEnableVertexAttribArray(indexPos_);
-	glEnableVertexAttribArray(indexNorm_);
-	glEnableVertexAttribArray(indexUV1_);
-	glEnableVertexAttribArray(indexColor_);
-	checkGLError("attrib arrays setup");
 
 	auto matPV = vp->camera()->matProjView();
 
@@ -83,14 +78,22 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 		auto &m = renderQueue_[batches_[batchId] + i];
 		auto matPVW = matPV * m.wldTransform_;
 		glUniformMatrix4fv(indexMatPVW_, 1, GL_FALSE, glm::value_ptr(matPVW));
+		checkGLError("mPVW uniform setup");
 
 		glBindVertexArray(m.pMesh_->getVAO());
 		if (!m.pMesh_->vertexAttribsSet_) {
+			glBindBuffer(GL_ARRAY_BUFFER, m.pMesh_->getVBO());
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.pMesh_->getIBO());
+			glEnableVertexAttribArray(indexPos_);
+			glEnableVertexAttribArray(indexNorm_);
+			glEnableVertexAttribArray(indexUV1_);
+			glEnableVertexAttribArray(indexColor_);
 			glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, position));
 			glVertexAttribPointer(indexNorm_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, normal));
 			glVertexAttribPointer(indexUV1_, 2, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, UV1));
 			glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, color));
 			m.pMesh_->vertexAttribsSet_ = true;
+			checkGLError("attrib arrays setup");
 		}
 		// decide what to draw:
 		unsigned drawMode = 0;
@@ -109,6 +112,7 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 		glDrawElements(drawMode, m.pMesh_->getElementsCount(), GL_UNSIGNED_SHORT, 0);
+		checkGLError("mesh draw");
 		glBindVertexArray(0);
 		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

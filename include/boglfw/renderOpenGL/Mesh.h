@@ -31,10 +31,12 @@ public:
 	
 	void setRenderMode(RENDER_MODES mode) { mode_ = mode; }
 
-	unsigned getVAO() const { return VAO_; }
-	//unsigned getIBO() const { return IBO_; }
-	unsigned getRenderMode() const;
+	unsigned getRenderMode() const { return mode_; }
 	unsigned getElementsCount() const { return indexCount_; }
+	
+	unsigned getVAO() const { return VAO_; }
+	unsigned getVBO() const { return VBO_; }
+	unsigned getIBO() const { return IBO_; }
 
 private:
 	friend class MeshRenderer;
