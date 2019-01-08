@@ -1,3 +1,5 @@
+#ifdef WITH_BOX2D
+
 #include <boglfw/input/operations/OperationsStack.h>
 #include <boglfw/input/operations/OperationContext.h>
 #include <boglfw/input/operations/IOperation.h>
@@ -98,3 +100,5 @@ void OperationsStack::update(float dt) {
 	for (unsigned i=0; i<m_stack.size(); i++)
 		m_stack[i]->update(dt);
 }
+
+#endif // WITH_BOX2D

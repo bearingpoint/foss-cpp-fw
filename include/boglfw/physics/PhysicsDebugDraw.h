@@ -4,6 +4,10 @@
  *  Created on: Nov 27, 2014
  *      Author: bog
  */
+ 
+#ifndef WITH_BOX2D
+#error "Box2D support has not been enabled and this is a requirement for using the PhysicsDebugDraw class"
+#endif
 
 #ifndef PHYSICSDEBUGDRAW_H_
 #define PHYSICSDEBUGDRAW_H_

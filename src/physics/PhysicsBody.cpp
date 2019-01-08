@@ -4,6 +4,8 @@
  *  Created on: Jan 21, 2015
  *      Author: bog
  */
+ 
+#ifdef WITH_BOX2D
 
 #include <boglfw/physics/PhysicsBody.h>
 #include <boglfw/World.h>
@@ -93,3 +95,5 @@ aabb PhysicsBody::getAABB() const {
 	}
 	return x;
 }
+
+#endif // WITH_BOX2D

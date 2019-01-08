@@ -2,12 +2,14 @@
 
 # optional parameters:
 #
+# --release		perform a RELEASE build instead of DEBUG
 # -R			Rebuild (clean before build)
 # --with-SDL	build with SDL support
 # --no-GLFW		build without GLFW support
-# --release		perform a RELEASE build instead of DEBUG
+# --with-Box2D	build with Box2D support
 #
-# By default the script builds with GLFW support
+# By default the script builds Debug with GLFW support
+#
 
 function updateVersion {
 	versionString=$(cat fw-version)
@@ -19,9 +21,10 @@ function updateVersion {
 }
 
 REBUILD=0
+RELEASE=0
 WITH_SDL=0
 WITH_GLFW=1
-RELEASE=0
+WITH_BOX2D=0
 while test $# -gt 0
 do
 	echo "arg $1"
@@ -34,6 +37,8 @@ do
         --with-SDL) WITH_SDL=1
             ;;
 		--no-GLFW) WITH_GLFW=0
+			;;
+		--with-Box2D) WITH_BOX2D=1
 			;;
         --*) echo "bad option $1"
             ;;
@@ -64,6 +69,12 @@ if [ $WITH_GLFW = 1 ]; then
 	CMAKE_PARAM="$CMAKE_PARAM -DWITH_GLFW=ON"
 else
 	CMAKE_PARAM="$CMAKE_PARAM -DWITH_GLFW=OFF"
+fi
+if [ $WITH_BOX2D = 1 ]; then
+	printf "Building with Box2D support.\n"
+	CMAKE_PARAM="$CMAKE_PARAM -DWITH_BOX2D=ON"
+else
+	CMAKE_PARAM="$CMAKE_PARAM -DWITH_BOX2D=OFF"
 fi
 
 CMAKE_BUILD_TYPE="Debug"

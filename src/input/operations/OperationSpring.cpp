@@ -5,6 +5,8 @@
  *      Author: bogdan
  */
 
+#ifdef WITH_BOX2D
+
 #include <boglfw/input/operations/OperationSpring.h>
 #include <boglfw/input/operations/OperationContext.h>
 #include <boglfw/renderOpenGL/Viewport.h>
@@ -124,3 +126,5 @@ void OperationSpring::releaseJoint() {
 
 void OperationSpring::update(float dt) {
 }
+
+#endif // WITH_BOX2D

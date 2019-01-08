@@ -14,17 +14,22 @@
 #include "utils/MTVector.h"
 #include "utils/Event.h"
 
+#ifdef WITH_BOX2D
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
+#endif // WITH_BOX2D
 
 #include <vector>
 #include <memory>
 #include <atomic>
 #include <map>
 
+#ifdef WITH_BOX2D
 class b2World;
 class b2Body;
 struct b2AABB;
 class PhysDestroyListener;
+#endif // WITH_BOX2D
+
 class Viewport;
 
 struct WorldConfig {
@@ -36,7 +41,11 @@ struct WorldConfig {
 	float extent_Yp = 10;
 };
 
-class World : public IOperationSpatialLocator {
+class World 
+#ifdef WITH_BOX2D
+: public IOperationSpatialLocator 
+#endif // WITH_BOX2D
+{
 public:
 	static void setConfig(WorldConfig cfg);
 
@@ -51,6 +60,7 @@ public:
 
 	void setBounds(float left, float right, float top, float bottom);
 
+#ifdef WITH_BOX2D
 	b2Body* getBodyAtPos(glm::vec2 const& pos) override;
 	void getBodiesInArea(glm::vec2 const& pos, float radius, bool clipToCircle, std::vector<b2Body*> &outBodies);
 
@@ -59,6 +69,7 @@ public:
 	PhysDestroyListener* getDestroyListener() { return destroyListener_; }
 	b2World* getPhysics() { return physWld; }
 	b2Body* getGroundBody() { return groundBody; }
+#endif // WITH_BOX2D
 
 	void takeOwnershipOf(std::unique_ptr<Entity> &&e);
 	void destroyEntity(Entity* e);
@@ -66,8 +77,10 @@ public:
 	// get all entities that match ALL of the requested features
 	void getEntities(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags = Entity::FunctionalityFlags::NONE);
 
+#ifdef WITH_BOX2D
 	// get all entities in a specific area that match ALL of the requested features
 	void getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags, glm::vec2 const& pos, float radius, bool clipToCircle);
+#endif // WITH_BOX2D
 
 	void update(float dt);
 	void draw(Viewport* vp);
@@ -94,14 +107,17 @@ public:
 #endif
 
 protected:
+#ifdef WITH_BOX2D
 	b2World* physWld;
 	b2Body* groundBody;
+	PhysDestroyListener *destroyListener_ = nullptr;
+#endif // WITH_BOX2D
+	
 	std::vector<std::unique_ptr<Entity>> entities;
 	std::vector<Entity*> entsToUpdate;
 	std::vector<Entity*> entsToDraw;
 	MTVector<Entity*> entsToDestroy;
 	MTVector<std::unique_ptr<Entity>> entsToTakeOver;
-	PhysDestroyListener *destroyListener_ = nullptr;
 	int frameNumber_ = 0;
 	float extentXn_, extentXp_, extentYn_, extentYp_;
 	SpatialCache spatialCache_;
@@ -119,7 +135,10 @@ protected:
 	void destroyPending();
 	void takeOverPending();
 
+#ifdef WITH_BOX2D
 	void getFixtures(std::vector<b2Fixture*> &out, b2AABB const& aabb);
+#endif // WITH_BOX2D
+
 	bool testEntity(Entity &e, EntityType filterTypes, Entity::FunctionalityFlags filterFlags);
 
 private:

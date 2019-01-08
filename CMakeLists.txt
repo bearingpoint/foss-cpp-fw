@@ -5,6 +5,7 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 
 OPTION(WITH_SDL "Build with SDL support" OFF)
 OPTION(WITH_GLFW "Build with GLFW support" ON)
+OPTION(WITH_BOX2D "Build with Box2D support" ON)
 
 # Project's name
 project(boglfw)
@@ -31,17 +32,19 @@ list(REMOVE_ITEM sources ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
 add_library(boglfw ${sources} ${data})
 
-set(WINDOWING_API "")
+set(API_DEFS "")
 if (WITH_SDL)
-	set(WINDOWING_API ${WINDOWING_API} -DWITH_SDL)
+	set(API_DEFS ${API_DEFS} -DWITH_SDL)
 endif()
 if (WITH_GLFW)
-	set(WINDOWING_API ${WINDOWING_API} -DWITH_GLFW)
+	set(API_DEFS ${API_DEFS} -DWITH_GLFW)
+endif()
+if (WITH_BOX2D)
+	set(API_LIBS ${API_DEFS} -DWITH_BOX2D)
 endif()
 
 set_property(TARGET boglfw PROPERTY CXX_STANDARD 14)
-target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14 ${WINDOWING_API})
-
+target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14 ${API_DEFS})
 
 if (WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__WIN32__")

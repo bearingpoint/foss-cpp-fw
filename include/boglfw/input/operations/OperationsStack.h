@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef WITH_BOX2D
+#error "Box2D support has not been enabled and this is a requirement for using the OperationsStack"
+#endif
+
 #include <vector>
 #include <memory>
 

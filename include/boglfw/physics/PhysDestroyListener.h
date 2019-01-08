@@ -4,6 +4,10 @@
  *  Created on: Mar 22, 2015
  *      Author: bog
  */
+ 
+#ifndef WITH_BOX2D
+#error "Box2D support has not been enabled and this is a requirement for using the PhysDestroyListener class"
+#endif
 
 #ifndef PHYSDESTROYLISTENER_H_
 #define PHYSDESTROYLISTENER_H_

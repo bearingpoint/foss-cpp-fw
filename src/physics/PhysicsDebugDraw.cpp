@@ -4,6 +4,8 @@
  *  Created on: Nov 27, 2014
  *      Author: bog
  */
+ 
+#ifdef WITH_BOX2D
 
 #include <boglfw/physics/PhysicsDebugDraw.h>
 #include <boglfw/renderOpenGL/Shape3D.h>
@@ -67,3 +69,5 @@ void PhysicsDebugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& c
 	DrawSegment(p - b2Vec2(size/2, 0), p + b2Vec2(size/2, 0), color);
 	DrawSegment(p - b2Vec2(0, size/2), p + b2Vec2(0, size/2), color);
 }
+
+#endif // WITH_BOX2D

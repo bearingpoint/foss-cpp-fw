@@ -4,6 +4,10 @@
  *  Created on: Jan 21, 2015
  *      Author: bog
  */
+ 
+#ifndef WITH_BOX2D
+#error "Box2D support has not been enabled and this is a requirement for using the PhysicsBody class"
+#endif
 
 #ifndef OBJECTS_PHYSICSBODY_H_
 #define OBJECTS_PHYSICSBODY_H_

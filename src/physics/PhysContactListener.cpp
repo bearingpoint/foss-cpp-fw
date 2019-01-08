@@ -4,6 +4,8 @@
  *  Created on: Jan 22, 2015
  *      Author: bogdan
  */
+ 
+#ifdef WITH_BOX2D
 
 #include <boglfw/physics/PhysContactListener.h>
 #include <boglfw/physics/PhysicsBody.h>
@@ -54,3 +56,5 @@ void PhysContactListener::update(float dt) {
 	}
 	eventBuffer.clear();
 }
+
+#endif // WITH_BOX2D

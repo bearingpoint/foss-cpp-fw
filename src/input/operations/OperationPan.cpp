@@ -4,6 +4,8 @@
  *  Created on: Nov 4, 2014
  *      Author: bog
  */
+ 
+#ifdef WITH_BOX2D
 
 #include <boglfw/input/operations/OperationPan.h>
 #include <boglfw/input/operations/OperationContext.h>
@@ -102,3 +104,5 @@ void OperationPan::update(float dt) {
 			isFlyActive = false;
 	}
 }
+
+#endif // WITH_BOX2D

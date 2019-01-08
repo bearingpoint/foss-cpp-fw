@@ -4,6 +4,10 @@
  *  Created on: Jan 22, 2015
  *      Author: bogdan
  */
+ 
+#ifndef WITH_BOX2D
+#error "Box2D support has not been enabled and this is a requirement for using the PhysContactListener class"
+#endif
 
 #ifndef PHYSCONTACTLISTENER_H_
 #define PHYSCONTACTLISTENER_H_

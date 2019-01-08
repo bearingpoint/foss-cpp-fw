@@ -5,6 +5,8 @@
  *      Author: bog
  */
 
+#ifdef WITH_BOX2D
+
 #include <boglfw/physics/PhysDestroyListener.h>
 
 #ifdef DEBUG_DMALLOC
@@ -30,3 +32,5 @@ void PhysDestroyListener::removeCallback(b2Joint* joint, unsigned handle) {
 	if (handle <= vec.size())
 		vec[handle-1] = nullptr;
 }
+
+#endif // WITH_BOX2D

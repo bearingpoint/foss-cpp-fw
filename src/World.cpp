@@ -7,7 +7,6 @@
 
 #include <boglfw/World.h>
 #include <boglfw/entities/Entity.h>
-#include <boglfw/physics/PhysicsBody.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/math/box2glm.h>
 #include <boglfw/Infrastructure.h>
@@ -21,7 +20,11 @@
 #include <boglfw/perf/marker.h>
 
 #include <glm/glm.hpp>
+
+#ifdef WITH_BOX2D
+#include <boglfw/physics/PhysicsBody.h>
 #include <Box2D/Box2D.h>
+#endif
 
 #include <algorithm>
 #include <atomic>
@@ -40,9 +43,14 @@ void World::setConfig(WorldConfig cfg) {
 }
 
 World::World()
+#ifdef WITH_BOX2D
 	: physWld(nullptr)
 	, groundBody(nullptr)
-	, entsToDestroy(1024)
+	, 
+#else
+	:
+#endif // WITH_BOX2D
+	  entsToDestroy(1024)
 	, entsToTakeOver(1024)
 	, deferredActions_(8192)
 	, pendingActions_(8192)
@@ -58,12 +66,14 @@ World::World()
 	initialized.store(true);
 }
 
+#ifdef WITH_BOX2D
 void World::setPhysics(b2World* phys) {
 	physWld = phys;
 	b2BodyDef gdef;
 	gdef.type = b2_staticBody;
 	groundBody = physWld->CreateBody(&gdef);
 }
+#endif // WITH_BOX2D
 
 World& World::getInstance() {
     static World instance;
@@ -99,6 +109,7 @@ void World::reset() {
 	entsToUpdate.clear();
 }
 
+#ifdef WITH_BOX2D
 void World::getFixtures(std::vector<b2Fixture*> &out, const b2AABB& aabb) {
 	PERF_MARKER_FUNC;
 	class cbWrap : public b2QueryCallback {
@@ -155,6 +166,8 @@ void World::getBodiesInArea(glm::vec2 const& pos, float radius, bool clipToCircl
 		outBodies.push_back(f->GetBody());
 	}
 }
+
+#endif // WITH_BOX2D
 
 void World::takeOwnershipOf(std::unique_ptr<Entity> &&e) {
 	assertDbg(e != nullptr);
@@ -310,6 +323,7 @@ void World::getEntities(std::vector<Entity*> &out, EntityType filterTypes, Entit
 	}
 }
 
+#ifdef WITH_BOX2D
 void World::getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, Entity::FunctionalityFlags filterFlags,
 		glm::vec2 const& pos, float radius, bool clipToCircle)
 {
@@ -332,6 +346,7 @@ void World::getEntitiesInBox(std::vector<Entity*> &out, EntityType filterTypes, 
 		return testEntity(*e, filterTypes, filterFlags);
 	});
 }
+#endif // WITH_BOX2D
 
 int World::registerEventHandler(std::string eventName, std::function<void(int param)> handler) {
 	return mapUserEvents_[eventName].add(handler);
