@@ -38,7 +38,7 @@ void Mesh::createBox(glm::vec3 center, float width, float height, float depth) {
 	glm::vec3 nRight(1, 0, 0);
 	glm::vec3 nTop(0, 1, 0);
 	glm::vec3 nBottom(0, -1, 0);
-	glm::vec3 white(1, 1, 1);
+	glm::vec4 white(1, 1, 1, 1);
 	s_Vertex vertices[] {
 	// back face
 		// #0 back bottom left
@@ -145,7 +145,7 @@ void Mesh::createBox(glm::vec3 center, float width, float height, float depth) {
 	};
 
 #if (1)	// debug vertices with colors
-	glm::vec3 c[] { {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 0} };
+	glm::vec4 c[] { {1, 0, 0, 1}, {0, 1, 0, 1}, {0, 0, 1, 1}, {1, 1, 0, 1} };
 	for (unsigned i=0; i<sizeof(vertices) / sizeof(vertices[0]); i++) {
 		vertices[i].color = c[i % (sizeof(c) / sizeof(c[0]))];
 	}
@@ -185,14 +185,14 @@ void Mesh::createGizmo(float axisLength) {
 	float axl = axisLength;
 	s_Vertex verts[] {
 		// X axis
-		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.5f, 0.f, 0.f} },
-		{ {axl, 0.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {1.0f, 0.f, 0.f} },
+		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.1f, 0.f, 0.f, 1.f} },
+		{ {axl, 0.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {1.0f, 0.f, 0.f, 1.f} },
 		// Y axis
-		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.f, 0.5f, 0.f} },
-		{ {0.f, axl, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {0.f, 1.0f, 0.f} },
+		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.f, 0.1f, 0.f, 1.f} },
+		{ {0.f, axl, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {0.f, 1.0f, 0.f, 1.f} },
 		// Z axis
-		{ {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f}, {0.f, 0.f}, {0.f, 0.f, 0.5f} },
-		{ {0.f, 0.f, axl}, {0.f, 1.f, 0.f}, {1.f, 0.f}, {0.f, 0.f, 1.0f} },
+		{ {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f}, {0.f, 0.f}, {0.f, 0.f, 0.1f, 1.f} },
+		{ {0.f, 0.f, axl}, {0.f, 1.f, 0.f}, {1.f, 0.f}, {0.f, 0.f, 1.0f, 1.f} },
 	};
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
