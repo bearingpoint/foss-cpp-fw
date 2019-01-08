@@ -10,20 +10,20 @@
 
 #include <utility>
 
-template<typename T> T sqr(T const &x) { return x*x; }
+template<typename T> inline T sqr(T const &x) { return x*x; }
 template<typename T> inline void xchg(T &x1, T &x2) { T aux(x1); x1 = x2; x2 = aux; }
 template<typename T> inline void xchg(T &&x1, T &&x2) { T aux(std::move(x1)); x1 = std::move(x2); x2 = std::move(aux); }
-template<typename T> T min(T const &x, T const &y) { return x < y ? x : y; }
-template<typename T> T max(T const &x, T const &y) { return x > y ? x : y; }
-template<typename T> T sign(T const& x) { return x > 0 ? T(+1) : (x < 0 ? T(-1) : T(0)); }
-template<typename T> T abs(T const& x) { return x < 0 ? -x : x; }
+template<typename T> inline T min(T const &x, T const &y) { return x < y ? x : y; }
+template<typename T> inline T max(T const &x, T const &y) { return x > y ? x : y; }
+template<typename T> inline T sign(T const& x) { return x > 0 ? T(+1) : (x < 0 ? T(-1) : T(0)); }
+template<typename T> inline T abs(T const& x) { return x < 0 ? -x : x; }
 
 // returns the normal vector of a 2D vector in the same plane, pointing towards the positive subspace of the initial vector (left)
 // as if crossing the original vector with a 3D upwards vector
 inline glm::vec2 getNormalVector(glm::vec2 v) { return glm::vec2(-v.y, v.x); }
 
-float eqEps(float f1, float f2) { return abs(f1 - f2) < EPS; }
-float eqEps(float f1, float f2, float eps) { return abs(f1 - f2) < eps; }
+inline float eqEps(float f1, float f2) { return abs(f1 - f2) < EPS; }
+inline float eqEps(float f1, float f2, float eps) { return abs(f1 - f2) < eps; }
 
 // returns the cross product of two 2D vectors, as a scalar (positive if v2 is clockwise from v1 and negative otherwise)
 inline float cross2D(const glm::vec2 &v1, const glm::vec2 &v2) {
