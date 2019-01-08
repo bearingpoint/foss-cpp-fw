@@ -10,7 +10,7 @@
 class Gizmo : public Entity
 {
 public:
-	virtual FunctionalityFlags getFunctionalityFlags() const override { return FunctionalityFlags::UPDATABLE; }
+	virtual FunctionalityFlags getFunctionalityFlags() const override { return FunctionalityFlags::DRAWABLE; }
 	virtual unsigned getEntityType() const override { return EntityTypes::GIZMO; }
 	virtual ~Gizmo() override;
 
