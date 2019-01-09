@@ -67,11 +67,11 @@ public:
 	void setPhysics(b2World* physWld);
 	void setDestroyListener(PhysDestroyListener *listener) { destroyListener_ = listener; }
 	PhysDestroyListener* getDestroyListener() { return destroyListener_; }
-	b2World* getPhysics() { return physWld; }
-	b2Body* getGroundBody() { return groundBody; }
+	b2World* getPhysics() { return physWld_; }
+	b2Body* getGroundBody() { return groundBody_; }
 #endif // WITH_BOX2D
 
-	void takeOwnershipOf(std::unique_ptr<Entity> &&e);
+	void takeOwnershipOf(std::shared_ptr<Entity> e);
 	void destroyEntity(Entity* e);
 
 	// get all entities that match ALL of the requested features
@@ -108,17 +108,17 @@ public:
 
 protected:
 #ifdef WITH_BOX2D
-	b2World* physWld;
-	b2Body* groundBody;
+	b2World* physWld_;
+	b2Body* groundBody_;
 	PhysDestroyListener *destroyListener_ = nullptr;
 	SpatialCache spatialCache_;
 #endif // WITH_BOX2D
 	
-	std::vector<std::unique_ptr<Entity>> entities;
-	std::vector<Entity*> entsToUpdate;
-	std::vector<Entity*> entsToDraw;
-	MTVector<Entity*> entsToDestroy;
-	MTVector<std::unique_ptr<Entity>> entsToTakeOver;
+	std::vector<std::shared_ptr<Entity>> entities_;
+	std::vector<Entity*> entsToUpdate_;
+	std::vector<Entity*> entsToDraw_;
+	MTVector<Entity*> entsToDestroy_;
+	MTVector<std::shared_ptr<Entity>> entsToTakeOver_;
 	int frameNumber_ = 0;
 	float extentXn_, extentXp_, extentYn_, extentYp_, extentZn_, extentZp_;
 #ifdef DEBUG

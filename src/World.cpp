@@ -44,14 +44,14 @@ void World::setConfig(WorldConfig cfg) {
 
 World::World()
 #ifdef WITH_BOX2D
-	: physWld(nullptr)
-	, groundBody(nullptr)
+	: physWld_(nullptr)
+	, groundBody_(nullptr)
 	, 
 #else
 	:
 #endif // WITH_BOX2D
-	  entsToDestroy(1024)
-	, entsToTakeOver(1024)
+	  entsToDestroy_(1024)
+	, entsToTakeOver_(1024)
 	, deferredActions_(8192)
 	, pendingActions_(8192)
 {
@@ -70,10 +70,10 @@ World::World()
 
 #ifdef WITH_BOX2D
 void World::setPhysics(b2World* phys) {
-	physWld = phys;
+	physWld_ = phys;
 	b2BodyDef gdef;
 	gdef.type = b2_staticBody;
-	groundBody = physWld->CreateBody(&gdef);
+	groundBody_ = physWld_->CreateBody(&gdef);
 }
 #endif // WITH_BOX2D
 
@@ -100,19 +100,19 @@ void World::setBounds(float left, float right, float top, float bottom, float fr
 }
 
 void World::reset() {
-	for (auto &e : entities) {
+	for (auto &e : entities_) {
 		e->markedForDeletion_= true;
 		e.reset();
 	}
-	for (auto &e : entsToTakeOver) {
+	for (auto &e : entsToTakeOver_) {
 		e->markedForDeletion_ = true;
 		e.reset();
 	}
-	entities.clear();
-	entsToTakeOver.clear();
-	entsToDestroy.clear();
-	entsToDraw.clear();
-	entsToUpdate.clear();
+	entities_.clear();
+	entsToTakeOver_.clear();
+	entsToDestroy_.clear();
+	entsToDraw_.clear();
+	entsToUpdate_.clear();
 }
 
 #ifdef WITH_BOX2D
@@ -131,7 +131,7 @@ void World::getFixtures(std::vector<b2Fixture*> &out, const b2AABB& aabb) {
 
 		std::vector<b2Fixture*> &fixtures_;
 	} wrap(out);
-	physWld->QueryAABB(&wrap, aabb);
+	physWld_->QueryAABB(&wrap, aabb);
 }
 
 b2Body* World::getBodyAtPos(glm::vec2 const& pos) {
@@ -175,44 +175,44 @@ void World::getBodiesInArea(glm::vec2 const& pos, float radius, bool clipToCircl
 
 #endif // WITH_BOX2D
 
-void World::takeOwnershipOf(std::unique_ptr<Entity> &&e) {
+void World::takeOwnershipOf(std::shared_ptr<Entity> e) {
 	assertDbg(e != nullptr);
 	e->managed_ = true;
-	entsToTakeOver.push_back(std::move(e));
+	entsToTakeOver_.push_back(std::move(e));
 }
 
 void World::destroyEntity(Entity* e) {
 	PERF_MARKER_FUNC;
-	entsToDestroy.push_back(e);
+	entsToDestroy_.push_back(e);
 }
 
 void World::destroyPending() {
 	PERF_MARKER_FUNC;
-	static decltype(entsToDestroy) destroyNow(entsToDestroy.getLockFreeCapacity());
-	destroyNow.swap(entsToDestroy);
+	static decltype(entsToDestroy_) destroyNow(entsToDestroy_.getLockFreeCapacity());
+	destroyNow.swap(entsToDestroy_);
 	for (auto &e : destroyNow) {
-		auto it = std::find_if(entities.begin(), entities.end(), [&] (auto &it) {
+		auto it = std::find_if(entities_.begin(), entities_.end(), [&] (auto &it) {
 			return it.get() == e;
 		});
-		if (it != entities.end()) {
+		if (it != entities_.end()) {
 			Entity::FunctionalityFlags flags = e->getFunctionalityFlags();
 			if ((flags & Entity::FunctionalityFlags::UPDATABLE) != 0) {
-				auto it = std::find(entsToUpdate.begin(), entsToUpdate.end(), e);
-				assertDbg(it != entsToUpdate.end());
-				entsToUpdate.erase(it);
+				auto it = std::find(entsToUpdate_.begin(), entsToUpdate_.end(), e);
+				assertDbg(it != entsToUpdate_.end());
+				entsToUpdate_.erase(it);
 			}
 			if ((flags & Entity::FunctionalityFlags::DRAWABLE) != 0) {
-				auto it = std::find(entsToDraw.begin(), entsToDraw.end(), e);
-				assertDbg(it != entsToDraw.end());
-				entsToDraw.erase(it);
+				auto it = std::find(entsToDraw_.begin(), entsToDraw_.end(), e);
+				assertDbg(it != entsToDraw_.end());
+				entsToDraw_.erase(it);
 			}
-			entities.erase(it); // this will also delete
+			entities_.erase(it); // this will also delete
 //TODO optimize this, it will be O(n^2) - must move the pointer from entities to entsToDestroy when destroy()
 		} else {
-			auto it2 = std::find_if(entsToTakeOver.begin(), entsToTakeOver.end(), [&] (auto &it) {
+			auto it2 = std::find_if(entsToTakeOver_.begin(), entsToTakeOver_.end(), [&] (auto &it) {
 				return it.get() == e;
 			});
-			if (it2 != entsToTakeOver.end()) {
+			if (it2 != entsToTakeOver_.end()) {
 				(*it2).reset();
 			} else {
 				ERROR("[WARNING] World skip DESTROY unmanaged obj: "<<e);
@@ -224,20 +224,20 @@ void World::destroyPending() {
 
 void World::takeOverPending() {
 	PERF_MARKER_FUNC;
-	static decltype(entsToTakeOver) takeOverNow(entsToTakeOver.getLockFreeCapacity());
-	takeOverNow.swap(entsToTakeOver);
+	static decltype(entsToTakeOver_) takeOverNow(entsToTakeOver_.getLockFreeCapacity());
+	takeOverNow.swap(entsToTakeOver_);
 	for (auto &e : takeOverNow) {
 		if (!e)
 			continue;	// entity was destroyed in the mean time
 		// add to update and draw lists if appropriate
 		Entity::FunctionalityFlags flags = e->getFunctionalityFlags();
 		if ((flags & Entity::FunctionalityFlags::DRAWABLE) != 0) {
-			entsToDraw.push_back(e.get());
+			entsToDraw_.push_back(e.get());
 		}
 		if ((flags & Entity::FunctionalityFlags::UPDATABLE) != 0) {
-			entsToUpdate.push_back(e.get());
+			entsToUpdate_.push_back(e.get());
 		}
-		entities.push_back(std::move(e));
+		entities_.push_back(std::move(e));
 	}
 	takeOverNow.clear();
 }
@@ -260,11 +260,11 @@ void World::update(float dt) {
 		e->update(dt);
 	};
 	if (config.disableParallelProcessing) {
-		for (auto e : entsToUpdate)
+		for (auto e : entsToUpdate_)
 			pred(e);
 	} else
 		parallel_for(
-			entsToUpdate.begin(), entsToUpdate.end(),
+			entsToUpdate_.begin(), entsToUpdate_.end(),
 			Infrastructure::getThreadPool(),
 			pred
 		);
@@ -305,7 +305,7 @@ void World::draw(Viewport* vp) {
 	Shape3D::get()->drawLine(glm::vec3(extentXn_*1.5f, extentYp_, 0), glm::vec3(extentXp_*1.5f, extentYp_, 0), lineColor);
 	Shape3D::get()->drawLine(glm::vec3(extentXn_*1.5f, extentYn_, 0), glm::vec3(extentXp_*1.5f, extentYn_, 0), lineColor);
 	// draw entities
-	for (auto e : entsToDraw) {
+	for (auto e : entsToDraw_) {
 		PERF_MARKER((std::string("Entity draw: ") + std::to_string((int)e->getEntityType())).c_str());
 		e->draw(vp);
 	}
@@ -325,11 +325,11 @@ bool World::testEntity(Entity &e, unsigned* filterTypes, unsigned filterTypesCou
 
 void World::getEntities(std::vector<Entity*> &out, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags) {
 	PERF_MARKER_FUNC;
-	for (auto &e : entities) {
+	for (auto &e : entities_) {
 		if (!e->isZombie() && testEntity(*e, filterTypes, filterTypesCount, filterFlags))
 			out.push_back(e.get());
 	}
-	for (auto &e : entsToTakeOver) {
+	for (auto &e : entsToTakeOver_) {
 		if (!e->isZombie() && testEntity(*e, filterTypes, filterTypesCount, filterFlags))
 			out.push_back(e.get());
 	}
