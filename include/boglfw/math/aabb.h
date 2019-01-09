@@ -85,6 +85,10 @@ struct aabb {
 		return aabb(glm::vec3(max(vMin.x, x.vMin.x), max(vMin.y, x.vMin.y), max(vMin.z, x.vMin.z)),
 				glm::vec3(min(vMax.x, x.vMax.x), min(vMax.y, x.vMax.y), min(vMax.z, x.vMax.z)));
 	}
+	
+	aabb offset(glm::vec3 const& o) const {
+		return aabb{vMin + o, vMax + o};
+	}
 
 	bool intersectSphere(glm::vec3 const& c, float r) const {
 		if (c.x + r <= vMin.x ||
