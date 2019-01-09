@@ -248,6 +248,9 @@ bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowT
 	glfwMakeContextCurrent(window);
 	if (checkGLError("glfwMakeContextCurrent"))
 		return false;
+		
+	// disable vsync, use 1 to enable it
+	glfwSwapInterval(0);
 
 	windowW = windowWidth;
 	windowH = windowHeight;

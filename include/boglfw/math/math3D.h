@@ -170,6 +170,14 @@ inline glm::vec3 m4Translation(glm::mat4 const& m4) {
 	return {m4[0][3], m4[1][3], m4[2][3]};
 }
 
+// builds an object transformation matrix from 3 perpendicular axes and a translation value.
+// the axes are assumed to be normalized and orthogonal.
+glm::mat4 buildMatrix(glm::vec3 right, glm::vec3 up, glm::vec3 front, glm::vec3 translation);
+
+// builds an object transformation object from a position, a direction (towards which the object is facing) and the up-vector
+// the function normalizes vectors automatically
+glm::mat4 buildMatrixFromOrientation(glm::vec3 position, glm::vec3 direction, glm::vec3 up);
+
 /**
  * computes the distance from point P to the line defined by lineOrigin and lineDirection.
  * lineDirection is assumed to be normalized.

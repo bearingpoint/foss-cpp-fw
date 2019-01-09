@@ -53,3 +53,19 @@ bool angleSpanOverlap(float angle1, float span1, float angle2, float span2, bool
 
 	return outMargin < 0;
 }
+
+glm::mat4 buildMatrix(glm::vec3 right, glm::vec3 up, glm::vec3 front, glm::vec3 translation) {
+	return glm::mat4 {
+		right.x,	right.y,	right.z,	translation.x,
+		up.x,		up.y,		up.z,		translation.y,
+		front.x,	front.y,	front.z,	translation.z,
+		0.f,		0.f,		0.f,		1.f
+	};
+}
+
+glm::mat4 buildMatrixFromOrientation(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
+	direction = glm::normalize(direction);
+	glm::vec3 right = glm::normalize(glm::cross(direction, up));
+	up = glm::cross(right, direction);
+	return buildMatrix(right, up, direction, position);
+}
