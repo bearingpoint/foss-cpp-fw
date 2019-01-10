@@ -19,7 +19,7 @@
 //#define DEBUG_THREADPOOL	// to enable debug logs
 
 #ifdef DEBUG_THREADPOOL
-#include "../../bugs/utils/log.h"
+#include <boglfw/utils/log.h>
 #endif
 
 
@@ -63,10 +63,13 @@ public:
 		checkValidState();
 		auto handle = std::shared_ptr<PoolTask>(new PoolTask([=] () mutable { task(args...); }));
 		queuedTasks_.push(handle);
-		lk.unlock();
+		//lk.unlock(); -- TODO unlocking the mutex here causes the notify_one() below to sometimes hang
+#ifdef DEBUG_THREADPOOL
+	LOGLN(__FUNCTION__ << " mutex unlocked. notifying...");
+#endif
 		condPendingTask_.notify_one();
 #ifdef DEBUG_THREADPOOL
-	LOGLN(__FUNCTION__ << " notify_one()");
+	LOGLN(__FUNCTION__ << " notify_one() returned");
 #endif
 		return handle;
 	}

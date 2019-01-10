@@ -65,7 +65,7 @@ glm::mat4 buildMatrix(glm::vec3 right, glm::vec3 up, glm::vec3 front, glm::vec3 
 
 glm::mat4 buildMatrixFromOrientation(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
 	direction = glm::normalize(direction);
-	glm::vec3 right = glm::normalize(glm::cross(direction, up));
-	up = glm::cross(right, direction);
+	glm::vec3 right = glm::normalize(glm::cross(up, direction));
+	up = glm::cross(direction, right);
 	return buildMatrix(right, up, direction, position);
 }

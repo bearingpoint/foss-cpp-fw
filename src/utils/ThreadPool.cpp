@@ -42,6 +42,9 @@ void ThreadPool::wait() {
 }
 
 void ThreadPool::stop() {
+#ifdef DEBUG_THREADPOOL
+	LOGLN(__FUNCTION__);
+#endif
 	std::unique_lock<std::mutex> poolLk(poolMutex_);
 	wait_impl(poolLk);
 	// wait for all workers to finish and shuts down the threads in the pool
