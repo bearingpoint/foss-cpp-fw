@@ -299,12 +299,36 @@ void World::queueDeferredAction(std::function<void()> &&fun, int delayFrames) {
 void World::draw(Viewport* vp) {
 	PERF_MARKER_FUNC;
 	// draw extent lines:
-	glm::vec3 lineColor(0.2f, 0, 0.8f);
-	Shape3D::get()->drawLine(glm::vec3(extentXn_, extentYp_*1.5f, 0), glm::vec3(extentXn_, extentYn_*1.5f, 0), lineColor);
-	Shape3D::get()->drawLine(glm::vec3(extentXp_, extentYp_*1.5f, 0), glm::vec3(extentXp_, extentYn_*1.5f, 0), lineColor);
-	Shape3D::get()->drawLine(glm::vec3(extentXn_*1.5f, extentYp_, 0), glm::vec3(extentXp_*1.5f, extentYp_, 0), lineColor);
-	Shape3D::get()->drawLine(glm::vec3(extentXn_*1.5f, extentYn_, 0), glm::vec3(extentXp_*1.5f, extentYn_, 0), lineColor);
+	if (config.drawBoundaries) {
+		glm::vec3 lineColor(0.2f, 0, 0.8f);
+		const float overflow = 1.1f;
+		Shape3D::get()->drawLine(glm::vec3(extentXn_, extentYp_*overflow, extentZn_),
+			glm::vec3(extentXn_, extentYn_*overflow, extentZn_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXp_, extentYp_*overflow, extentZn_),
+			glm::vec3(extentXp_, extentYn_*overflow, extentZn_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXn_*overflow, extentYp_, extentZn_),
+			glm::vec3(extentXp_*overflow, extentYp_, extentZn_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXn_*overflow, extentYn_, extentZn_),
+			glm::vec3(extentXp_*overflow, extentYn_, extentZn_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXn_, extentYp_*overflow, extentZp_),
+			glm::vec3(extentXn_, extentYn_*overflow, extentZp_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXp_, extentYp_*overflow, extentZp_),
+			glm::vec3(extentXp_, extentYn_*overflow, extentZp_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXn_*overflow, extentYp_, extentZp_),
+			glm::vec3(extentXp_*overflow, extentYp_, extentZp_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXn_*overflow, extentYn_, extentZp_),
+			glm::vec3(extentXp_*overflow, extentYn_, extentZp_), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXn_, extentYn_, extentZn_*overflow),
+			glm::vec3(extentXn_, extentYn_, extentZp_*overflow), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXn_, extentYp_, extentZn_*overflow),
+			glm::vec3(extentXn_, extentYp_, extentZp_*overflow), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXp_, extentYn_, extentZn_*overflow),
+			glm::vec3(extentXp_, extentYn_, extentZp_*overflow), lineColor);
+		Shape3D::get()->drawLine(glm::vec3(extentXp_, extentYp_, extentZn_*overflow),
+			glm::vec3(extentXp_, extentYp_, extentZp_*overflow), lineColor);
+	}
 	// draw entities
+
 	for (auto e : entsToDraw_) {
 		PERF_MARKER((std::string("Entity draw: ") + std::to_string((int)e->getEntityType())).c_str());
 		e->draw(vp);

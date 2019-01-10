@@ -35,6 +35,7 @@ class Viewport;
 struct WorldConfig {
 	bool disableParallelProcessing = false;	// set to true to disable parallel (multi-threaded) update of entities
 	bool disableUserEvents = false;			// set to true to disable propagation of user events
+	bool drawBoundaries = true;				// draw world boundaries
 	float extent_Xn = -10;
 	float extent_Xp = 10;
 	float extent_Yn = -10;

@@ -47,7 +47,8 @@ struct SSDescriptor {
 
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
-bool gltInitGLFW(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled");
+// if multisampleCount is greater than 1, multi-sampling will be enabled
+bool gltInitGLFW(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled", unsigned multiSampleCount=0);
 
 // initializes openGL and create a supersampled framebuffer
 bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor desc, const char windowTitle[]="Untitled");

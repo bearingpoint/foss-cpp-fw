@@ -224,14 +224,16 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
-bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowTitle[]) {
+bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowTitle[], unsigned multiSampleCount) {
 	// initialize GLFW and set-up window an' all:
 	if (!glfwInit()) {
 		cerr << "FAILED glfwInit" << endl;
 		return false;
 	}
+	if (multiSampleCount == 0)
+		multiSampleCount = 1;
 
-//	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_SAMPLES, multiSampleCount);
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
