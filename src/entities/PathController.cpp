@@ -17,7 +17,7 @@ PathController::~PathController() {
 }
 
 void PathController::addVertex(Vertex v) {
-	lerper_.appendNode(v);
+	lerper_.appendNode(PathNode<Vertex>({PathNodeType::vertex, v, 0}));
 }
 
 void PathController::addRedirect(int index) {

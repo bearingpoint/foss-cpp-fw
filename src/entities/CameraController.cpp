@@ -17,60 +17,19 @@ CameraController::~CameraController() {
 }
 
 void CameraController::update(float dt) {
-	/*if (path_.empty())
-		return;
-
-	if (lerpFactor_ >= 1) {
-		// reached the next vertex
-		if (pathIndex_ > 0 && (unsigned)pathIndex_ == path_.size()) {
-			path_.clear(); // finished the path
-			return;
-		}
-
-		jumpNext_ = path_[pathIndex_].type == pathNode::jump;
-		if (path_[pathIndex_].type == pathNode::jump ||
-				path_[pathIndex_].type == pathNode::redirect) {
-			pathIndex_ = clamp(path_[pathIndex_].targetIndex, 0u, (unsigned)path_.size() - 1);
-			return;
-		}
-		if (jumpNext_) {
-			jumpNext_ = false;
-			camera_->moveTo(path_[pathIndex_].position);
-			lastLookAt_ = path_[pathIndex_].lookAtTarget;
-			camera_->lookAt(lastLookAt_);
-			pathIndex_++;
-			return;
-		}
-
-		lerpFactor_ = 0;
-		auto &next = path_[pathIndex_];
-		origin_ = camera_->position();
-		originLookAt_ = lastLookAt_;
-		segmentLength_ = (next.position - origin_).length();
-		maxLerpSpeed_ = cruiseSpeed_ / segmentLength_;
+	auto attachedSP = attachedEntity_.lock();
+	if (attachedSP) {
+		auto tr = attachedSP->getTransform();
+		glm::vec3 pos = attachOffset_ + m4Translation(tr);
+		camera_->moveTo(pos);
+		glm::vec3 dir = vec4xyz(tr[2]);
+		camera_->lookAt(pos + dir);
+	} else {
+		attachedSP.reset();
+		pathLerper_.update(dt);
+		camera_->moveTo(pathLerper_.value().position);
+		camera_->lookAt(pathLerper_.value().lookAtTarget);
 	}
-
-	if (lerpFactor_ > 0.9f) { // nearing the end
-		// slow down
-		float delta = maxLerpSpeed_ * 0.5f * dt;
-		if (lerpSpeed_ > delta)
-			lerpSpeed_ -= delta;
-	} else if (lerpSpeed_ < maxLerpSpeed_) {
-		// speed up
-		lerpSpeed_ += maxLerpSpeed_ * 0.5f * dt;
-	}
-	lerpFactor_ += lerpSpeed_ * dt;
-	auto pos = lerp(origin_, path_[pathIndex_].position, clamp(lerpFactor_, 0.f, 1.f));
-	auto target = lerp(originLookAt_, path_[pathIndex_].lookAtTarget, clamp(lerpFactor_, 0.f, 1.f));
-	camera_->moveTo(pos);
-	camera_->lookAt(target);
-	lastLookAt_ = target;
-	if (lerpFactor_ >= 1)
-		pathIndex_++;*/
-
-	pathLerper_.update(dt);
-	camera_->moveTo(pathLerper_.value().position);
-	camera_->lookAt(pathLerper_.value().lookAtTarget);
 }
 
 void CameraController::startBackAndForth(glm::vec3 p1, glm::vec3 p2, glm::vec3 lookAtTarget, float speed) {
@@ -82,16 +41,18 @@ void CameraController::startBackAndForth(glm::vec3 p1, glm::vec3 p2, glm::vec3 l
 	pathLerper_.start(speed);
 }
 
-/*void CameraController::startPath(std::vector<pathNode> path, float speed) {
-	path_ = path;
-	cruiseSpeed_ = speed;
-	pathIndex_ = 0;
-	origin_ = camera_->position();
-	originLookAt_ = camera_->position() + camera_->direction();
-	lastLookAt_ = originLookAt_;
-	segmentLength_ = (camera_->position() - path[0].position).length();
-	lerpFactor_ = 0;
-	maxLerpSpeed_ = cruiseSpeed_ / segmentLength_;
-	lerpSpeed_ = 0;
-}*/
+void CameraController::addNextCheckpoint(glm::vec3 p, glm::vec3 lookAtTarget, float speed) {
+	pathLerper_.appendNode(PathNode<CameraNode>{ PathNodeType::vertex, {p, lookAtTarget}, 0 });
+	if (pathLerper_.isStopped())
+		pathLerper_.start(speed);
+}
 
+void CameraController::stop() {
+	pathLerper_.reset();
+}
+
+void CameraController::attachToEntity(std::weak_ptr<Entity> ent, glm::vec3 offset) {
+	attachedEntity_ = ent;
+	attachOffset_ = offset;
+	stop();	// stop any path lerping that might have been going on before
+}

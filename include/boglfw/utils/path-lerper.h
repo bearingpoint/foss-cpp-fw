@@ -44,11 +44,13 @@ class PathLerper {
 public:
 	PathLerper(LerpFunction lerpFn = genericLerp<NodeValue>, DistanceFunction distFn = genericDistance<NodeValue>);
 	void setPath(std::vector<PathNode<NodeValue>> path);
-	void appendNode(NodeValue val);
+	void appendNode(PathNode<NodeValue> val);
 	void appendJump(unsigned target);
 	void appendRedirect(unsigned target);
 
 	void start(float speed, unsigned initialIndex = 0);
+	void reset();
+	bool isStopped() const { return !isStarted_; }
 
 	void update(float dt);
 
@@ -66,6 +68,7 @@ private:
 	float lerpSpeed_ = 0;
 	float maxLerpSpeed_ = 0;
 	bool jumpNext_ = false;
+	bool isStarted_ = false;
 
 	LerpFunction lerpFn_;
 	DistanceFunction distFn_;
@@ -90,20 +93,13 @@ template<class NodeValue,
 void PathLerper<NodeValue, LerpFunction, DistanceFunction>::setPath(std::vector<PathNode<NodeValue>> path)
 {
 	path_ = path;
-	if (cruiseSpeed_ > 0) {
-		start(cruiseSpeed_, 0);
-	}
 }
 
 template<class NodeValue,
 	class LerpFunction,
 	class DistanceFunction>
-void PathLerper<NodeValue, LerpFunction, DistanceFunction>::appendNode(NodeValue n) {
-	path_.push_back(PathNode<NodeValue> {
-		PathNodeType::vertex,
-		n,
-		0
-	});
+void PathLerper<NodeValue, LerpFunction, DistanceFunction>::appendNode(PathNode<NodeValue> n) {
+	path_.push_back(n);
 }
 
 template<class NodeValue,
@@ -132,6 +128,7 @@ template<class NodeValue,
 	class LerpFunction,
 	class DistanceFunction>
 void PathLerper<NodeValue, LerpFunction, DistanceFunction>::start(float speed, unsigned initial) {
+	isStarted_ = true;
 	cruiseSpeed_ = speed;
 	pathIndex_ = initial;
 	origin_ = path_[pathIndex_].value;
@@ -145,14 +142,25 @@ void PathLerper<NodeValue, LerpFunction, DistanceFunction>::start(float speed, u
 template<class NodeValue,
 	class LerpFunction,
 	class DistanceFunction>
+void PathLerper<NodeValue, LerpFunction, DistanceFunction>::reset() {
+	isStarted_ = false;
+	pathIndex_ = -1;
+	path_.clear();
+	cruiseSpeed_ = 0;
+	jumpNext_ = false;
+}
+
+template<class NodeValue,
+	class LerpFunction,
+	class DistanceFunction>
 void PathLerper<NodeValue, LerpFunction, DistanceFunction>::update(float dt) {
-	if (path_.empty())
+	if (path_.empty() || !isStarted_)
 		return;
 
 	if (lerpFactor_ >= 1) {
 		// reached the next vertex
 		if (pathIndex_ > 0 && (unsigned)pathIndex_ == path_.size()) {
-			path_.clear(); // finished the path
+			isStarted_ = false;
 			return;
 		}
 
