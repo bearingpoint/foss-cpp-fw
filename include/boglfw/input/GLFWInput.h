@@ -22,8 +22,11 @@ class GLFWInput {
 public:
 	static void initialize(GLFWwindow* window);
 
-	// returns true if application should continue, and false if it should shut down (user closed window)
+	// Returns true if application should continue, and false if it should shut down (user closed window)
 	static bool checkInput();
+	// Resets the input event queue by discarding any pending events.
+	// This is usually done before the first frame, to ensure you don't treat any events that occured during window initialization.
+	static void resetInputQueue();
 
 	static Event<void(InputEvent&)> onInputEvent;
 

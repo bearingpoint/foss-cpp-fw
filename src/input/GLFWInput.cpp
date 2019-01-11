@@ -40,6 +40,11 @@ bool GLFWInput::checkInput() {
 	return glfwWindowShouldClose(window) == 0;
 }
 
+void GLFWInput::resetInputQueue() {
+	glfwPollEvents();
+	eventQueue.clear();
+}
+
 InputEvent::MOUSE_BUTTON GLFWInput::translateMouseButton(int glfwBtn) {
 	switch (glfwBtn) {
 		case GLFW_MOUSE_BUTTON_LEFT:
