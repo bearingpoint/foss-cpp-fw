@@ -230,8 +230,6 @@ bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowT
 		cerr << "FAILED glfwInit" << endl;
 		return false;
 	}
-	if (multiSampleCount == 0)
-		multiSampleCount = 1;
 
 	glfwWindowHint(GLFW_SAMPLES, multiSampleCount);
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);

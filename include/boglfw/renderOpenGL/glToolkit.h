@@ -47,10 +47,10 @@ struct SSDescriptor {
 
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
-// if multisampleCount is greater than 1, multi-sampling will be enabled
+// if multisampleCount is non-zero, multi-sampling antialiasing (MSAA) will be enabled
 bool gltInitGLFW(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled", unsigned multiSampleCount=0);
 
-// initializes openGL and create a supersampled framebuffer
+// initializes openGL and create a supersampled framebuffer (SSAA)
 bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor desc, const char windowTitle[]="Untitled");
 
 GLFWwindow* gltGetWindow();
@@ -60,7 +60,7 @@ GLFWwindow* gltGetWindow();
 // initialize openGL on an SDL window
 bool gltInitSDL(SDL_Window* window);
 
-// initialize openGL on an SDL window and create a supersampled framebuffer
+// initialize openGL on an SDL window and create a supersampled framebuffer (SSAA)
 bool gltInitSDLSupersampled(SDL_Window* window, SSDescriptor desc);
 #endif
 
