@@ -20,9 +20,8 @@ void draw(Callable *fn, Viewport* vp) {
 }
 
 // special handling for plain function pointers:
-template<class FuncPointer, FuncPointer *fDummy=nullptr>
-decltype(fDummy((Viewport*)nullptr))
-draw(FuncPointer *fn, Viewport* vp) {
+template<class FnType=void(*)(Viewport*)>
+void draw(FnType fn, Viewport* vp) {
 	(*fn)(vp);
 }
 
