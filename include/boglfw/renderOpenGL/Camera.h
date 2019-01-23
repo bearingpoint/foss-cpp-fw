@@ -34,6 +34,7 @@ public:
 	void lookAt(glm::vec3 where);
 	void transformView(glm::mat4 rTrans);
 	void setViewTransform(glm::mat4 aTrans);
+	void setZPlanes(float zNear, float zFar);
 	float FOV() const { return fov_; }
 	void setFOV(float fov);
 	void setOrtho(glm::vec2 size); // sets ortho projection size {width, height} in world units
@@ -50,6 +51,8 @@ protected:
 	Viewport* pViewport_;
 	float fov_;
 	float zoomLevel_;
+	float zNear_ = 0.5f;
+	float zFar_ = 100.f;
 	glm::mat4 matView_;
 	glm::mat4 matProj_;
 	glm::vec3 position_;

@@ -67,15 +67,19 @@ void Camera::updateView() {
 	matView_ = glm::lookAtLH(position_, position_ + direction_, {0, 1, 0});
 }
 
+void Camera::setZPlanes(float zNear, float zFar) {
+	zNear_ = zNear;
+	zFar_ = zFar;
+	updateProj();
+}
+
 void Camera::updateProj() {
-	float zNear = 0.5f;
-	float zFar = 50.f;
 	if (fov_ == 0) {
 		// set ortho
-		matProj_ = glm::orthoLH(-orthoSize_.x * 0.5f, orthoSize_.x * 0.5f, -orthoSize_.y * 0.5f, orthoSize_.y * 0.5f, zNear, zFar);
+		matProj_ = glm::orthoLH(-orthoSize_.x * 0.5f, orthoSize_.x * 0.5f, -orthoSize_.y * 0.5f, orthoSize_.y * 0.5f, zNear_, zFar_);
 	} else {
 		// set perspective
-		matProj_ = glm::perspectiveFovLH(fov_, (float)pViewport_->width(), (float)pViewport_->height(), zNear, zFar);
+		matProj_ = glm::perspectiveFovLH(fov_, (float)pViewport_->width(), (float)pViewport_->height(), zNear_, zFar_);
 	}
 }
 
