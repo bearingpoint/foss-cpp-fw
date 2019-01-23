@@ -1,5 +1,5 @@
 #include <boglfw/renderOpenGL/glToolkit.h>
-#include <boglfw/renderOpenGL/shader.hpp>
+#include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/utils/log.h>
 
 #ifdef WITH_GLFW

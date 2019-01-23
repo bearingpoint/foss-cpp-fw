@@ -9,7 +9,7 @@
 #include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/TextureLoader.h>
-#include <boglfw/renderOpenGL/shader.hpp>
+#include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/utils/assert.h>
 

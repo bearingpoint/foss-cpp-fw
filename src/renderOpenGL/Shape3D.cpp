@@ -9,7 +9,7 @@
 #include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Camera.h>
-#include <boglfw/renderOpenGL/shader.hpp>
+#include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/log.h>
 
