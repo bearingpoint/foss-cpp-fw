@@ -118,8 +118,6 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void MeshRenderer::startBatch() {
