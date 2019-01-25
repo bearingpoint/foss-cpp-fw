@@ -12,7 +12,7 @@
 
 class TextureLoader {
 public:
-	static unsigned loadFromPNG(const std::string filename, int* outWidth, int* outHeight);
+	static unsigned loadFromPNG(const std::string filename, int* outWidth=nullptr, int* outHeight=nullptr);
 };
 
 #endif /* RENDEROPENGL_TEXTURELOADER_H_ */
