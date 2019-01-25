@@ -250,7 +250,7 @@ bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowT
 		return false;
 		
 	// disable vsync, use 1 to enable it
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 
 	windowW = windowWidth;
 	windowH = windowHeight;
