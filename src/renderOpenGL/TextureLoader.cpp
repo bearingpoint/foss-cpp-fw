@@ -20,12 +20,16 @@ unsigned TextureLoader::loadFromPNG(const string filename, int * width, int * he
 {
     // This function was originally written by David Grayson for
     // https://github.com/DavidEGrayson/ahrs-visualizer
+	
+	LOGPREFIX("TextureLoader");
+	LOG("Loading texture from " << filename << " ...");
 
     png_byte header[8];
 
     FILE *fp = fopen(filename.c_str(), "rb");
     if (fp == 0)
     {
+		ERROR("Failed to open file.");
         perror(filename.c_str());
         return 0;
     }
@@ -131,7 +135,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, int * width, int * he
     png_byte * image_data = (png_byte *)malloc(rowbytes * temp_height * sizeof(png_byte)+15);
     if (image_data == NULL)
     {
-        fprintf(stderr, "error: could not allocate memory for PNG image data\n");
+        ERROR("Failed to allocate memory for PNG image data");
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         fclose(fp);
         return 0;
@@ -141,7 +145,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, int * width, int * he
     png_byte ** row_pointers = (png_byte **)malloc(temp_height * sizeof(png_byte *));
     if (row_pointers == NULL)
     {
-        fprintf(stderr, "error: could not allocate memory for PNG row pointers\n");
+        ERROR("Failed to allocate memory for PNG row pointers");
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         free(image_data);
         fclose(fp);
@@ -170,5 +174,6 @@ unsigned TextureLoader::loadFromPNG(const string filename, int * width, int * he
     free(image_data);
     free(row_pointers);
     fclose(fp);
+	LOGNP(" OK.\n");
     return texture;
 }
