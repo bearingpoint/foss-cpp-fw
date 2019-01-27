@@ -66,7 +66,7 @@ void Renderer::deleteViewport(std::string const& name) {
 
 void Renderer::render() {
 	SSDescriptor ssDesc;
-	bool ssEnabled = getSuperSampleInfo(ssDesc);
+	bool ssEnabled = gltGetSuperSampleInfo(ssDesc);
 	// when super sample is enabled we must adjust the viewports accordingly
 	unsigned vpfx = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
 	unsigned vpfy = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
