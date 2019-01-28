@@ -44,7 +44,7 @@ GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols,
 	renderer->registerRenderable(this);
 	cellRatio_ = (float)rows/cols;
 	// Initialize texture
-	textureID_ = TextureLoader::loadFromPNG(texturePath, nullptr, nullptr);
+	textureID_ = TextureLoader::loadFromPNG(texturePath, true);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID_);
 	if (!disableMipMaps_) {

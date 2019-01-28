@@ -14,9 +14,10 @@
 #include <stdio.h>
 
 #include <iostream>
+#include <cmath>
 using namespace std;
 
-unsigned TextureLoader::loadFromPNG(const string filename, int * width, int * height)
+unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues, int * width, int * height)
 {
     // This function was originally written by David Grayson for
     // https://github.com/DavidEGrayson/ahrs-visualizer
@@ -160,6 +161,20 @@ unsigned TextureLoader::loadFromPNG(const string filename, int * width, int * he
 
     // read the png into image_data through row_pointers
     png_read_image(png_ptr, row_pointers);
+	
+	if (linearizeValues) {
+		unsigned bpp = format == GL_RGBA ? 4 : 3; // bytes per pixel
+		float gamma = 2.2f;
+		// apply gamma correction
+		for (unsigned i=0; i<temp_height; i++)
+			for (unsigned j=0; j<temp_width; j++) {
+				row_pointers[i][j*bpp+0] = (png_byte)(255 * pow(row_pointers[i][j*bpp+0] / 255.f, gamma));
+				row_pointers[i][j*bpp+1] = (png_byte)(255 * pow(row_pointers[i][j*bpp+1] / 255.f, gamma));
+				row_pointers[i][j*bpp+2] = (png_byte)(255 * pow(row_pointers[i][j*bpp+2] / 255.f, gamma));
+				if (bpp == 4)
+					row_pointers[i][j*bpp+3] = (png_byte)(255 * pow(row_pointers[i][j*bpp+3] / 255.f, gamma));
+			}
+	}
 
     // Generate the OpenGL texture object
     unsigned texture;

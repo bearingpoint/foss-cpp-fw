@@ -12,7 +12,9 @@
 
 class TextureLoader {
 public:
-	static unsigned loadFromPNG(const std::string filename, int* outWidth=nullptr, int* outHeight=nullptr);
+	// [linearizeValues] - if true, it will apply gamma correction to bring the image from sRGB space into linear space
+	// [outWidth] and [outHeight] will be filled with the texture size, if provided.
+	static unsigned loadFromPNG(const std::string filename, bool linearizeValues, int* outWidth=nullptr, int* outHeight=nullptr);
 };
 
 #endif /* RENDEROPENGL_TEXTURELOADER_H_ */
