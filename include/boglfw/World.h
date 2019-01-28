@@ -22,6 +22,7 @@
 #include <memory>
 #include <atomic>
 #include <map>
+#include <typeindex>
 
 #ifdef WITH_BOX2D
 class b2World;
@@ -54,6 +55,17 @@ public:
 
 	static World& getInstance();
 	virtual ~World();
+	
+	// sets a user defined global object of an arbitrary type that can be accessed by any other object that knows about World
+	template<class C>
+	static void setGlobal(C* obj) { getInstance().userGlobals_[typeid(C)] = (void*)obj; }
+	
+	// returns a user defined global object of the given type
+	template<class C>
+	static C* getGlobal() { 
+		auto it = getInstance().userGlobals_.find(typeid(C)); 
+		return it == getInstance().userGlobals_.end() ? nullptr : (C*)(it->second); 
+	}
 
 	// delete all entities and reset state.
 	void reset();
@@ -132,6 +144,8 @@ protected:
 	std::atomic<bool> executingDeferredActions_ { false };
 
 	std::map<std::string, Event<void(int param)>> mapUserEvents_;
+	
+	std::map<std::type_index, void*> userGlobals_;
 
 	void destroyPending();
 	void takeOverPending();
