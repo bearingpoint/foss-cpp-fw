@@ -414,7 +414,7 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook) {
 	if (postProcessHooks[0]) {
 		if (!pp_framebuffer[0]) {
 			// post-processing enabled, need to create additional framebuffer
-			if (!createFrameBuffer(ss_bufferW, ss_bufferH, GL_RGB8, pp_framebuffer[0], pp_texture[0], nullptr)) {
+			if (!createFrameBuffer(ss_bufferW, ss_bufferH, GL_RGB16, pp_framebuffer[0], pp_texture[0], nullptr)) {
 				ERROR("Failed to create additional framebuffer for pre-downsampling post-processing; disabling post-processing at this step.");
 				postProcessHooks[0] = nullptr;
 			}
@@ -428,7 +428,7 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook) {
 		if (!pp_framebuffer[1]) {
 			// post-processing enabled, need to create additional framebuffer
 			unsigned *pDepthBuffer = ss_enabled ? nullptr : &pp1_depthBuffer;
-			if (!createFrameBuffer(windowW, windowH, GL_RGB8, pp_framebuffer[1], pp_texture[1], pDepthBuffer)) {
+			if (!createFrameBuffer(windowW, windowH, GL_RGB16, pp_framebuffer[1], pp_texture[1], pDepthBuffer)) {
 				ERROR("Failed to create additional framebuffer for post-downsampling post-processing; disabling post-processing at this step.");
 				postProcessHooks[1] = nullptr;
 			}
