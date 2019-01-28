@@ -314,22 +314,26 @@ void gltEnd() {
 	if (ss_enabled) {
 		if (postProcessHooks[0]) {
 			// pre-downsampling post processing step
+			glDisable(GL_DEPTH_TEST);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffer[0]);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, ss_texture);
 			glViewport(0, 0, ss_bufferW, ss_bufferH);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			postProcessHooks[0]();
+			glEnable(GL_DEPTH_TEST);
 		}
 		ssFBToScreen(); // render the off-screen framebuffer to the display backbuffer
 	}
 	if (postProcessHooks[1]) {
 		// post-downsampling post-processing step into the default screen framebuffer
+		glDisable(GL_DEPTH_TEST);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, pp_texture[1]);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		postProcessHooks[1]();
+		glEnable(GL_DEPTH_TEST);
 	}
 #ifdef WITH_SDL
 	if (boundToSDL)
