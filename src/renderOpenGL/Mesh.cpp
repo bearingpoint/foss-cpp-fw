@@ -183,14 +183,14 @@ void Mesh::createGizmo(float axisLength) {
 	float axl = axisLength;
 	s_Vertex verts[] {
 		// X axis
-		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {1.0f, 0.5f, 0.5f, 1.f} },
-		{ {axl, 0.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {1.0f, 0.f, 0.f, 1.f} },
+		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {1.0f, 0.8f, 0.8f, 1.f} },
+		{ {axl, 0.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {0.5f, 0.f, 0.f, 1.f} },
 		// Y axis
-		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.5f, 1.f, 05.f, 1.f} },
-		{ {0.f, axl, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {0.f, 1.0f, 0.f, 1.f} },
+		{ {0.f, 0.f, 0.f}, {0.f, 0.f, -1.f}, {0.f, 0.f}, {0.8f, 1.f, 0.8f, 1.f} },
+		{ {0.f, axl, 0.f}, {0.f, 0.f, -1.f}, {1.f, 0.f}, {0.f, 0.5f, 0.f, 1.f} },
 		// Z axis
-		{ {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f}, {0.f, 0.f}, {0.5f, 0.5f, 1.f, 1.f} },
-		{ {0.f, 0.f, axl}, {0.f, 1.f, 0.f}, {1.f, 0.f}, {0.f, 0.f, 1.0f, 1.f} },
+		{ {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f}, {0.f, 0.f}, {0.8f, 0.8f, 1.f, 1.f} },
+		{ {0.f, 0.f, axl}, {0.f, 1.f, 0.f}, {1.f, 0.f}, {0.f, 0.f, 0.5f, 1.f} },
 	};
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
