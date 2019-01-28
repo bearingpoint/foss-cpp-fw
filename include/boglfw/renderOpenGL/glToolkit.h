@@ -55,7 +55,8 @@ enum class PostProcessStep {
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
 // if multisampleCount is non-zero, multi-sampling antialiasing (MSAA) will be enabled
-bool gltInitGLFW(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled", unsigned multiSampleCount=0);
+bool gltInitGLFW(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled",
+					unsigned multiSampleCount=0, bool createDepthStencilBuffer=true);
 
 // initializes openGL and create a supersampled framebuffer (SSAA)
 bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor desc, const char windowTitle[]="Untitled");
@@ -90,10 +91,15 @@ bool gltGetSuperSampleInfo(SSDescriptor& outDesc);
 // Usually it's preferable to do postprocessing only after downsampling since it will be faster (fewer pixels), and
 // it consumes less memory (no additional full-supersampled framebuffer needs to be created).
 //
+// [multisamples] specifies the number of multisamples (or zero to disable) to use for the off-screen framebuffer that
+// the scene will be rendered onto. This is only used for post-downsampling step when supersampling is disabled, otherwise
+// it is ignored. The texture that will be fed into the postprocessing callback is not multisampled, the multisamples are
+// resolved prior to the call.
+//
 // The framebuffer texture to be used as input is bound to GL_TEXTURE0 GL_TEXTURE_2D target before the callback is invoked.
 // The viewport is also correctly set to cover the entire target framebuffer prior to calling the callback.
 // The user is responsible for all other aspects of the post-process rendering - screen quad, shader etc.
-void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook);
+void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, unsigned multisamples);
 
 // checks if an OpenGL error has occured and prints it on stderr if so;
 // returns true if error, false if no error
