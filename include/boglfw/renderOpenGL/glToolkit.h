@@ -5,6 +5,8 @@
 #include <GL/glew.h>
 #include <glm/vec4.hpp>
 
+#include <functional>
+
 #if defined(WITH_SDL)
 #elif defined(WITH_GLFW)
 #else
@@ -45,6 +47,11 @@ struct SSDescriptor {
 	}
 };
 
+enum class PostProcessStep {
+	PRE_DOWNSAMPLING,
+	POST_DOWNSAMPLING
+};
+
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
 // if multisampleCount is non-zero, multi-sampling antialiasing (MSAA) will be enabled
@@ -72,7 +79,21 @@ void gltEnd();
 
 
 // returns true if SS is enabled and fills the provided buffer with data; returns false otherwise
-bool getSuperSampleInfo(SSDescriptor& outDesc);
+bool gltGetSuperSampleInfo(SSDescriptor& outDesc);
+
+// Allows the caller to set up to two post-processing hooks, one that is executed before the downsampling step
+// (on the raw super-sampled framebuffer - if supersampling is enabled),
+// and the second after downsampling, on the screen-sized framebuffer.
+// If supersampling is turned off, the pre-downsample hook will have no effect.
+// In the pre-downsampling step, the draw framebuffer will have the same size as the supersampled framebuffer.
+// In the post-downsampling step, the draw framebuffer has the same size as the screen framebuffer.
+// Usually it's preferable to do postprocessing only after downsampling since it will be faster (fewer pixels), and
+// it consumes less memory (no additional full-supersampled framebuffer needs to be created).
+//
+// The framebuffer texture to be used as input is bound to GL_TEXTURE0 GL_TEXTURE_2D target before the callback is invoked.
+// The viewport is also correctly set to cover the entire target framebuffer prior to calling the callback.
+// The user is responsible for all other aspects of the post-process rendering - screen quad, shader etc.
+void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook);
 
 // checks if an OpenGL error has occured and prints it on stderr if so;
 // returns true if error, false if no error
