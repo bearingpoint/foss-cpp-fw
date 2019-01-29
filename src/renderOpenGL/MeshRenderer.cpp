@@ -108,12 +108,18 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 			default:
 				assert(false && "Unknown mesh draw mode!");
 		}
+		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME || m.pMesh_->mode_ == Mesh::RENDER_MODE_LINES) {
+			glLineWidth(2.f);
+		}
 		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 		glDrawElements(drawMode, m.pMesh_->getElementsCount(), GL_UNSIGNED_SHORT, 0);
 		checkGLError("mesh draw");
 		glBindVertexArray(0);
+		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME || m.pMesh_->mode_ == Mesh::RENDER_MODE_LINES) {
+			glLineWidth(1.f);
+		}
 		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
