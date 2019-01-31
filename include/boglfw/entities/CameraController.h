@@ -38,11 +38,13 @@ public:
 	void addNextCheckpoint(glm::vec3 p, glm::vec3 lookAtTarget, float speed);
 	// stops camera motion;
 	void stop();
-	
+
 	// attaches the controller to the given entity; camera will follow this entity precisely, both in position and orientation.
 	// the camera is attached at <offset> from the entity's origin; <offset> is expressed in entity's local space.
 	// To detach the controller from the entity, call this again with nullptr; the camera will remain in its last position
 	void attachToEntity(std::weak_ptr<Entity> ent, glm::vec3 offset);
+
+	std::weak_ptr<Entity> getAttachedEntity() const { return attachedEntity_; }
 
 	struct CameraNode {
 		glm::vec3 position;

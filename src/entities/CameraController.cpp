@@ -22,8 +22,9 @@ void CameraController::update(float dt) {
 		auto tr = attachedSP->getTransform();
 		glm::vec3 pos = attachOffset_ + m4Translation(tr);
 		camera_->moveTo(pos);
-		glm::vec3 dir = vec4xyz(tr[2]);
-		camera_->lookAt(pos + dir);
+		glm::vec3 dir = vec4xyz(m4row(tr, 2));
+		glm::vec3 up = vec4xyz(m4row(tr, 1));
+		camera_->lookAt(pos + dir, up);
 	} else {
 		attachedSP.reset();
 		pathLerper_.update(dt);

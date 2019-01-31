@@ -58,13 +58,14 @@ void Camera::moveTo(glm::vec3 where) {
 	updateView();
 }
 
-void Camera::lookAt(glm::vec3 where) {
+void Camera::lookAt(glm::vec3 where, glm::vec3 up) {
 	direction_ = glm::normalize(where - position_);
+	up_ = up;
 	updateView();
 }
 
 void Camera::updateView() {
-	matView_ = glm::lookAtLH(position_, position_ + direction_, {0, 1, 0});
+	matView_ = glm::lookAtLH(position_, position_ + direction_, up_);
 }
 
 void Camera::setZPlanes(float zNear, float zFar) {
@@ -82,4 +83,3 @@ void Camera::updateProj() {
 		matProj_ = glm::perspectiveFovLH(fov_, (float)pViewport_->width(), (float)pViewport_->height(), zNear_, zFar_);
 	}
 }
-

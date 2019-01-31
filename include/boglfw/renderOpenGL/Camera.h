@@ -31,7 +31,7 @@ public:
 	glm::vec3 direction() const { return direction_; }
 	void move(glm::vec3 delta);
 	void moveTo(glm::vec3 where);
-	void lookAt(glm::vec3 where);
+	void lookAt(glm::vec3 where, glm::vec3 up = glm::vec3{0.f, 1.f, 0.f});
 	void transformView(glm::mat4 rTrans);
 	void setViewTransform(glm::mat4 aTrans);
 	void setZPlanes(float zNear, float zFar);
@@ -55,8 +55,9 @@ protected:
 	float zFar_ = 100.f;
 	glm::mat4 matView_;
 	glm::mat4 matProj_;
-	glm::vec3 position_;
-	glm::vec3 direction_;
+	glm::vec3 position_ {0.f, 0.f, -1.f};
+	glm::vec3 direction_ {0.f, 0.f, 1.f};
+	glm::vec3 up_ {0.f, 1.f, 0.f};
 	glm::vec2 orthoSize_; // in world units
 
 	void updateView();

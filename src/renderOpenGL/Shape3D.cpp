@@ -71,12 +71,12 @@ void Shape3D::unload() {
 
 void Shape3D::render(Viewport* vp, unsigned batchId) {
 	assertDbg(batchId < batches_.size());
-	
+
 	unsigned nIndices = batchId == batches_.size() - 1 ? indices_.size() - batches_.back()
 		: batches_[batchId+1] - batches_[batchId];
 	if (!nIndices)
 		return;
-	
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glBlendEquation(GL_BLEND_EQUATION_ALPHA);
@@ -84,9 +84,9 @@ void Shape3D::render(Viewport* vp, unsigned batchId) {
 	glUseProgram(lineShaderProgram_);
 	glBindVertexArray(VAO_);
 	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(vp->camera()->matProjView()));
-	
-	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_SHORT, (void*)(sizeof(indices_[0]) * batches_[batchId]));
-	
+
+	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_INT, (void*)(sizeof(indices_[0]) * batches_[batchId]));
+
 	glDisable(GL_BLEND);
 }
 

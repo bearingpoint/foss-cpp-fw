@@ -1,15 +1,15 @@
 #pragma once
 
 /*
- * 4x4 Matrices are row-major and row-axis-aligned
- * (each row of the matrix represents the local space's X/Y/Z/W axis)
- * Translation is encoded as the last element of each of the first 3 rows
- * 
- * Thus, for transformation we use
- * 
- * MATRIX * Vector 
- * 
- * multiplication order, the right-most matrix in the composition being the first to be applied to the vector
+ * GLM 4x4 Matrices are column-major and column-axis-aligned
+ * (each column of the matrix represents the local space's X/Y/Z/W axis)
+ * Translation is encoded as the last element of each of the first 3 columns
+ *
+ * When passing the matrix to OpenGL it will interpret it as colum major by default (when transpose=GL_FALSE)
+ * For this reason, both in C++ and GLSL the correct multiplication order is:
+ *
+ * LAST_MATRIX * ... * FIRST_MATRIX * VEC4
+ *
  */
 
 #include "constants.h"
@@ -167,7 +167,17 @@ inline float vec2len(glm::vec2 const& v) {
 
 // extract translation from a transformation matrix
 inline glm::vec3 m4Translation(glm::mat4 const& m4) {
-	return {m4[0][3], m4[1][3], m4[2][3]};
+	return {m4[3][0], m4[3][1], m4[3][2]};
+}
+
+// extract a column from a matrix
+inline glm::vec4 m4col(glm::mat4 const& m, int c) {
+	return {m[0][c], m[1][c], m[2][c], m[3][c]};
+}
+
+// extract a row from a matrix
+inline glm::vec4 m4row(glm::mat4 const& m, int r) {
+	return {m[r][0], m[r][1], m[r][2], m[r][3]};
 }
 
 // builds an object transformation matrix from 3 perpendicular axes and a translation value.

@@ -100,6 +100,11 @@ void World::setBounds(float left, float right, float top, float bottom, float fr
 }
 
 void World::reset() {
+#ifdef DEBUG
+	assertOnMainThread();
+#endif
+	deferredActions_.clear();
+	pendingActions_.clear();
 	for (auto &e : entities_) {
 		e->markedForDeletion_= true;
 		e.reset();

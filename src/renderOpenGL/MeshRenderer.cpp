@@ -64,12 +64,12 @@ void MeshRenderer::renderMesh(Mesh& mesh, glm::mat4 worldTransform) {
 void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 	LOGPREFIX("MeshRenderer::render");
 	assertDbg(batchId < batches_.size());
-	
+
 	unsigned nMeshes = batchId == batches_.size() - 1 ? renderQueue_.size() - batches_.back()
 		: batches_[batchId+1] - batches_[batchId];
 	if (!nMeshes)
 		return;
-	
+
 	glUseProgram(meshShaderProgram_);
 
 	auto matPV = vp->camera()->matProjView();
