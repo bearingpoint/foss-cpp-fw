@@ -5,6 +5,8 @@
  *      Author: bog
  */
 
+#if (0)
+
 #include <boglfw/SpatialCache.h>
 #include <boglfw/entities/Entity.h>
 #include <boglfw/math/aabb.h>
@@ -111,3 +113,6 @@ void SpatialCache::getCachedEntities(std::vector<Entity*> &out, glm::vec2 const&
 			cells_[i][j].locked_.store(false, std::memory_order_release);
 		}
 }
+
+
+#endif // if (0)

@@ -9,9 +9,10 @@
 #define ENTITIES_ENTITY_H_
 
 #include <boglfw/utils/bitFlags.h>
+#include <boglfw/math/transform.h>
 
 #include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <atomic>
 
@@ -42,18 +43,17 @@ public:
 	virtual int getSerializationType() const;
 	virtual unsigned getEntityType() const = 0;
 
-	// specify requirePrecise to force a precise recomputation of the bounding box (performance penalty)
-	// leave this value false in order to allow faster retrieval via caching or slightly less accurate optimizations
-	virtual aabb getAABB(bool requirePrecise=false) const = 0;
-	
-	// for entities that define an object-to-world transformation matrix, this method gets the matrix
-	virtual glm::mat4 getTransform() const { return glm::mat4{1.f}; }
+	// return the world transormation of the entity
+	virtual Transform& getTransform() { return transform_; }
+	virtual const Transform& getTransform() const { return transform_; }
 
 	void destroy();
 	bool isZombie() const { return markedForDeletion_.load(std::memory_order_acquire); }
 
 protected:
 	Entity() = default;
+
+	Transform transform_;
 
 private:
 	std::atomic<bool> markedForDeletion_ {false};

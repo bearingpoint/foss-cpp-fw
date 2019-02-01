@@ -19,11 +19,11 @@ CameraController::~CameraController() {
 void CameraController::update(float dt) {
 	auto attachedSP = attachedEntity_.lock();
 	if (attachedSP) {
-		auto tr = attachedSP->getTransform();
-		glm::vec3 pos = attachOffset_ + m4Translation(tr);
+		Transform const& tr = attachedSP->getTransform();
+		glm::vec3 pos = attachOffset_ + tr.position();
 		camera_->moveTo(pos);
-		glm::vec3 dir = vec4xyz(m4row(tr, 2));
-		glm::vec3 up = vec4xyz(m4row(tr, 1));
+		glm::vec3 dir = tr.axisZ();
+		glm::vec3 up = tr.axisY();
 		camera_->lookAt(pos + dir, up);
 	} else {
 		attachedSP.reset();

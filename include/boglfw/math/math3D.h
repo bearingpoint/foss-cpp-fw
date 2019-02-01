@@ -172,12 +172,12 @@ inline glm::vec3 m4Translation(glm::mat4 const& m4) {
 
 // extract a column from a matrix
 inline glm::vec4 m4col(glm::mat4 const& m, int c) {
-	return {m[0][c], m[1][c], m[2][c], m[3][c]};
+	return {m[c][0], m[c][1], m[c][2], m[c][3]};
 }
 
 // extract a row from a matrix
 inline glm::vec4 m4row(glm::mat4 const& m, int r) {
-	return {m[r][0], m[r][1], m[r][2], m[r][3]};
+	return {m[0][r], m[1][r], m[2][r], m[3][r]};
 }
 
 // builds an object transformation matrix from 3 perpendicular axes and a translation value.

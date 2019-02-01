@@ -28,7 +28,6 @@ public:
 	unsigned getEntityType() const override { return EntityTypes::CAMERA_CTRL; }
 	// these flags MUST NOT change during the life time of the object, or else UNDEFINED BEHAVIOUR
 	FunctionalityFlags getFunctionalityFlags() const override { return FunctionalityFlags::UPDATABLE; }
-	virtual aabb getAABB(bool requirePrecise=false) const override { return aabb(); }
 
 	void update(float dt) override;
 

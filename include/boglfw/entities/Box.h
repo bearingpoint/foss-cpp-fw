@@ -26,15 +26,11 @@ public:
 
 	void update(float dt) override;
 	void draw(Viewport* vp) override;
-	
-	virtual aabb getAABB(bool requirePrecise=false) const override;
 
 	//physics::DynamicBody* body() { return &body_; }
 
 private:
 	Mesh mesh_;
-	glm::mat4 transform_ { 1.f };
-	aabb modelAABB_;
 	//physics::DynamicBody body_;
 };
 

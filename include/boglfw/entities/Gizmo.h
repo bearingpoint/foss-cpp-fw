@@ -15,12 +15,10 @@ public:
 	virtual ~Gizmo() override;
 
 	Gizmo(glm::mat4 transform, float axisLength = 1.f);
-	
+
 	virtual void draw(Viewport* vp) override;
-	virtual aabb getAABB(bool requirePrecise=false) const override;
-	
+
 private:
-	glm::mat4 transform_;
 	float axisLength_;
 	Mesh mesh_;
 };
