@@ -10,7 +10,7 @@ void Transform::setPosition(glm::vec3 pos) {
 
 // set a new world orientation for the transform
 void Transform::setOrientation(glm::quat orient) {
-	orient_ = orient;
+	orient_ = glm::normalize(orient);
 	matDirty_ = true;
 }
 
@@ -29,13 +29,14 @@ void Transform::moveLocal(glm::vec3 const& delta) {
 
 // rotate the transform by a quaternion expressed in *WORLD* coordinates
 void Transform::rotateWorld(glm::quat const& rot) {
-	orient_ *= rot;
+	orient_ = glm::normalize(orient_ * rot);
 	matDirty_ = true;
 }
 
 // rotate the transform by a quaternion expressed in *LOCAL* coordinates
 void Transform::rotateLocal(glm::quat const& rot) {
-
+	orient_ = glm::normalize(rot * orient_);
+	matDirty_ = true;
 }
 
 glm::vec3 Transform::axisX() const {
