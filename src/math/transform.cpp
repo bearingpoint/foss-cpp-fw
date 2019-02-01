@@ -44,11 +44,13 @@ glm::vec3 Transform::axisX() const {
 }
 
 glm::vec3 Transform::axisY() const {
-
+	glm::vec3 y{0.f, 1.f, 0.f};
+	return orient_ * y;
 }
 
 glm::vec3 Transform::axisZ() const {
-
+	glm::vec3 z{0.f, 0.f, 1.f};
+	return orient_ * z;
 }
 
 const glm::mat4& Transform::glMatrix() const {
