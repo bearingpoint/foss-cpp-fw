@@ -56,10 +56,10 @@ bool angleSpanOverlap(float angle1, float span1, float angle2, float span2, bool
 
 glm::mat4 buildMatrix(glm::vec3 right, glm::vec3 up, glm::vec3 front, glm::vec3 translation) {
 	return glm::mat4 {
-		right.x,	up.x,		front.x,	0.f,
-		right.y,	up.y,		front.y,	0.f,
-		right.z,	up.z,		front.z,	0.f,
-		translation.x, translation.y, translation.z, 1.f
+		right.x,	right.y,	right.z,	translation.x,
+		up.x,		up.y,		up.z,		translation.y,
+		front.x,	front.y,	front.z,	translation.z,
+		0.f, 		0.f, 		0.f, 		1.f
 	};
 }
 
