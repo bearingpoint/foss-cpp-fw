@@ -34,8 +34,6 @@ public:
 
 	// these flags MUST NOT change during the life time of the object, or else UNDEFINED BEHAVIOUR
 	virtual FunctionalityFlags getFunctionalityFlags() const { return FunctionalityFlags::NONE; }
-	//virtual glm::vec3 getWorldTransform() const = 0;
-	//glm::vec2 getPosition() const;
 
 	virtual void update(float dt) {}
 	virtual void draw(Viewport* vp) {}
