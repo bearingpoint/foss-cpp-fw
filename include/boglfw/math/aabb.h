@@ -54,7 +54,7 @@ struct AABB {
 	AABB(const AABB& x) = default;
 	AABB& operator = (AABB const& x) = default;
 
-	bool isEmpty() {
+	bool isEmpty() const {
 		return vMin.x > vMax.x || vMin.y > vMax.y || vMin.z > vMax.z;
 	}
 
