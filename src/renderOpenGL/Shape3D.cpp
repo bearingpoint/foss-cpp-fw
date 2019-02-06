@@ -238,6 +238,35 @@ void Shape3D::drawCircleXOY(glm::vec2 pos, float radius, int nSides, glm::vec4 r
 	delete [] v;
 }
 
+void Shape3D::drawAABB(AABB const& aabb, glm::vec3 rgb) {
+	drawAABB(aabb, glm::vec4(rgb, 1.f));
+}
+
+void Shape3D::drawAABB(AABB const& aabb, glm::vec4 rgba) {
+	glm::vec3 verts[8] {
+		aabb.vMin,
+		{aabb.vMin.x, aabb.vMin.y, aabb.vMax.z},
+		{aabb.vMin.x, aabb.vMax.y, aabb.vMax.z},
+		{aabb.vMin.x, aabb.vMax.y, aabb.vMin.z},
+		aabb.vMax,
+		{aabb.vMax.x, aabb.vMin.y, aabb.vMin.z},
+		{aabb.vMax.x, aabb.vMin.y, aabb.vMax.z},
+		{aabb.vMax.x, aabb.vMax.y, aabb.vMin.z},
+	};
+	drawLine(verts[0], verts[1], rgba);
+	drawLine(verts[1], verts[2], rgba);
+	drawLine(verts[2], verts[3], rgba);
+	drawLine(verts[3], verts[0], rgba);
+	drawLine(verts[4], verts[5], rgba);
+	drawLine(verts[5], verts[6], rgba);
+	drawLine(verts[6], verts[7], rgba);
+	drawLine(verts[7], verts[4], rgba);
+	drawLine(verts[0], verts[4], rgba);
+	drawLine(verts[1], verts[5], rgba);
+	drawLine(verts[2], verts[7], rgba);
+	drawLine(verts[3], verts[8], rgba);
+}
+
 void Shape3D::setTransform(glm::mat4 mat) {
 	transform_ = mat;
 	transformActive_ = true;

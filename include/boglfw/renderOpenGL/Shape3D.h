@@ -8,7 +8,8 @@
 #ifndef RENDEROPENGL_SHAPE3D_H_
 #define RENDEROPENGL_SHAPE3D_H_
 
-#include "IRenderable.h"
+#include <boglfw/renderOpenGL/IRenderable.h>
+#include <boglfw/math/aabb.h>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -51,6 +52,9 @@ public:
 	// draw a circle
 	void drawCircleXOY(glm::vec2 pos, float radius, int nSides, glm::vec3 rgb);
 	void drawCircleXOY(glm::vec2 pos, float radius, int nSides, glm::vec4 rgba);
+
+	void drawAABB(AABB const& aabb, glm::vec3 rgb);
+	void drawAABB(AABB const& aabb, glm::vec4 rgba);
 
 	// sets a transform matrix that will affect all future drawXXX calls
 	void setTransform(glm::mat4 mat);
