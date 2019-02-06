@@ -18,7 +18,7 @@
 
 class Viewport;
 class BinaryStream;
-struct aabb;
+struct AABB;
 
 class Entity {
 public:

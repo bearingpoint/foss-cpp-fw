@@ -4,7 +4,7 @@
  *  Created on: Jan 21, 2015
  *      Author: bog
  */
- 
+
 #ifndef WITH_BOX2D
 #error "Box2D support has not been enabled and this is a requirement for using the PhysicsBody class"
 #endif
@@ -21,7 +21,7 @@
 
 class b2Body;
 class Entity;
-struct aabb;
+struct AABB;
 
 struct PhysicsProperties {
 	glm::vec2 position;
@@ -55,7 +55,7 @@ public:
 	inline glm::vec2 getPosition() const { return b2Body_ ? b2g(b2Body_->GetPosition()) : glm::vec2{0, 0}; }
 	inline float getRotation() const { return b2Body_ ? b2Body_->GetAngle() : 0; }
 	inline Entity* getAssociatedEntity() const { assertDbg(getEntityFunc_ != nullptr); return getEntityFunc_(*this); }
-	aabb getAABB() const;
+	AABB getAABB() const;
 
 	static PhysicsBody* getForB2Body(b2Body* body);
 

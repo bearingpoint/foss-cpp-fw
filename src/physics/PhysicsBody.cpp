@@ -4,7 +4,7 @@
  *  Created on: Jan 21, 2015
  *      Author: bog
  */
- 
+
 #ifdef WITH_BOX2D
 
 #include <boglfw/physics/PhysicsBody.h>
@@ -86,8 +86,8 @@ PhysicsBody* PhysicsBody::getForB2Body(b2Body* body) {
 	return (PhysicsBody*)body->GetUserData();
 }
 
-aabb PhysicsBody::getAABB() const {
-	aabb x;
+AABB PhysicsBody::getAABB() const {
+	AABB x;
 	if (b2Body_) {
 		for (b2Fixture* pFix = b2Body_->GetFixtureList(); pFix; pFix = pFix->GetNext()) {
 			x = x.reunion(pFix->GetAABB(0));

@@ -45,9 +45,9 @@ struct WorldConfig {
 	float extent_Zp = 10;
 };
 
-class World 
+class World
 #ifdef WITH_BOX2D
-: public IOperationSpatialLocator 
+: public IOperationSpatialLocator
 #endif // WITH_BOX2D
 {
 public:
@@ -55,16 +55,16 @@ public:
 
 	static World& getInstance();
 	virtual ~World();
-	
+
 	// sets a user defined global object of an arbitrary type that can be accessed by any other object that knows about World
 	template<class C>
 	static void setGlobal(C* obj) { getInstance().userGlobals_[typeid(C)] = (void*)obj; }
-	
+
 	// returns a user defined global object of the given type
 	template<class C>
-	static C* getGlobal() { 
-		auto it = getInstance().userGlobals_.find(typeid(C)); 
-		return it == getInstance().userGlobals_.end() ? nullptr : (C*)(it->second); 
+	static C* getGlobal() {
+		auto it = getInstance().userGlobals_.find(typeid(C));
+		return it == getInstance().userGlobals_.end() ? nullptr : (C*)(it->second);
 	}
 
 	// delete all entities and reset state.
@@ -126,7 +126,7 @@ protected:
 	PhysDestroyListener *destroyListener_ = nullptr;
 	SpatialCache spatialCache_;
 #endif // WITH_BOX2D
-	
+
 	std::vector<std::shared_ptr<Entity>> entities_;
 	std::vector<Entity*> entsToUpdate_;
 	std::vector<Entity*> entsToDraw_;
@@ -144,14 +144,14 @@ protected:
 	std::atomic<bool> executingDeferredActions_ { false };
 
 	std::map<std::string, Event<void(int param)>> mapUserEvents_;
-	
+
 	std::map<std::type_index, void*> userGlobals_;
 
 	void destroyPending();
 	void takeOverPending();
 
 #ifdef WITH_BOX2D
-	void getFixtures(std::vector<b2Fixture*> &out, b2AABB const& aabb);
+	void getFixtures(std::vector<b2Fixture*> &out, b2AABB const& AABB);
 #endif // WITH_BOX2D
 
 	bool testEntity(Entity &e, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags);

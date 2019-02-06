@@ -46,7 +46,7 @@ World::World()
 #ifdef WITH_BOX2D
 	: physWld_(nullptr)
 	, groundBody_(nullptr)
-	, 
+	,
 #else
 	:
 #endif // WITH_BOX2D
@@ -121,7 +121,7 @@ void World::reset() {
 }
 
 #ifdef WITH_BOX2D
-void World::getFixtures(std::vector<b2Fixture*> &out, const b2AABB& aabb) {
+void World::getFixtures(std::vector<b2Fixture*> &out, const b2AABB& AABB) {
 	PERF_MARKER_FUNC;
 	class cbWrap : public b2QueryCallback {
 	public:
@@ -136,17 +136,17 @@ void World::getFixtures(std::vector<b2Fixture*> &out, const b2AABB& aabb) {
 
 		std::vector<b2Fixture*> &fixtures_;
 	} wrap(out);
-	physWld_->QueryAABB(&wrap, aabb);
+	physWld_->QueryAABB(&wrap, AABB);
 }
 
 b2Body* World::getBodyAtPos(glm::vec2 const& pos) {
 	PERF_MARKER_FUNC;
-	b2AABB aabb;
-	aabb.lowerBound = g2b(pos) - b2Vec2(0.005f, 0.005f);
-	aabb.upperBound = g2b(pos) + b2Vec2(0.005f, 0.005f);
+	b2AABB AABB;
+	AABB.lowerBound = g2b(pos) - b2Vec2(0.005f, 0.005f);
+	AABB.upperBound = g2b(pos) + b2Vec2(0.005f, 0.005f);
 	static thread_local std::vector<b2Fixture*> b2QueryResult;
 	b2QueryResult.clear();
-	getFixtures(b2QueryResult, aabb);
+	getFixtures(b2QueryResult, AABB);
 	if (b2QueryResult.empty())
 		return nullptr;
 	PERF_MARKER("precisionTest");
@@ -162,12 +162,12 @@ b2Body* World::getBodyAtPos(glm::vec2 const& pos) {
 
 void World::getBodiesInArea(glm::vec2 const& pos, float radius, bool clipToCircle, std::vector<b2Body*> &outBodies) {
 	PERF_MARKER_FUNC;
-	b2AABB aabb;
-	aabb.lowerBound = g2b(pos) - b2Vec2(radius, radius);
-	aabb.upperBound = g2b(pos) + b2Vec2(radius, radius);
+	b2AABB AABB;
+	AABB.lowerBound = g2b(pos) - b2Vec2(radius, radius);
+	AABB.upperBound = g2b(pos) + b2Vec2(radius, radius);
 	static thread_local std::vector<b2Fixture*> b2QueryResult;
 	b2QueryResult.clear();
-	getFixtures(b2QueryResult, aabb);
+	getFixtures(b2QueryResult, AABB);
 	for (b2Fixture* f : b2QueryResult) {
 		if (clipToCircle) {
 			PERF_MARKER("clipToCircle");

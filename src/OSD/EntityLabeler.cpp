@@ -18,7 +18,7 @@
 
 class DecoratorLayout {
 public:
-	DecoratorLayout(aabb const& box, int padding, float zoomLevel)
+	DecoratorLayout(AABB const& box, int padding, float zoomLevel)
 		: box_(box), padding_(padding), zoomLevel_(zoomLevel) {
 		nextPosition_ = glm::vec2(box.vMax.x + padding / zoomLevel_, box.vMax.y);
 	}
@@ -49,7 +49,7 @@ public:
 	}
 
 private:
-	aabb box_;
+	AABB box_;
 	int padding_;
 	float zoomLevel_;
 	int side_ = 0;	// 0 is right, 1 is left, 2 is below, 3 is above
@@ -72,8 +72,8 @@ void EntityLabeler::draw(Viewport* vp) {
 			continue;
 		}
 		// TODO restore
-		/*auto aabb = p.first->getAABB();
-		DecoratorLayout layout(aabb, 5, ctx.viewport->getCamera()->getZoomLevel()); // 5 pixel padding
+		/*auto AABB = p.first->getAABB();
+		DecoratorLayout layout(AABB, 5, ctx.viewport->getCamera()->getZoomLevel()); // 5 pixel padding
 		for (auto const& lp : p.second) {
 			auto &label = lp.second.label_;
 			label->setPos(glm::vec3(layout.nextPosition(label->getBoxSize(ctx)), 0));
