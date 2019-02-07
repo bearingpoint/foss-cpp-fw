@@ -238,3 +238,9 @@ template<typename T> inline T lerp_lookup(const T* v, int nV, float position) {
  * length is along OX axis, and width along OY. direction is relative to trigonometric zero (OX+)
  */
 glm::vec2 rayIntersectBox(float length, float width, float direction);
+
+// computes the intersection point between a ray and a triangle and fills [outIntersectionPoint] with the coordinates.
+// returns true if the ray intersects the triangle, or false otherwise
+bool rayIntersectTri(glm::vec3 const& start, glm::vec3 const& dir,
+	glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const&p3,
+	glm::vec3 &outIntersectionPoint);

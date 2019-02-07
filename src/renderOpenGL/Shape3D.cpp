@@ -244,14 +244,14 @@ void Shape3D::drawAABB(AABB const& aabb, glm::vec3 rgb) {
 
 void Shape3D::drawAABB(AABB const& aabb, glm::vec4 rgba) {
 	glm::vec3 verts[8] {
-		aabb.vMin,
-		{aabb.vMin.x, aabb.vMin.y, aabb.vMax.z},
-		{aabb.vMin.x, aabb.vMax.y, aabb.vMax.z},
-		{aabb.vMin.x, aabb.vMax.y, aabb.vMin.z},
-		aabb.vMax,
-		{aabb.vMax.x, aabb.vMin.y, aabb.vMin.z},
-		{aabb.vMax.x, aabb.vMin.y, aabb.vMax.z},
-		{aabb.vMax.x, aabb.vMax.y, aabb.vMin.z},
+		aabb.vMin,								 // bottom left back
+		{aabb.vMin.x, aabb.vMax.y, aabb.vMin.z}, // top left back
+		{aabb.vMin.x, aabb.vMax.y, aabb.vMax.z}, // top left front
+		{aabb.vMin.x, aabb.vMin.y, aabb.vMax.z}, // bottom left front
+		{aabb.vMax.x, aabb.vMin.y, aabb.vMin.z}, // bottom right back
+		{aabb.vMax.x, aabb.vMax.y, aabb.vMin.z}, // top right back
+		aabb.vMax, 								 // top right front
+		{aabb.vMax.x, aabb.vMin.y, aabb.vMax.z}, // bottom right front
 	};
 	drawLine(verts[0], verts[1], rgba);
 	drawLine(verts[1], verts[2], rgba);
@@ -263,8 +263,8 @@ void Shape3D::drawAABB(AABB const& aabb, glm::vec4 rgba) {
 	drawLine(verts[7], verts[4], rgba);
 	drawLine(verts[0], verts[4], rgba);
 	drawLine(verts[1], verts[5], rgba);
-	drawLine(verts[2], verts[7], rgba);
-	drawLine(verts[3], verts[8], rgba);
+	drawLine(verts[2], verts[6], rgba);
+	drawLine(verts[3], verts[7], rgba);
 }
 
 void Shape3D::setTransform(glm::mat4 mat) {

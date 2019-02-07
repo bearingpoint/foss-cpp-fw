@@ -69,3 +69,30 @@ glm::mat4 buildMatrixFromOrientation(glm::vec3 position, glm::vec3 direction, gl
 	up = glm::cross(direction, right);
 	return buildMatrix(right, up, direction, position);
 }
+
+bool rayIntersectTri(glm::vec3 const& start, glm::vec3 const& dir,
+	glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const&p3,
+	glm::vec3 &outIntersectionPoint) {
+
+	glm::vec3 p1p3 = p3 - p1;
+	glm::vec3 p1p2 = p2 - p1;
+	glm::vec3 triNorm = glm::normalize(glm::cross(p1p2, p1p3));				// triangle normal
+	float d = -glm::dot(triNorm, p1);										// d component of plane equation (triNorm has a,b,c)
+	float t = (-d - glm::dot(triNorm, start)) / glm::dot(triNorm, dir);		// ray parameter t for intersection between ray and triangle plane
+	if (t < 0.f)															// t<0 means intersection point is behind start
+		return false;
+	outIntersectionPoint = start + dir * t;									// this is the point in the triangle's plane where the ray hits
+	glm::vec3 p1P = outIntersectionPoint - p1;
+	// now check if the point is within the triangle
+	float d00 = glm::dot(p1p3, p1p3);
+	float d01 = glm::dot(p1p2, p1p3);
+	float d02 = glm::dot(p1p3, p1P);
+	float d11 = glm::dot(p1p2, p1p2);
+	float d12 = glm::dot(p1p2, p1P);
+	float invDenom = 1.f / (d00 * d11 - d01 * d01);
+	// compute barycentric coords:
+	float u = (d11 * d02 - d01 * d12) * invDenom;
+	float v = (d00 * d12 - d01 * d02) * invDenom;
+
+	return u >= 0 && v >= 0 && (u+v) <= 1;
+}
