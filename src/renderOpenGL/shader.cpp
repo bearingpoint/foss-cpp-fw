@@ -54,7 +54,7 @@ unsigned Shaders::createAndCompileShader(std::string const &code, unsigned shade
 		std::cerr << std::endl;
 		return 0;
 	}
-	LOGNP("OK\n");
+	LOGNP("Shader OK\n");
 	return shaderID;
 }
 
