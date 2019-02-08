@@ -108,7 +108,18 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 		LOGLN("Some shaders failed. Aborting...");
 		return 0;
 	}
+	unsigned prog = linkProgram(vertexShaderID, fragmentShaderID, geomShaderID);
+	// delete shaders:
+	glDeleteShader(vertexShaderID);
+	if (geomShaderID)
+		glDeleteShader(geomShaderID);
+	glDeleteShader(fragmentShaderID);
+	checkGLError("delete shaders");
 
+	return prog;
+}
+
+unsigned Shaders::linkProgram(unsigned vertexShaderID, unsigned fragmentShaderID, unsigned geomShaderID) {
 	// Link the program
 	LOG("Linking program . . .");
 	unsigned programID = glCreateProgram();
@@ -146,12 +157,7 @@ unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* ge
 			return 0;
 		}
 	}
-
-	glDeleteShader(vertexShaderID);
-	if (geomShaderID)
-		glDeleteShader(geomShaderID);
-	glDeleteShader(fragmentShaderID);
-	checkGLError("delete shaders");
+	checkGLError("link program");
 
 	return programID;
 }
