@@ -35,8 +35,8 @@ public:
 	void rotateLocal(glm::quat const& rot);
 
 private:
-	glm::vec3 pos_;
-	glm::quat orient_;
+	glm::vec3 pos_ {0.f};
+	glm::quat orient_ {1.f, 0.f, 0.f, 0.f};
 	mutable glm::mat4 glMat_;
 	mutable bool matDirty_ = true;
 
