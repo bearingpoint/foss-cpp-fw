@@ -65,7 +65,8 @@ World::World()
 	extentYp_ = config.extent_Yp;
 	extentZn_ = config.extent_Zn;
 	extentZp_ = config.extent_Zp;
-	initialized.store(true);
+
+	initialized.store(true, std::memory_order_release);
 }
 
 #ifdef WITH_BOX2D
@@ -78,12 +79,13 @@ void World::setPhysics(b2World* phys) {
 #endif // WITH_BOX2D
 
 World& World::getInstance() {
-    static World instance;
+	static World instance;
 	return instance;
 }
 
 World::~World() {
 	reset();
+	LOGLN("World Destroyed.");
 }
 
 void World::setBounds(float left, float right, float top, float bottom, float front, float back) {

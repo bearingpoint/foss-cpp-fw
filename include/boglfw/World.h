@@ -21,7 +21,7 @@
 #include <vector>
 #include <memory>
 #include <atomic>
-#include <map>
+#include <unordered_map>
 #include <typeindex>
 
 #ifdef WITH_BOX2D
@@ -56,6 +56,9 @@ public:
 	static World& getInstance();
 	virtual ~World();
 
+	// delete all entities and reset state. Call this before exiting.
+	void reset();
+
 	// sets a user defined global object of an arbitrary type that can be accessed by any other object that knows about World
 	template<class C>
 	static void setGlobal(C* obj) { getInstance().userGlobals_[typeid(C)] = (void*)obj; }
@@ -66,9 +69,6 @@ public:
 		auto it = getInstance().userGlobals_.find(typeid(C));
 		return it == getInstance().userGlobals_.end() ? nullptr : (C*)(it->second);
 	}
-
-	// delete all entities and reset state.
-	void reset();
 
 	// set new world spatial extents
 	void setBounds(float left, float right, float top, float bottom, float front, float back);
@@ -143,9 +143,9 @@ protected:
 	decltype(deferredActions_) pendingActions_;
 	std::atomic<bool> executingDeferredActions_ { false };
 
-	std::map<std::string, Event<void(int param)>> mapUserEvents_;
+	std::unordered_map<std::string, Event<void(int param)>> mapUserEvents_;
 
-	std::map<std::type_index, void*> userGlobals_;
+	std::unordered_map<std::type_index, void*> userGlobals_;
 
 	void destroyPending();
 	void takeOverPending();
