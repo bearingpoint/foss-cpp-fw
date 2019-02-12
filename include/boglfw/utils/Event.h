@@ -35,17 +35,26 @@ public:
 		callbackList_[handle] = nullptr;
 	}
 
+	// Forward this event to another; all triggerings of this event will also trigger the forwarded event.
+	void forward(Event<T> &forward) {
+		pForwarded_ = &forward;
+	}
+
 	void clear() {
 		callbackList_.clear();
 	}
 
 	void trigger() {
+		if (pForwarded_)
+			pForwarded_->trigger();
 		for (auto c : callbackList_)
 			c();
 	}
 
 	template<typename... argTypes>
 	void trigger(argTypes... argList) {
+		if (pForwarded_)
+			pForwarded_->trigger(argList...);
 		for (auto c : callbackList_)
 			if (c)
 				c(argList...);
@@ -53,6 +62,7 @@ public:
 
 protected:
 	std::vector<handler_type> callbackList_;
+	Event<T> *pForwarded_ = nullptr;
 };
 
 #endif /* EVENT_H_ */

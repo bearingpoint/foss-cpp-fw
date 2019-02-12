@@ -7,6 +7,12 @@
 
 struct Transform {
 public:
+	Transform() = default;
+
+	Transform(glm::vec3 position, glm::quat orientation)
+		: pos_(position), orient_(orientation) {
+	}
+
 	// get world position
 	const glm::vec3& position() const { return pos_; }
 	// get world orientation
