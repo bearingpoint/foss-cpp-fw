@@ -40,6 +40,11 @@ public:
 	// rotate the transform by a quaternion expressed in *LOCAL* coordinates
 	void rotateLocal(glm::quat const& rot);
 
+	// combine two transforms
+	Transform operator*(Transform const& right) const {
+		return Transform{pos_ + orient_ * right.pos_, orient_ * right.orient_};
+	}
+
 private:
 	glm::vec3 pos_ {0.f};
 	glm::quat orient_ {1.f, 0.f, 0.f, 0.f};
