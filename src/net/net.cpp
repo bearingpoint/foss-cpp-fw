@@ -53,13 +53,14 @@ void startListenImpl(tcp::acceptor* acceptor, newConnectionCallback callback) {
 	workAvail.notify();
 }
 
-void startListen(uint16_t port, listener &outLis, newConnectionCallback callback) {
+listener startListen(uint16_t port, newConnectionCallback callback) {
 	tcp::acceptor* acceptor = new tcp::acceptor(theIoContext, tcp::endpoint(tcp::v4(), port));
 	std::lock_guard<std::mutex> lk(asyncOpMutex);
 	listeners.push_back(acceptor);
-	outLis = listeners.size() - 1;
+	listener ret = listeners.size() - 1;
 	startListenImpl(acceptor, callback);
 	checkStart();
+	return ret;
 }
 
 void stopListen(listener lis) {
