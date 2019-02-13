@@ -1,5 +1,5 @@
-#include "connection.h"
-#include "listener.h"
+#include <boglfw/net/connection.h>
+#include <boglfw/net/listener.h>
 
 #include <boglfw/utils/semaphore.h>
 
