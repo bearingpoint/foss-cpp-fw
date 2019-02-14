@@ -93,26 +93,36 @@ result connect(std::string host, uint16_t port, connection& outCon) {
 void connect_async(std::string host, uint16_t port, newConnectionCallback callback) {
 	tcp::resolver resolver(theIoContext);
     tcp::resolver::query query(host, std::to_string(port));
-	resolver.async_resolve(query, [callback] (const asio::error_code &err, tcp::resolver::iterator endpointIter) {
+	tcp::socket* newSocket = new tcp::socket(theIoContext);
+	std::unique_lock<std::mutex> lk(asyncOpMutex);
+	connections.push_back(newSocket);
+	auto connectionId = connections.size() - 1;
+	lk.unlock();
+	resolver.async_resolve(query, [callback, newSocket, connectionId] (const asio::error_code &err, tcp::resolver::iterator endpointIter) {
 		if (err) {
+			std::unique_lock<std::mutex> lk(asyncOpMutex);
+			delete newSocket;
+			connections[connectionId] = nullptr;
+			checkFinish(lk);
+			lk.unlock();
 			callback(translateError(err), -1u);
 		} else {
-			tcp::socket* newSocket = new tcp::socket(theIoContext);
-			asio::async_connect(*newSocket, endpointIter, [newSocket, callback] (const asio::error_code &err, tcp::resolver::iterator endpointIter) {
+			asio::async_connect(*newSocket, endpointIter, [newSocket, connectionId, callback] (const asio::error_code &err, tcp::resolver::iterator endpointIter) {
 				if (!err) {
-					std::unique_lock<std::mutex> lk(asyncOpMutex);
-					connections.push_back(newSocket);
-					auto connectionId = connections.size() - 1;
-					lk.unlock();
 					callback(result::ok, connectionId);
 				} else {
+					std::unique_lock<std::mutex> lk(asyncOpMutex);
+					delete newSocket;
+					connections[connectionId] = nullptr;
+					checkFinish(lk);
+					lk.unlock();
 					callback(translateError(err), -1u);
 				}
 			});
 			workAvail.notify();
 		}
 	});
-	std::lock_guard<std::mutex> lk(asyncOpMutex);
+	lk.lock();
 	checkStart();
 	workAvail.notify();
 }
