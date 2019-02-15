@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cassert>
 
 namespace net {
 
@@ -34,5 +35,20 @@ struct result {
 		return !operator==(c);
 	}
 };
+
+inline std::string errorString(net::result const& err) {
+	switch (err.code) {
+		case net::result::ok: return "[OK]";
+		case net::result::err_timeout: return "[Timeout] " + err.message;
+		case net::result::err_aborted: return "[Aborted] " + err.message;
+		case net::result::err_refused: return "[Refused] " + err.message;
+		case net::result::err_portInUse: return "[PortInUse] " + err.message;
+		case net::result::err_unreachable: return "[HostUnreachable] " + err.message;
+		case net::result::err_unknown: return "[Unknown] " + err.message;
+		default:
+			assert("unhandled error type");
+			return "[Unknown] " + err.message;
+	}
+}
 
 }
