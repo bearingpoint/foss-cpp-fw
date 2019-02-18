@@ -14,14 +14,18 @@
 #include <stdio.h>
 
 #include <iostream>
+#include <functional>
 #include <cmath>
+
 using namespace std;
 
-unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues, int * width, int * height)
-{
-    // This function was originally written by David Grayson for
+using textureCallback = std::function<void(unsigned format, unsigned width, unsigned height,
+											unsigned dataType, void* dataPtr)>;
+
+static void internalLoadPNG(string const& filename, bool linearizeValues, textureCallback cb) {
+	// This function was originally written by David Grayson for
     // https://github.com/DavidEGrayson/ahrs-visualizer
-	
+
 	LOGPREFIX("TextureLoader");
 	LOG("Loading texture from " << filename << " ...");
 
@@ -32,7 +36,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
     {
 		ERROR("Failed to open file.");
         perror(filename.c_str());
-        return 0;
+        return;
     }
 
     // read the header
@@ -42,7 +46,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
     {
         ERROR(filename << " is not a PNG.");
         fclose(fp);
-        return 0;
+        return;
     }
 
     png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -50,7 +54,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
     {
         ERROR("png_create_read_struct returned 0.");
         fclose(fp);
-        return 0;
+        return;
     }
 
     // create png info struct
@@ -60,7 +64,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
     	ERROR("png_create_info_struct returned 0.");
         png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
         fclose(fp);
-        return 0;
+        return;
     }
 
     // create png info struct
@@ -70,7 +74,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
         ERROR("png_create_info_struct returned 0.");
         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) NULL);
         fclose(fp);
-        return 0;
+        return;
     }
 
     // the code in this if statement gets called if libpng encounters an error
@@ -78,7 +82,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
         ERROR("png_jmpbuf from libpng");
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         fclose(fp);
-        return 0;
+        return;
     }
 
     // init png reading
@@ -98,15 +102,12 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
     png_get_IHDR(png_ptr, info_ptr, &temp_width, &temp_height, &bit_depth, &color_type,
         NULL, NULL, NULL);
 
-    if (width){ *width = temp_width; }
-    if (height){ *height = temp_height; }
-
     //printf("%s: %lux%lu %d\n", file_name, temp_width, temp_height, color_type);
 
     if (bit_depth != 8)
     {
         ERROR(filename << ": Unsupported bit depth " << bit_depth << ".  Must be 8.");
-        return 0;
+        return;
     }
 
     GLint format;
@@ -120,7 +121,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
         break;
     default:
         ERROR(filename << ": Unknown libpng color type " << color_type << ".");
-        return 0;
+        return;
     }
 
     // Update the png info struct.
@@ -139,7 +140,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
         ERROR("Failed to allocate memory for PNG image data");
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         fclose(fp);
-        return 0;
+        return;
     }
 
     // row_pointers is for pointing to image_data for reading the png with libpng
@@ -150,7 +151,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         free(image_data);
         fclose(fp);
-        return 0;
+        return;
     }
 
     // set the individual row_pointers to point at the correct offsets of image_data
@@ -161,7 +162,7 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
 
     // read the png into image_data through row_pointers
     png_read_image(png_ptr, row_pointers);
-	
+
 	if (linearizeValues) {
 		unsigned bpp = format == GL_RGBA ? 4 : 3; // bytes per pixel
 		float gamma = 2.2f;
@@ -176,13 +177,8 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
 			}
 	}
 
-    // Generate the OpenGL texture object
-    unsigned texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, temp_width, temp_height, 0, format, GL_UNSIGNED_BYTE, image_data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// call user callback with loaded image details:
+    cb(format, temp_width, temp_height, GL_UNSIGNED_BYTE, image_data);
 
     // clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
@@ -190,5 +186,59 @@ unsigned TextureLoader::loadFromPNG(const string filename, bool linearizeValues,
     free(row_pointers);
     fclose(fp);
 	LOGNP(" OK.\n");
+}
+
+unsigned TextureLoader::loadFromPNG(string const& filename, bool linearizeValues, unsigned* out_width, unsigned* out_height) {
+	unsigned texture = 0;
+	auto callback = [out_width, out_height, &texture]
+		(unsigned format, unsigned width, unsigned height, unsigned dataType, void* dataPtr)
+	{
+		if (out_width)
+			*out_width = width;
+		if (out_height)
+			*out_height = height;
+
+		// Generate the OpenGL texture object
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, dataType, dataPtr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	};
+
+	internalLoadPNG(filename, linearizeValues, callback);
+
     return texture;
+}
+
+unsigned TextureLoader::loadCubeFromPNG(const std::string filenames[], bool linearizeValues) {
+	unsigned texture = 0;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+
+	auto callback = [] (unsigned faceId, unsigned format, unsigned width, unsigned height, unsigned dataType, void* dataPtr) {
+		glTexImage2D(faceId, 0, format, width, height, 0, format, dataType, dataPtr);
+	};
+
+	unsigned faceIds[] {
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+	};
+
+	for (int i=0; i<6; i++) {
+		internalLoadPNG(filenames[i], linearizeValues, [i, &faceIds, &callback]
+			(unsigned format, unsigned width, unsigned height, unsigned dataType, void* dataPtr)
+		{
+			callback(faceIds[i], format, width, height, dataType, dataPtr);
+		});
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	return texture;
 }

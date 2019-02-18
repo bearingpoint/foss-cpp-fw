@@ -14,7 +14,12 @@ class TextureLoader {
 public:
 	// [linearizeValues] - if true, it will apply gamma correction to bring the image from sRGB space into linear space
 	// [outWidth] and [outHeight] will be filled with the texture size, if provided.
-	static unsigned loadFromPNG(const std::string filename, bool linearizeValues, int* outWidth=nullptr, int* outHeight=nullptr);
+	static unsigned loadFromPNG(std::string const& filename, bool linearizeValues, unsigned* out_width=nullptr, unsigned* out_height=nullptr);
+
+	// loads a cube texture from 6 files.
+	// the order of the filenames must be:
+	// X+, X-, Y+, Y-, Z+, Z-
+	static unsigned loadCubeFromPNG(const std::string filenames[], bool linearizeValues);
 };
 
 #endif /* RENDEROPENGL_TEXTURELOADER_H_ */
