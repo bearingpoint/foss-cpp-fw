@@ -138,11 +138,15 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	// load shader for post-render blit
 	switch(ss_descriptor.mode) {
 		case SSDescriptor::SS_4X:
-			ss_shaderProgram = Shaders::createProgram("data/shaders/ssaa.vert", "data/shaders/ssaa.frag");
+			Shaders::createProgram("data/shaders/ssaa.vert", "data/shaders/ssaa.frag", [&](unsigned id) {
+				ss_shaderProgram = id;
+			});
 			break;
 		case SSDescriptor::SS_9X:
 		case SSDescriptor::SS_16X:
-			ss_shaderProgram = Shaders::createProgram("data/shaders/ssaa.vert", "data/shaders/ssaa4s.frag");
+			Shaders::createProgram("data/shaders/ssaa.vert", "data/shaders/ssaa4s.frag", [&](unsigned id) {
+				ss_shaderProgram = id;
+			});
 			break;
 		default:
 			assert("Invalid super sampling mode!");
@@ -266,7 +270,7 @@ bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowT
 	glfwMakeContextCurrent(window);
 	if (checkGLError("glfwMakeContextCurrent"))
 		return false;
-		
+
 	// disable vsync, use 1 to enable it
 	glfwSwapInterval(1);
 

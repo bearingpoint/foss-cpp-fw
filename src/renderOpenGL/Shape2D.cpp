@@ -37,38 +37,41 @@ Shape2D* Shape2D::get() {
 
 Shape2D::Shape2D(Renderer* renderer) {
 	renderer->registerRenderable(this);
-	shaderProgram_ = Shaders::createProgram("data/shaders/shape2d.vert", "data/shaders/shape2d.frag");
-	if (shaderProgram_ == 0) {
-		throw std::runtime_error("Unable to load shape2D shaders!!");
-	}
-	indexMatViewport_ = glGetUniformLocation(shaderProgram_, "mViewportInverse");
-
-	unsigned indexPos = glGetAttribLocation(shaderProgram_, "vPos");
-	unsigned indexColor = glGetAttribLocation(shaderProgram_, "vColor");
-
 	glGenVertexArrays(1, &lineVAO_);
-	glBindVertexArray(lineVAO_);
 	glGenBuffers(1, &lineVBO_);
 	glGenBuffers(1, &lineIBO_);
-	glBindBuffer(GL_ARRAY_BUFFER, lineVBO_);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIBO_);
-	glEnableVertexAttribArray(indexPos);
-	glEnableVertexAttribArray(indexColor);
-	glVertexAttribPointer(indexPos, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, pos));
-	glVertexAttribPointer(indexColor, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, rgba));
-
 	glGenVertexArrays(1, &triangleVAO_);
-	glBindVertexArray(triangleVAO_);
 	glGenBuffers(1, &triangleVBO_);
 	glGenBuffers(1, &triangleIBO_);
-	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO_);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleIBO_);
-	glEnableVertexAttribArray(indexPos);
-	glEnableVertexAttribArray(indexColor);
-	glVertexAttribPointer(indexPos, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, pos));
-	glVertexAttribPointer(indexColor, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, rgba));
 
-	glBindVertexArray(0);
+	Shaders::createProgram("data/shaders/shape2d.vert", "data/shaders/shape2d.frag", [this](unsigned id) {
+		shaderProgram_ = id;
+		if (shaderProgram_ == 0) {
+			throw std::runtime_error("Unable to load shape2D shaders!!");
+		}
+		indexMatViewport_ = glGetUniformLocation(shaderProgram_, "mViewportInverse");
+
+		unsigned indexPos = glGetAttribLocation(shaderProgram_, "vPos");
+		unsigned indexColor = glGetAttribLocation(shaderProgram_, "vColor");
+
+		glBindVertexArray(lineVAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, lineVBO_);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIBO_);
+		glEnableVertexAttribArray(indexPos);
+		glEnableVertexAttribArray(indexColor);
+		glVertexAttribPointer(indexPos, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, pos));
+		glVertexAttribPointer(indexColor, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, rgba));
+
+		glBindVertexArray(triangleVAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, triangleVBO_);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleIBO_);
+		glEnableVertexAttribArray(indexPos);
+		glEnableVertexAttribArray(indexColor);
+		glVertexAttribPointer(indexPos, 3, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, pos));
+		glVertexAttribPointer(indexColor, 4, GL_FLOAT, GL_FALSE, sizeof(s_lineVertex), (void*)offsetof(s_lineVertex, rgba));
+
+		glBindVertexArray(0);
+	});
 
 	checkGLError("Shape2D:: vertex array creation");
 }
@@ -112,7 +115,7 @@ void Shape2D::render(Viewport* vp, unsigned batchId) {
 		batchId < batches_.size() - 1 ? batches_[batchId+1].lineStripOffset_ : lineStrips_.size(),
 		batchId < batches_.size() - 1 ? batches_[batchId+1].triangleOffset_ : triangleIndices_.size()
 	};
-	
+
 	checkGLError("Shape2D::render() : setup");
 
 	// render triangle primitives:

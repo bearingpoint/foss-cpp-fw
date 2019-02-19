@@ -41,16 +41,18 @@ void MeshRenderer::unload() {
 MeshRenderer::MeshRenderer(Renderer* renderer) {
 	LOGPREFIX("MeshRenderer::ctor");
 	renderer->registerRenderable(this);
-	meshShaderProgram_ = Shaders::createProgram("data/shaders/mesh.vert", "data/shaders/mesh-texture.frag");
-	if (meshShaderProgram_ == 0) {
-		throw std::runtime_error("Unable to load mesh shaders!!");
-	}
-	indexPos_ = glGetAttribLocation(meshShaderProgram_, "vPos");
-	indexNorm_ = glGetAttribLocation(meshShaderProgram_, "vNormal");
-	indexUV1_ = glGetAttribLocation(meshShaderProgram_, "vUV1");
-	indexColor_ = glGetAttribLocation(meshShaderProgram_, "vColor");
-	indexMatPVW_ = glGetUniformLocation(meshShaderProgram_, "mPVW");
-	checkGLError("getAttribs");
+	Shaders::createProgram("data/shaders/mesh.vert", "data/shaders/mesh-texture.frag", [this](unsigned id) {
+		meshShaderProgram_ = id;
+		if (meshShaderProgram_ == 0) {
+			throw std::runtime_error("Unable to load mesh shaders!!");
+		}
+		indexPos_ = glGetAttribLocation(meshShaderProgram_, "vPos");
+		indexNorm_ = glGetAttribLocation(meshShaderProgram_, "vNormal");
+		indexUV1_ = glGetAttribLocation(meshShaderProgram_, "vUV1");
+		indexColor_ = glGetAttribLocation(meshShaderProgram_, "vColor");
+		indexMatPVW_ = glGetUniformLocation(meshShaderProgram_, "mPVW");
+		checkGLError("getAttribs");
+	});
 }
 
 MeshRenderer::~MeshRenderer() {

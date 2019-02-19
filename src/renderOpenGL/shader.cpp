@@ -10,6 +10,9 @@
 
 using namespace std;
 
+vector<Shaders::shaderDesc> Shaders::loadedShaders_;
+vector<Shaders::programDesc> Shaders::loadedPrograms_;
+
 std::string Shaders::readShaderFile(const char* path) {
 	std::ifstream VertexShaderStream(path, std::ios::in);
 	if (VertexShaderStream.is_open()) {
@@ -58,27 +61,54 @@ unsigned Shaders::createAndCompileShader(std::string const &code, unsigned shade
 	return shaderID;
 }
 
-unsigned Shaders::loadVertexShader(const char* path) {
-	string vertexShaderCode = readShaderFile(path);
-	if (vertexShaderCode == "")
-		return 0;
+void Shaders::loadVertexShader(const char* path, shaderCallback cb) {
+	string shaderCode = readShaderFile(path);
+	if (shaderCode == "") {
+		cb(0);
+		return;
+	}
 	LOG("Compiling shader : " << path << " . . . ");
-	return createAndCompileShader(vertexShaderCode, GL_VERTEX_SHADER);
+	unsigned id = createAndCompileShader(shaderCode, GL_VERTEX_SHADER);
+	loadedShaders_.push_back({
+		GL_VERTEX_SHADER,
+		id,
+		path,
+		cb
+	});
+	cb(id);
 }
 
-unsigned Shaders::loadGeometryShader(const char* path) {
-	string vertexShaderCode = readShaderFile(path);
-	if (vertexShaderCode == "")
-		return 0;
+void Shaders::loadGeometryShader(const char* path, shaderCallback cb) {
+	string shaderCode = readShaderFile(path);
+	if (shaderCode == "") {
+		cb(0);
+		return;
+	}
 	LOG("Compiling shader : " << path << " . . . ");
-	return createAndCompileShader(vertexShaderCode, GL_GEOMETRY_SHADER);
+	unsigned id = createAndCompileShader(shaderCode, GL_GEOMETRY_SHADER);
+	loadedShaders_.push_back({
+		GL_GEOMETRY_SHADER,
+		id,
+		path,
+		cb
+	});
+	cb(id);
 }
-unsigned Shaders::loadFragmentShader(const char* path) {
-	string vertexShaderCode = readShaderFile(path);
-	if (vertexShaderCode == "")
-		return 0;
+void Shaders::loadFragmentShader(const char* path, shaderCallback cb) {
+	string shaderCode = readShaderFile(path);
+	if (shaderCode == "") {
+		cb(0);
+		return;
+	}
 	LOG("Compiling shader : " << path << " . . . ");
-	return createAndCompileShader(vertexShaderCode, GL_FRAGMENT_SHADER);
+	unsigned id = createAndCompileShader(shaderCode, GL_FRAGMENT_SHADER);
+	loadedShaders_.push_back({
+		GL_FRAGMENT_SHADER,
+		id,
+		path,
+		cb
+	});
+	cb(id);
 }
 
 void printProgramInfoLog(int programID) {
@@ -93,30 +123,66 @@ void printProgramInfoLog(int programID) {
 	}
 }
 
-unsigned Shaders::createProgram(const char* vertex_file_path, const char* fragment_file_path) {
-	return createProgramGeom(vertex_file_path, nullptr, fragment_file_path);
+void Shaders::createProgram(const char* vertex_file_path, const char* fragment_file_path, programCallback cb) {
+	createProgramGeom(vertex_file_path, nullptr, fragment_file_path, cb);
 }
-unsigned Shaders::createProgramGeom(const char* vertex_file_path, const char* geom_file_path,
-		const char* fragment_file_path) {
+void Shaders::createProgramGeom(const char* vertex_file_path, const char* geom_file_path,
+		const char* fragment_file_path, programCallback cb) {
 	LOGPREFIX("SHADERS");
 	// Create the shaders
-	unsigned vertexShaderID = loadVertexShader(vertex_file_path);
-	unsigned geomShaderID = geom_file_path != nullptr ? loadGeometryShader(geom_file_path) : 0;
-	unsigned fragmentShaderID = loadFragmentShader(fragment_file_path);
+	unsigned vertexShaderID = 0;
+	int vertexDescIdx = -1;
+	loadVertexShader(vertex_file_path, [&](unsigned id) {
+		vertexShaderID = id;
+		vertexDescIdx = loadedShaders_.size() - 1;
+	});
+	if (vertexDescIdx >= 0)
+		loadedShaders_[vertexDescIdx].callback = nullptr;
+	unsigned geomShaderID = 0;
+	int geomDescIdx = -1;
+	if (geom_file_path != nullptr) {
+		loadGeometryShader(geom_file_path, [&](unsigned id) {
+			geomShaderID = id;
+			geomDescIdx = loadedShaders_.size() - 1;
+		});
+		if (geomDescIdx >= 0)
+			loadedShaders_[geomDescIdx].callback = nullptr;
+	}
+	unsigned fragmentShaderID = 0;
+	int fragmentDescIdx = -1;
+	loadFragmentShader(fragment_file_path, [&](unsigned id) {
+		fragmentShaderID = id;
+		fragmentDescIdx = loadedShaders_.size() - 1;
+	});
+	if (fragmentDescIdx >= 0)
+		loadedShaders_[fragmentDescIdx].callback = nullptr;
 
 	if (vertexShaderID == 0 || fragmentShaderID == 0 || (geom_file_path != nullptr && geomShaderID == 0)) {
 		LOGLN("Some shaders failed. Aborting...");
-		return 0;
+		cb(0);
+		return;
 	}
 	unsigned prog = linkProgram(vertexShaderID, fragmentShaderID, geomShaderID);
 	// delete shaders:
 	glDeleteShader(vertexShaderID);
-	if (geomShaderID)
+	loadedShaders_[vertexDescIdx].shaderId = 0;
+	if (geomShaderID) {
 		glDeleteShader(geomShaderID);
+		loadedShaders_[geomDescIdx].shaderId = 0;
+	}
 	glDeleteShader(fragmentShaderID);
+	loadedShaders_[fragmentDescIdx].shaderId = 0;
 	checkGLError("delete shaders");
 
-	return prog;
+	loadedPrograms_.push_back({
+		prog,
+		vertexDescIdx,
+		fragmentDescIdx,
+		geomDescIdx,
+		cb
+	});
+
+	cb(prog);
 }
 
 unsigned Shaders::linkProgram(unsigned vertexShaderID, unsigned fragmentShaderID, unsigned geomShaderID) {
@@ -160,4 +226,28 @@ unsigned Shaders::linkProgram(unsigned vertexShaderID, unsigned fragmentShaderID
 	checkGLError("link program");
 
 	return programID;
+}
+
+void Shaders::reloadAllShaders() {
+	LOGPREFIX("SHADERS");
+	LOGLN("Reloading all shaders . . .");
+	for (auto &d : loadedShaders_) {
+		if (d.shaderId)
+			glDeleteShader(d.shaderId), d.shaderId = 0;
+		string shaderCode = readShaderFile(d.filename.c_str());
+		LOG("Compiling shader : " << d.filename << " . . . ");
+		d.shaderId = createAndCompileShader(shaderCode, d.shaderType);
+		if (d.callback)
+			d.callback(d.shaderId);
+	}
+	for (auto &d : loadedPrograms_) {
+		if (d.programId)
+			glDeleteProgram(d.programId), d.programId = 0;
+		d.programId = linkProgram(d.vertexDescIdx >= 0 ? loadedShaders_[d.vertexDescIdx].shaderId : 0,
+									d.fragDescIdx >= 0 ? loadedShaders_[d.fragDescIdx].shaderId : 0,
+									d.geomDescIdx >= 0 ? loadedShaders_[d.geomDescIdx].shaderId : 0);
+		if (d.callback)
+			d.callback(d.programId);
+	}
+	LOGLN("All shaders reloaded.");
 }

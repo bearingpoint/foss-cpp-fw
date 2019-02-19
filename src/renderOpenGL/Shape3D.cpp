@@ -34,27 +34,30 @@ Shape3D* Shape3D::get() {
 
 Shape3D::Shape3D(Renderer* renderer) {
 	renderer->registerRenderable(this);
-	lineShaderProgram_ = Shaders::createProgram("data/shaders/shape3d.vert", "data/shaders/shape3d.frag");
-	if (lineShaderProgram_ == 0) {
-		throw std::runtime_error("Unable to load shape3D shaders!!");
-	}
-	indexMatProjView_ = glGetUniformLocation(lineShaderProgram_, "mProjView");
-
-	unsigned indexPos = glGetAttribLocation(lineShaderProgram_, "vPos");
-	unsigned indexColor = glGetAttribLocation(lineShaderProgram_, "vColor");
-
 	glGenVertexArrays(1, &VAO_);
-	glBindVertexArray(VAO_);
 	glGenBuffers(1, &VBO_);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
 	glGenBuffers(1, &IBO_);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
-	glEnableVertexAttribArray(indexPos);
-	glEnableVertexAttribArray(indexColor);
-	glVertexAttribPointer(indexPos, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertex), (void*)offsetof(s_vertex, pos));
-	glVertexAttribPointer(indexColor, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertex), (void*)offsetof(s_vertex, rgba));
 
-	glBindVertexArray(0);
+	Shaders::createProgram("data/shaders/shape3d.vert", "data/shaders/shape3d.frag", [this](unsigned id) {
+		lineShaderProgram_ = id;
+		if (lineShaderProgram_ == 0) {
+			throw std::runtime_error("Unable to load shape3D shaders!!");
+		}
+		indexMatProjView_ = glGetUniformLocation(lineShaderProgram_, "mProjView");
+
+		unsigned indexPos = glGetAttribLocation(lineShaderProgram_, "vPos");
+		unsigned indexColor = glGetAttribLocation(lineShaderProgram_, "vColor");
+
+		glBindVertexArray(VAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+		glEnableVertexAttribArray(indexPos);
+		glEnableVertexAttribArray(indexColor);
+		glVertexAttribPointer(indexPos, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertex), (void*)offsetof(s_vertex, pos));
+		glVertexAttribPointer(indexColor, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertex), (void*)offsetof(s_vertex, rgba));
+
+		glBindVertexArray(0);
+	});
 }
 
 Shape3D::~Shape3D() {

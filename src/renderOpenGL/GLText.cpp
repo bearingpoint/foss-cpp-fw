@@ -54,42 +54,44 @@ GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	}
 
-	// Initialize Shader
-	shaderProgram_ = Shaders::createProgram("data/shaders/text.vert", "data/shaders/text.frag");
-	if (!shaderProgram_)
-		throw std::runtime_error("Could not load text shaders!");
-
-	// Get a handle for our buffers
-	unsigned vertexPosition_screenspaceID_ = glGetAttribLocation(shaderProgram_, "vertexPosition_screenspace");
-	unsigned vertexUVID_ = glGetAttribLocation(shaderProgram_, "vertexUV");
-	unsigned vertexColorID_ = glGetAttribLocation(shaderProgram_, "vertexColor");
-
-	// Initialize uniforms' IDs
-	indexViewportHalfSize_ = glGetUniformLocation(shaderProgram_, "viewportHalfSize");
-	indexTranslation_ = glGetUniformLocation(shaderProgram_, "translation");
-	u_textureID_ = glGetUniformLocation( shaderProgram_, "myTextureSampler" );
-
 	// Initialize VAO & VBOs
 	glGenVertexArrays(1, &VAO_);
-	glBindVertexArray(VAO_);
 	glGenBuffers(1, &posVBO_);
 	glGenBuffers(1, &uvVBO_);
 	glGenBuffers(1, &colorVBO_);
 
-	glBindBuffer(GL_ARRAY_BUFFER, posVBO_);
-	glEnableVertexAttribArray(vertexPosition_screenspaceID_);
-	glVertexAttribPointer(vertexPosition_screenspaceID_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	// Initialize Shader
+	Shaders::createProgram("data/shaders/text.vert", "data/shaders/text.frag", [this] (unsigned id) {
+		shaderProgram_ = id;
+		if (!shaderProgram_)
+			throw std::runtime_error("Could not load text shaders!");
+		// Get a handle for our buffers
+		unsigned vertexPosition_screenspaceID_ = glGetAttribLocation(shaderProgram_, "vertexPosition_screenspace");
+		unsigned vertexUVID_ = glGetAttribLocation(shaderProgram_, "vertexUV");
+		unsigned vertexColorID_ = glGetAttribLocation(shaderProgram_, "vertexColor");
 
-	glBindBuffer(GL_ARRAY_BUFFER, uvVBO_);
-	glEnableVertexAttribArray(vertexUVID_);
-	glVertexAttribPointer(vertexUVID_, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		// Initialize uniforms' IDs
+		indexViewportHalfSize_ = glGetUniformLocation(shaderProgram_, "viewportHalfSize");
+		indexTranslation_ = glGetUniformLocation(shaderProgram_, "translation");
+		u_textureID_ = glGetUniformLocation( shaderProgram_, "myTextureSampler" );
 
-	// 3rd attribute buffer : vertex colors
-	glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
-	glEnableVertexAttribArray(vertexColorID_);
-	glVertexAttribPointer(vertexColorID_, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		glBindVertexArray(VAO_);
 
-	glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, posVBO_);
+		glEnableVertexAttribArray(vertexPosition_screenspaceID_);
+		glVertexAttribPointer(vertexPosition_screenspaceID_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, uvVBO_);
+		glEnableVertexAttribArray(vertexUVID_);
+		glVertexAttribPointer(vertexUVID_, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+		// 3rd attribute buffer : vertex colors
+		glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
+		glEnableVertexAttribArray(vertexColorID_);
+		glVertexAttribPointer(vertexColorID_, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindVertexArray(0);
+	});
 }
 
 GLText::~GLText() {
@@ -212,12 +214,12 @@ void GLText::print(const std::string &text, ViewportCoord pos, int z, int size, 
 
 void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 	assertDbg(batchId < batches_.size());
-	
+
 	unsigned nItems = batchId == batches_.size() - 1 ? itemPositions_.size() - batches_.back()
 		: batches_[batchId+1] - batches_[batchId];
 	if (!nItems)
 		return;
-	
+
 	// Bind shader
 	glUseProgram(shaderProgram_);
 

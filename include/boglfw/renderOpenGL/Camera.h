@@ -27,8 +27,9 @@ public:
 	float getOrthoZoom() { return zoomLevel_; } // how many pixels per meter?
 	void setOrthoZoom(float zoom);
 
-	glm::vec3 position() const { return position_; }
-	glm::vec3 direction() const { return direction_; }
+	const glm::vec3& position() const { return position_; }
+	const glm::vec3& direction() const { return direction_; }
+
 	void move(glm::vec3 delta);
 	void moveTo(glm::vec3 where);
 	void lookAt(glm::vec3 where, glm::vec3 up = glm::vec3{0.f, 1.f, 0.f});
