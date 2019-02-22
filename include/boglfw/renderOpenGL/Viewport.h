@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boglfw/utils/drawable.h>
+#include <boglfw/renderOpenGL/drawable.h>
 
 #include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
@@ -40,8 +40,6 @@ public:
 	long userData() { return userData_; }
 	void setUserData(long data) { userData_ = data; }
 
-	std::string name() const { return name_; }
-
 	void render(std::vector<drawable> const& list);
 
 protected:
@@ -50,10 +48,7 @@ protected:
 	Camera* pCamera_ = nullptr;
 	bool enabled_ = true;
 	glm::vec3 backgroundColor_;
-	std::string name_ {"unnamed"};
 
 	mutable glm::mat4 mPV_cache_ {1};
 	mutable glm::mat4 mPV_inv_cache_ {1};
-
-	void setName(std::string name) { name_ = name; }
 };

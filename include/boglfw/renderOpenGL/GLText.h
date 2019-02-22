@@ -20,7 +20,7 @@ class GLText {
 public:
 	static void disableMipMaps(bool disable) { disableMipMaps_ = disable; }
 	static GLText* get();
-	virtual ~GLText() override;
+	virtual ~GLText();
 
 	// flush - all pending print commands will be executed and all following commands
 	// will produce text that will be layered on top of everything previous.
@@ -36,21 +36,18 @@ protected:
 	friend class RenderHelpers;
 	static void init(const char* fontPath); // path to font *.desc file
 	static void unload();
-	GLText(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize);
-
 private:
-	unsigned textureID_;            // Texture containing the font
+	GLText(const char * texturePath, int rows, int cols, char firstChar, int defaultSize);
+
+	unsigned textureID_;			// Texture containing the font
 	unsigned VAO_;
-	unsigned posVBO_;         		// Buffer containing the vertices
-	unsigned uvVBO_;             	// UVs
+	unsigned posVBO_;				// Buffer containing the vertices
+	unsigned uvVBO_;				// UVs
 	unsigned colorVBO_;				// vertex colors
-	unsigned shaderProgram_;               		// Program used to disaply the text
-	//unsigned vertexPosition_screenspaceID_; 	// Location of the program's "vertexPosition_screenspace" attribute
-	//unsigned vertexUVID_;                   	// Location of the program's "vertexUV" attribute
-	//unsigned vertexColorID_;
+	unsigned shaderProgram_;		// Program used to render the text
 	unsigned indexViewportHalfSize_;
 	unsigned indexTranslation_;
-	unsigned u_textureID_;              // Location of the program's texture attribute
+	unsigned u_textureID_;			// Location of the program's texture attribute
 	int rows_, cols_, firstChar_;
 	float cellRatio_; 					// cellWeight / cellHidth
 	int defaultSize_;					// text size from the texture
@@ -59,7 +56,6 @@ private:
 	std::vector<glm::vec4> colors_;
 	std::vector<ViewportCoord> itemPositions_;
 	std::vector<int> verticesPerItem_;
-	//std::vector<int> batches_;
 
 	static bool disableMipMaps_;
 };

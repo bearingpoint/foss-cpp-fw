@@ -17,3 +17,10 @@ void RenderHelpers::unload() {
 	MeshRenderer::unload();
 	GLText::unload();
 }
+
+void RenderHelpers::flushAll() {
+	Shape2D::flush();
+	Shape3D::flush();
+	MeshRenderer::flush();
+	GLText::flush();
+}

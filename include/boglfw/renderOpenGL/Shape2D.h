@@ -13,13 +13,11 @@
 #include <glm/vec4.hpp>
 #include <vector>
 
-class Viewport;
-
 // renders 2D shapes in viewport space
-class Shape2D : {
+class Shape2D {
 public:
 	static Shape2D* get();
-	virtual ~Shape2D() override;
+	virtual ~Shape2D();
 
 	// flush - all pending draw commands will be executed and all following commands
 	// will produce graphics that will be layered on top of everything previous.
@@ -84,11 +82,6 @@ private:
 	// triangle buffers
 	std::vector<s_lineVertex> triangleBuffer_;
 	std::vector<unsigned short> triangleIndices_;
-
-	struct s_batch {
-		size_t lineStripOffset_;
-		size_t triangleOffset_;
-	};
 
 	unsigned shaderProgram_ = 0;
 	unsigned indexMatViewport_ = 0;

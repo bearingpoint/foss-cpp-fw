@@ -1,6 +1,7 @@
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/glToolkit.h>
+#include <boglfw/renderOpenGL/RenderHelpers.h>
 
 using namespace glm;
 
@@ -77,8 +78,15 @@ void Viewport::render(std::vector<drawable> const& list) {
 	glDisable(GL_SCISSOR_TEST);
 	checkGLError("viewport clear");
 
+	RenderHelpers::pActiveViewport = this;
+
 	// render objects from list:
 	for (auto &x : list) {
 		x.draw(this);
 	}
+
+	// flush all render helpers' pending commands
+	RenderHelpers::flushAll();
+
+	RenderHelpers::pActiveViewport = nullptr;
 }

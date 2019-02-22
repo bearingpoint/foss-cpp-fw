@@ -6,11 +6,11 @@
  */
 
 #include <boglfw/renderOpenGL/GLText.h>
-#include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/TextureLoader.h>
 #include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/renderOpenGL/ViewportCoord.h>
+#include <boglfw/renderOpenGL/RenderHelpers.h>
 #include <boglfw/utils/assert.h>
 
 #include <glm/glm.hpp>
@@ -24,24 +24,24 @@ using namespace glm;
 static GLText* instance = nullptr;
 bool GLText::disableMipMaps_ = false;
 
-void GLText::init(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize) {
-	instance = new GLText(renderer, texturePath, rows, cols, firstChar, defaultSize);
+void GLText::init(const char* fontPath) {
+	// load font file and parse properties
+	...
+	instance = new GLText(texturePath, rows, cols, firstChar, defaultSize);
 }
 
 GLText* GLText::get() {
-	assertDbg(instance && "must be initialized first!");
+	assertDbg(instance && "must be initialized first - call RenderHelpers::load()!");
 	return instance;
 }
 
 void GLText::unload() {
-	delete instance;
-	instance = nullptr;
+	delete instance, instance = nullptr;
 }
 
-GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize)
+GLText::GLText(const char * texturePath, int rows, int cols, char firstChar, int defaultSize)
 	: rows_(rows), cols_(cols), firstChar_(firstChar), defaultSize_(defaultSize)
 {
-	renderer->registerRenderable(this);
 	cellRatio_ = (float)rows/cols;
 	// Initialize texture
 	textureID_ = TextureLoader::loadFromPNG(texturePath, true);
@@ -53,6 +53,8 @@ GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Initialize VAO & VBOs
 	glGenVertexArrays(1, &VAO_);
@@ -63,8 +65,10 @@ GLText::GLText(Renderer* renderer, const char * texturePath, int rows, int cols,
 	// Initialize Shader
 	Shaders::createProgram("data/shaders/text.vert", "data/shaders/text.frag", [this] (unsigned id) {
 		shaderProgram_ = id;
-		if (!shaderProgram_)
-			throw std::runtime_error("Could not load text shaders!");
+		if (!shaderProgram_) {
+			ERROR("Could not load text shaders!");
+			return;
+		}
 		// Get a handle for our buffers
 		unsigned vertexPosition_screenspaceID_ = glGetAttribLocation(shaderProgram_, "vertexPosition_screenspace");
 		unsigned vertexUVID_ = glGetAttribLocation(shaderProgram_, "vertexUV");
@@ -109,14 +113,6 @@ GLText::~GLText() {
 	glDeleteProgram(shaderProgram_);
 }
 
-void GLText::setViewportFilter(std::string viewportName) {
-	viewportFilter_ = viewportName;
-}
-
-void GLText::resetViewportFilter() {
-	viewportFilter_ = "";
-}
-
 glm::vec2 GLText::getTextRect(const std::string& text, int fontSize) {
 	unsigned int length = text.length();
 	float xSize = fontSize*cellRatio_;
@@ -157,7 +153,6 @@ void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::ve
 
 	// Fill buffers
 	itemPositions_.push_back(pos);
-	viewportFilters_.push_back(viewportFilter_);
 	size_t nPrevVertices = vertices_.size();
 	int x = 0;
 	int y = 0;
@@ -211,13 +206,22 @@ void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::ve
 	verticesPerItem_.push_back(vertices_.size() - nPrevVertices);
 }
 
-void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
-	assertDbg(batchId < batches_.size());
+void GLText::flush() {
+	if (!shaderProgram_)
+		return;
 
-	unsigned nItems = batchId == batches_.size() - 1 ? itemPositions_.size() - batches_.back()
-		: batches_[batchId+1] - batches_[batchId];
+	unsigned nItems = itemPositions_.size();
 	if (!nItems)
 		return;
+
+	// update render buffers:
+	glBindBuffer(GL_ARRAY_BUFFER, posVBO_);
+	glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(vertices_[0]), &vertices_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, uvVBO_);
+	glBufferData(GL_ARRAY_BUFFER, UVs_.size() * sizeof(UVs_[0]), &UVs_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
+	glBufferData(GL_ARRAY_BUFFER, colors_.size() * sizeof(colors_[0]), &colors_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Bind shader
 	glUseProgram(shaderProgram_);
@@ -225,11 +229,10 @@ void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 	// Bind texture
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID_);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Set our "myTextureSampler" sampler to user Texture Unit 0
 	glUniform1i(u_textureID_, 0);
 
+	Viewport* pCrtViewport = RenderHelpers::getActiveViewport();
 	vec2 halfVP(pCrtViewport->width() / 2, pCrtViewport->height() / 2);
 	glUniform2fv(indexViewportHalfSize_, 1, &halfVP[0]);
 
@@ -237,45 +240,27 @@ void GLText::render(Viewport* pCrtViewport, unsigned batchId) {
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_DEPTH_TEST);
 
 	// do the drawing:
 	unsigned offset = 0;
-	for (unsigned i=0; i<batches_[batchId]; i++)
-		offset += verticesPerItem_[i];
-	for (unsigned i=batches_[batchId]; i<batches_[batchId] + nItems; i++) {
-		if (viewportFilters_[i].empty() || viewportFilters_[i] == pCrtViewport->name()) {
-			glm::vec2 translate(itemPositions_[i].x(pCrtViewport), itemPositions_[i].y(pCrtViewport));
-			glUniform2fv(indexTranslation_, 1, &translate[0]);
-			glDrawArrays(GL_TRIANGLES, offset, verticesPerItem_[i] );
-		}
+	for (unsigned i=0; i<nItems; i++) {
+		glm::vec2 translate(itemPositions_[i].x(pCrtViewport), itemPositions_[i].y(pCrtViewport));
+		glUniform2fv(indexTranslation_, 1, &translate[0]);
+		glDrawArrays(GL_TRIANGLES, offset, verticesPerItem_[i]);
 		offset += verticesPerItem_[i];
 	}
 
 	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 	glBindVertexArray(0);
 	glUseProgram(0);
-}
 
-void GLText::startBatch() {
-	batches_.push_back(itemPositions_.size());
-}
-
-void GLText::setupFrameData() {
-	glBindBuffer(GL_ARRAY_BUFFER, posVBO_);
-	glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(vertices_[0]), &vertices_[0], GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, uvVBO_);
-	glBufferData(GL_ARRAY_BUFFER, UVs_.size() * sizeof(UVs_[0]), &UVs_[0], GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
-	glBufferData(GL_ARRAY_BUFFER, colors_.size() * sizeof(colors_[0]), &colors_[0], GL_DYNAMIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void GLText::purgeRenderQueue() {
+	// purge all cached data:
 	vertices_.clear();
 	UVs_.clear();
 	colors_.clear();
 	itemPositions_.clear();
 	verticesPerItem_.clear();
-	batches_.clear();
 }
+
