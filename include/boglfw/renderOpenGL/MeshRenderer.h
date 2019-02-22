@@ -8,36 +8,25 @@
 #ifndef RENDEROPENGL_MESHRENDERER_H_
 #define RENDEROPENGL_MESHRENDERER_H_
 
-#include "IRenderable.h"
-
 #include <glm/mat4x4.hpp>
 #include <vector>
 
 class Mesh;
-class Renderer;
 
-class MeshRenderer: public IRenderable {
+class MeshRenderer {
 public:
-	static void init(Renderer* renderer);
-	virtual ~MeshRenderer() override;
 	static MeshRenderer* get();
+	virtual ~MeshRenderer() override;
 
 	void renderMesh(Mesh& mesh, glm::mat4 worldTransform = glm::mat4(1));
 
-	const char* getName() const override {
-		static char name[] = "MeshRenderer";
-		return name;
-	}
-
 protected:
-	MeshRenderer(Renderer* renderer);
+	friend class RenderHelpers;
+	static void init();
+	static void unload();
+	MeshRenderer();
 
 private:
-	void startBatch() override;
-	void setupFrameData() override;
-	void render(Viewport* pCrtViewport, unsigned batchId) override;
-	void purgeRenderQueue() override;
-	void unload() override;
 
 	struct meshRenderData {
 		Mesh* pMesh_;
@@ -49,7 +38,6 @@ private:
 		meshRenderData(meshRenderData &&) = default;
 	};
 	std::vector<meshRenderData> renderQueue_;
-	std::vector<unsigned> batches_;
 	unsigned meshShaderProgram_ = 0;
 	unsigned indexPos_ = 0;
 	unsigned indexNorm_ = 0;

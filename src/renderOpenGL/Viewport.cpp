@@ -1,5 +1,6 @@
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Camera.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 
 using namespace glm;
 
@@ -56,4 +57,28 @@ bool Viewport::containsPoint(glm::vec2 const&p) const {
 	return p.x >= viewportArea_.x && p.y >= viewportArea_.y &&
 			p.x <= viewportArea_.x + viewportArea_.z &&
 			p.y <= viewportArea_.y + viewportArea_.w;
+}
+
+void Viewport::render(std::vector<drawable> const& list) {
+	if (!isEnabled())
+		return;
+	// set up and clear viewport:
+	SSDescriptor ssDesc;
+	bool ssEnabled = gltGetSuperSampleInfo(ssDesc);
+	// when super sample is enabled we must adjust the viewport accordingly
+	unsigned vpfx = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
+	unsigned vpfy = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
+	auto vpp = position();
+	glViewport(vpp.x * vpfx, vpp.y * vpfy, width() * vpfx, height() * vpfy);
+	glScissor(vpp.x * vpfx, vpp.y * vpfx, width() * vpfx, height() * vpfx);
+	glEnable(GL_SCISSOR_TEST);
+	glClearColor(backgroundColor_.r, backgroundColor_.g, backgroundColor_.b, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glDisable(GL_SCISSOR_TEST);
+	checkGLError("viewport clear");
+
+	// render objects from list:
+	for (auto &x : list) {
+		x.draw(this);
+	}
 }

@@ -11,7 +11,6 @@
 #include <vector>
 
 class Camera;
-class Renderer;
 
 class Viewport
 {
@@ -35,8 +34,6 @@ public:
 	glm::vec3 project(glm::vec3 point) const;
 	glm::vec3 unproject(glm::vec3 point) const;
 
-	void setDrawList(std::vector<drawable> list) { drawList_.swap(list); }
-
 	void setEnabled(bool enabled) { enabled_ = enabled; }
 	void setArea(int vpX, int vpY, int vpW, int vpH);
 
@@ -44,7 +41,8 @@ public:
 	void setUserData(long data) { userData_ = data; }
 
 	std::string name() const { return name_; }
-	Renderer* renderer() const { return renderer_; }
+
+	void render(std::vector<drawable> const& list);
 
 protected:
 	long userData_ = 0;
@@ -53,14 +51,9 @@ protected:
 	bool enabled_ = true;
 	glm::vec3 backgroundColor_;
 	std::string name_ {"unnamed"};
-	std::vector<drawable> drawList_;
-	Renderer* renderer_ = nullptr;
 
 	mutable glm::mat4 mPV_cache_ {1};
 	mutable glm::mat4 mPV_inv_cache_ {1};
 
 	void setName(std::string name) { name_ = name; }
-	void setRenderer(Renderer* r) { renderer_ = r; }
-
-	friend class Renderer;
 };

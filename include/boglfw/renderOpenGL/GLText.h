@@ -1,5 +1,5 @@
 /*
- * text.h
+ * GLText.h
  *
  *  Created on: Nov 22, 2014
  *      Author: bog
@@ -8,46 +8,34 @@
 #ifndef RENDEROPENGL_GLTEXT_H_
 #define RENDEROPENGL_GLTEXT_H_
 
-#include "IRenderable.h"
 #include <string>
 #include <vector>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-class Renderer;
 class ViewportCoord;
 
-class GLText : public IRenderable {
+class GLText {
 public:
 	static void disableMipMaps(bool disable) { disableMipMaps_ = disable; }
 	static GLText* get();
 	virtual ~GLText() override;
-	static void init(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize);
 
-	// restricts rendering of following commands to only one viewport
-	void setViewportFilter(std::string viewportName);
-	// resets the viewport filter
-	void resetViewportFilter();
+	// flush - all pending print commands will be executed and all following commands
+	// will produce text that will be layered on top of everything previous.
+	// This is useful when interleaving draw calls with other 2D drawing code to achieve layering (such as with Shape2D)
+	void flush();
 
-	// z is between [0..100] (bottom to top)
-	void print(const std::string &text, ViewportCoord pos, int z, int size, glm::vec3 const& color);
-	// z is between [0..100] (bottom to top)
-	void print(const std::string &text, ViewportCoord pos, int z, int size, glm::vec4 const& color);
+	void print(const std::string &text, ViewportCoord pos, int size, glm::vec3 const& color);
+	void print(const std::string &text, ViewportCoord pos, int size, glm::vec4 const& color);
 
 	glm::vec2 getTextRect(std::string const& text, int fontSize);
 
-	const char* getName() const override {
-		static char name[] = "GLText";
-		return name;
-	}
-
 protected:
-	void startBatch() override;
-	void setupFrameData() override;
-	void render(Viewport* pCrtViewport, unsigned batchId) override;
-	void purgeRenderQueue() override;
-	void unload() override;
+	friend class RenderHelpers;
+	static void init(const char* fontPath); // path to font *.desc file
+	static void unload();
 	GLText(Renderer* renderer, const char * texturePath, int rows, int cols, char firstChar, int defaultSize);
 
 private:
@@ -70,10 +58,8 @@ private:
 	std::vector<glm::vec2> UVs_;
 	std::vector<glm::vec4> colors_;
 	std::vector<ViewportCoord> itemPositions_;
-	std::string viewportFilter_;
-	std::vector<std::string> viewportFilters_;
 	std::vector<int> verticesPerItem_;
-	std::vector<int> batches_;
+	//std::vector<int> batches_;
 
 	static bool disableMipMaps_;
 };

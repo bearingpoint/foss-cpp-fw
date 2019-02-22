@@ -8,7 +8,6 @@
 #ifndef RENDEROPENGL_SHAPE3D_H_
 #define RENDEROPENGL_SHAPE3D_H_
 
-#include <boglfw/renderOpenGL/IRenderable.h>
 #include <boglfw/math/aabb.h>
 
 #include <glm/vec2.hpp>
@@ -19,15 +18,13 @@
 #include <set>
 #include <string>
 
-class Renderer;
 class Viewport;
 
 // renders 3D shapes in world space
-class Shape3D : public IRenderable {
+class Shape3D {
 public:
 	static Shape3D* get();
 	virtual ~Shape3D() override;
-	static void init(Renderer* renderer);
 
 	// draw a single line segment
 	void drawLine(glm::vec3 point1, glm::vec3 point2, glm::vec3 rgb);
@@ -60,21 +57,13 @@ public:
 	void setTransform(glm::mat4 mat);
 	void resetTransform();
 
-	const char* getName() const override {
-		static char name[] = "Shape3D";
-		return name;
-	}
-
 protected:
-	Shape3D(Renderer* renderer);
+	friend class RenderHelpers;
+	static void init();
+	static void unload();
+	Shape3D();
 
 private:
-	void startBatch() override;
-	void setupFrameData() override;
-	void render(Viewport* vp, unsigned batchId) override;
-	void purgeRenderQueue() override;
-	void unload() override;
-
 	void transform(glm::vec3* v[], int n);
 	void transform(glm::vec3 v[], int n);
 
@@ -85,7 +74,6 @@ private:
 	// line buffers
 	std::vector<s_vertex> buffer_;
 	std::vector<unsigned> indices_;
-	std::vector<unsigned> batches_;
 	glm::mat4 transform_ {1};
 	bool transformActive_ = false;
 

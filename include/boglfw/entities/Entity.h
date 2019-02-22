@@ -45,6 +45,11 @@ public:
 	virtual Transform& getTransform() { return transform_; }
 	virtual const Transform& getTransform() const { return transform_; }
 
+	// return the AABB that contains this entity
+	virtual AABB getAABB() const { return AABB {
+			transform_.position() - glm::vec3(0.5f, 0.5f, 0.5f),
+			transform_.position() + glm::vec3(0.5f, 0.5f, 0.5f) }; }
+
 	void destroy();
 	bool isZombie() const { return markedForDeletion_.load(std::memory_order_acquire); }
 

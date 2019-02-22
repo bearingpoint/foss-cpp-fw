@@ -8,76 +8,68 @@
 #ifndef RENDEROPENGL_SHAPE2D_H_
 #define RENDEROPENGL_SHAPE2D_H_
 
-#include "IRenderable.h"
-
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <vector>
 
-class Renderer;
 class Viewport;
 
 // renders 2D shapes in viewport space
-class Shape2D : public IRenderable {
+class Shape2D : {
 public:
 	static Shape2D* get();
 	virtual ~Shape2D() override;
-	static void init(Renderer* renderer);
+
+	// flush - all pending draw commands will be executed and all following commands
+	// will produce graphics that will be layered on top of everything previous.
+	// This is useful when interleaving draw calls with other 2D drawing code to achieve layering (such as with GLText)
+	void flush();
 
 	// draw a single line segment
-	void drawLine(glm::vec2 point1, glm::vec2 point2, float z, glm::vec3 rgb);
-	void drawLine(glm::vec2 point1, glm::vec2 point2, float z, glm::vec4 rgba);
+	void drawLine(glm::vec2 point1, glm::vec2 point2, glm::vec3 rgb);
+	void drawLine(glm::vec2 point1, glm::vec2 point2, glm::vec4 rgba);
 	// draw a list of separate lines (pairs of two vertices)
-	void drawLineList(glm::vec2 verts[], int nVerts, float z, glm::vec3 rgb);
-	void drawLineList(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba);
+	void drawLineList(glm::vec2 verts[], int nVerts, glm::vec3 rgb);
+	void drawLineList(glm::vec2 verts[], int nVerts, glm::vec4 rgba);
 	// draw a line strip (connected lines)
-	void drawLineStrip(glm::vec2 verts[], int nVerts, float z, glm::vec3 rgb);
-	void drawLineStrip(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba);
+	void drawLineStrip(glm::vec2 verts[], int nVerts, glm::vec3 rgb);
+	void drawLineStrip(glm::vec2 verts[], int nVerts, glm::vec4 rgba);
 	// draw a rectangle; pos is the top-left position
-	void drawRectangle(glm::vec2 pos, float z, glm::vec2 size, glm::vec3 rgb);
-	void drawRectangle(glm::vec2 pos, float z, glm::vec2 size, glm::vec4 rgba);
+	void drawRectangle(glm::vec2 pos, glm::vec2 size, glm::vec3 rgb);
+	void drawRectangle(glm::vec2 pos, glm::vec2 size, glm::vec4 rgba);
 	// draw a rectangle; pos is the center position
-	void drawRectangleCentered(glm::vec2 pos, float z, glm::vec2 size, glm::vec3 rgb);
-	void drawRectangleCentered(glm::vec2 pos, float z, glm::vec2 size, glm::vec4 rgba);
+	void drawRectangleCentered(glm::vec2 pos, glm::vec2 size, glm::vec3 rgb);
+	void drawRectangleCentered(glm::vec2 pos, glm::vec2 size, glm::vec4 rgba);
 	// draw a filled rectangle; pos is the center position
-	void drawRectangleFilled(glm::vec2 pos, float z, glm::vec2 size, glm::vec3 rgb);
-	void drawRectangleFilled(glm::vec2 pos, float z, glm::vec2 size, glm::vec4 rgba);
+	void drawRectangleFilled(glm::vec2 pos, glm::vec2 size, glm::vec3 rgb);
+	void drawRectangleFilled(glm::vec2 pos, glm::vec2 size, glm::vec4 rgba);
 	// draw a polygon
-	void drawPolygon(glm::vec2 verts[], int nVerts, float z, glm::vec3 rgb);
-	void drawPolygon(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba);
+	void drawPolygon(glm::vec2 verts[], int nVerts, glm::vec3 rgb);
+	void drawPolygon(glm::vec2 verts[], int nVerts, glm::vec4 rgba);
 	// draw a filled polygon
-	void drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec3 rgb);
-	void drawPolygonFilled(glm::vec2 verts[], int nVerts, float z, glm::vec4 rgba);
+	void drawPolygonFilled(glm::vec2 verts[], int nVerts, glm::vec3 rgb);
+	void drawPolygonFilled(glm::vec2 verts[], int nVerts, glm::vec4 rgba);
 	// draw a circle
-	void drawCircle(glm::vec2 pos, float radius, float z, int nSides, glm::vec3 rgb);
-	void drawCircle(glm::vec2 pos, float radius, float z, int nSides, glm::vec4 rgba);
+	void drawCircle(glm::vec2 pos, float radius, int nSides, glm::vec3 rgb);
+	void drawCircle(glm::vec2 pos, float radius, int nSides, glm::vec4 rgba);
 	// draw a filled circle
-	void drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec3 rgb);
-	void drawCircleFilled(glm::vec2 pos, float radius, float z, int nSides, glm::vec4 rgba);
-
-	const char* getName() const override {
-		static char name[] = "Shape2D";
-		return name;
-	}
+	void drawCircleFilled(glm::vec2 pos, float radius, int nSides, glm::vec3 rgb);
+	void drawCircleFilled(glm::vec2 pos, float radius, int nSides, glm::vec4 rgba);
 
 protected:
-	Shape2D(Renderer* renderer);
+	friend class RenderHelpers;
+	static void init();
+	static void unload();
+	Shape2D();
 
 private:
-	void startBatch() override;
-	void setupFrameData() override;
-	void render(Viewport* vp, unsigned batchId) override;
-	void purgeRenderQueue() override;
-	void unload() override;
-
 	struct s_lineVertex {
 		glm::vec2 pos;
-		float z;
 		glm::vec4 rgba; 	// color
 
-		s_lineVertex(glm::vec2 pos, float z, glm::vec4 rgba)
-			: pos(pos), z(z), rgba(rgba) {}
+		s_lineVertex(glm::vec2 pos, glm::vec4 rgba)
+			: pos(pos), rgba(rgba) {}
 	};
 	// line buffers
 	std::vector<s_lineVertex> lineBuffer_;
@@ -97,7 +89,6 @@ private:
 		size_t lineStripOffset_;
 		size_t triangleOffset_;
 	};
-	std::vector<s_batch> batches_;
 
 	unsigned shaderProgram_ = 0;
 	unsigned indexMatViewport_ = 0;

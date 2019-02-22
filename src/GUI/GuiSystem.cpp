@@ -10,7 +10,6 @@
 #include <boglfw/input/InputEvent.h>
 #include <boglfw/utils/log.h>
 #include <boglfw/renderOpenGL/Viewport.h>
-#include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/math/math3D.h>
 
 #include <glm/vec2.hpp>

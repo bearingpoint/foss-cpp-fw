@@ -9,7 +9,6 @@
 #include <boglfw/GUI/GuiHelper.h>
 #include <boglfw/GUI/GuiTheme.h>
 #include <boglfw/renderOpenGL/Viewport.h>
-#include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <glm/vec3.hpp>
 #include <algorithm>

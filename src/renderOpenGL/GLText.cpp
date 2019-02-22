@@ -144,17 +144,16 @@ glm::vec2 GLText::getTextRect(const std::string& text, int fontSize) {
 	return glm::vec2(x, y+lineH);
 }
 
-void GLText::print(const std::string &text, ViewportCoord pos, int z, int size, glm::vec3 const& color) {
+void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::vec3 const& color) {
 	print(text, pos, z, size, glm::vec4(color, 1));
 }
 
-void GLText::print(const std::string &text, ViewportCoord pos, int z, int size, glm::vec4 const& color) {
+void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::vec4 const& color) {
 	unsigned int length = text.length();
 	float xSize = size*cellRatio_;
 	glm::vec4 altColor = color;
 	if (size < defaultSize_)
 		altColor.a *= (float)defaultSize_ / size;
-	float zf = -z * 0.01f;
 
 	// Fill buffers
 	itemPositions_.push_back(pos);
