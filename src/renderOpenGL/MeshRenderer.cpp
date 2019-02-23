@@ -25,6 +25,7 @@
 static MeshRenderer* instance = nullptr;
 
 void MeshRenderer::init() {
+	instance = new MeshRenderer();
 }
 
 MeshRenderer* MeshRenderer::get() {
