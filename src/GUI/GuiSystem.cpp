@@ -44,9 +44,9 @@ void GuiSystem::setMouseCapture(GuiBasicElement* elementOrNull) {
 	}
 }
 
-void GuiSystem::draw(Viewport* vp) {
-	if (vp == viewport_)
-		rootElement_.draw(vp, {0.f, 0.f}, {1.f, 1.f});
+void GuiSystem::draw(RenderContext const& ctx) {
+	if (&ctx.viewport == viewport_)
+		rootElement_.draw(ctx, {0.f, 0.f}, {1.f, 1.f});
 }
 
 glm::vec2 GuiSystem::screenToViewport(glm::vec2 sp) const {

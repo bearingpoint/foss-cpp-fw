@@ -16,7 +16,7 @@ public:
 	virtual ~RoundButton() override;
 
 protected:
-	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
+	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 
 private:
 	glm::vec2 centerPos_;

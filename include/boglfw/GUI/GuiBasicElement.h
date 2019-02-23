@@ -15,7 +15,7 @@
 class GuiSystem;
 class GuiContainerElement;
 class ICaptureManager;
-class Viewport;
+class RenderContext;
 
 class GuiBasicElement {
 public:
@@ -56,7 +56,7 @@ protected:
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
 	ICaptureManager* getCaptureManager() const { return captureManager_; }
 	
-	virtual void draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
+	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
 	
 	virtual void mouseEnter();
 	virtual void mouseLeave();

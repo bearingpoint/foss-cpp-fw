@@ -14,6 +14,7 @@
 
 class GuiBasicElement;
 class Viewport;
+class RenderContext;
 class InputEvent;
 
 class GuiSystem : public ICaptureManager {
@@ -27,7 +28,7 @@ public:
 	void addElement(std::shared_ptr<GuiBasicElement> e);
 	void addElement(...) = delete;
 	void removeElement(std::shared_ptr<GuiBasicElement> e);
-	void draw(Viewport* vp);
+	void draw(RenderContext const& ctx);
 	void handleInput(InputEvent &ev);
 
 private:

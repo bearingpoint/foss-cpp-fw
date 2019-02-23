@@ -27,7 +27,7 @@ bool TextField::keyDown(int keyCode) {
 	return false;
 }
 
-void TextField::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
+void TextField::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	Shape2D::get()->drawRectangleFilled(
 			vec3xy(frameTranslation)+glm::vec2(2,2),
 			0,

@@ -22,7 +22,7 @@ RoundButton::RoundButton(glm::vec2 centerPos, float radius, std::string text)
 RoundButton::~RoundButton() {
 }
 
-void RoundButton::draw(Viewport* vp, glm::vec2 frameTranslation, glm::vec2 frameScale) {
+void RoundButton::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	glm::vec4 fillColor = isMouseIn() ? isMousePressed(MouseButtons::Left) ? GuiTheme::getButtonColorPressed() : GuiTheme::getButtonColorHover() : GuiTheme::getButtonColor();
 	Shape2D::get()->drawCircleFilled(
 			vec3xy(frameTranslation) + glm::vec2{radius_, radius_ },	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
