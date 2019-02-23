@@ -5,7 +5,6 @@
  *      Author: bogdan
  */
 #include <boglfw/renderOpenGL/Shape2D.h>
-#include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/shader.h>

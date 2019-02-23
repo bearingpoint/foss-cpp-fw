@@ -16,7 +16,7 @@
 
 #include <atomic>
 
-class Viewport;
+class RenderContext;
 class BinaryStream;
 struct AABB;
 
@@ -36,7 +36,7 @@ public:
 	virtual FunctionalityFlags getFunctionalityFlags() const { return FunctionalityFlags::NONE; }
 
 	virtual void update(float dt) {}
-	virtual void draw(Viewport* vp) {}
+	virtual void draw(RenderContext const& ctx) {}
 	virtual void serialize(BinaryStream &stream) const;
 	virtual int getSerializationType() const;
 	virtual unsigned getEntityType() const = 0;
@@ -46,9 +46,8 @@ public:
 	virtual const Transform& getTransform() const { return transform_; }
 
 	// return the AABB that contains this entity
-	virtual AABB getAABB() const { return AABB {
-			transform_.position() - glm::vec3(0.5f, 0.5f, 0.5f),
-			transform_.position() + glm::vec3(0.5f, 0.5f, 0.5f) }; }
+	// the default implementation returns a 1mx1mx1m AABB centered around the entitiy's transform origin
+	virtual AABB getAABB() const;
 
 	void destroy();
 	bool isZombie() const { return markedForDeletion_.load(std::memory_order_acquire); }

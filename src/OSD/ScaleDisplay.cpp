@@ -4,6 +4,7 @@
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/GLText.h>
+#include <boglfw/renderOpenGL/RenderContext.h>
 
 #include <glm/vec3.hpp>
 #include <math.h>
@@ -12,9 +13,8 @@
 static const glm::vec3 LINE_COLOR(0.8f, 0.8f, 0.8f);
 static const glm::vec3 TEXT_COLOR(1.f, 1.f, 1.f);
 
-ScaleDisplay::ScaleDisplay(ViewportCoord pos, float z, int maxPixelsPerUnit)
+ScaleDisplay::ScaleDisplay(ViewportCoord pos, int maxPixelsPerUnit)
 	: pos_(pos)
-	, z_(z)
 	, segmentsXOffset(50)
 	, segmentHeight(10)
 	, labelYOffset(-12)
@@ -22,8 +22,8 @@ ScaleDisplay::ScaleDisplay(ViewportCoord pos, float z, int maxPixelsPerUnit)
 {
 }
 
-void ScaleDisplay::draw(Viewport* vp) {
-	float pixelsPerUnit = vp->camera()->getOrthoZoom();
+void ScaleDisplay::draw(RenderContext const& ctx) {
+	float pixelsPerUnit = ctx.viewport.camera()->getOrthoZoom();
 	int exponent = 0;
 
 	if (pixelsPerUnit > m_MaxSize) {
@@ -53,8 +53,8 @@ void ScaleDisplay::draw(Viewport* vp) {
 		segIncrement = 0.5f;
 	}
 	int nVertex = 1 + segments * 3;
-	float cx = (float)pos_.x(vp) + segmentsXOffset;
-	float cy = (float)pos_.y(vp) - 1;
+	float cx = (float)pos_.x(ctx.viewport) + segmentsXOffset;
+	float cy = (float)pos_.y(ctx.viewport) - 1;
 	glm::vec2 vList[31]; // 31 is max vertex for max_seg=10
 	for (int i=0; i<segments; i++) {
 		int localSegHeight = (int)(i*segIncrement) == (i*segIncrement) ? segmentHeight : segmentHeight / 2;
@@ -65,19 +65,18 @@ void ScaleDisplay::draw(Viewport* vp) {
 	}
 	vList[nVertex-1] = glm::vec2(cx, cy-segmentHeight);
 
-	Shape2D::get()->drawLineStrip(vList, nVertex, 0, LINE_COLOR);
+	Shape2D::get()->drawLineStrip(vList, nVertex, LINE_COLOR);
 
 	char scaleLabel[100];
 
 	snprintf(scaleLabel, 100, "(10^%d)", exponent);
-	GLText::get()->print(scaleLabel, pos_, z_, 14, TEXT_COLOR);
+	GLText::get()->print(scaleLabel, pos_, 14, TEXT_COLOR);
 	for (int i=0; i<segments+1; i++) {
 		snprintf(scaleLabel, 100, "%g", i*segIncrement);
 		int localSegHeight = (int)(i*segIncrement) == (i*segIncrement) ? 0 : segmentHeight / 2;
 		GLText::get()->print(scaleLabel,
 				pos_ + ViewportCoord{ -localSegHeight + segmentsXOffset+i*(int)(pixelsPerUnit*segIncrement),
 					 	 -10 + localSegHeight },
-				z_,
 				12, TEXT_COLOR);
 	}
 }

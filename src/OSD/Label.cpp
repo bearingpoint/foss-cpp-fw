@@ -3,31 +3,26 @@
 #include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/renderOpenGL/GLText.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
+#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/math/math3D.h>
 
-Label::Label(std::string value, ViewportCoord pos, float z, float textSize, glm::vec3 color, std::string viewportFilter)
+Label::Label(std::string value, ViewportCoord pos, float textSize, glm::vec3 color)
 	: pos_(pos)
-	, z_(z)
 	, color_(color)
 	, textSize_(textSize)
-	, value_(value)
-	, viewportFilter_(viewportFilter) {
+	, value_(value) {
 }
 
 glm::vec2 Label::boxSize() const {
 	return GLText::get()->getTextRect(value_, textSize_);
 }
 
-void Label::draw(Viewport* vp) {
-	if (!viewportFilter_.empty() && viewportFilter_ != vp->name())
-		return;
-
-	GLText::get()->print(value_, pos_, z_, textSize_, color_);
+void Label::draw(RenderContext const& ctx) {
+	GLText::get()->print(value_, pos_, textSize_, color_);
 	if (drawFrame) {
 		glm::vec2 rectSize = boxSize() + glm::vec2(5, 5);
 		Shape2D::get()->drawRectangle(
-				pos_.xy(vp) + glm::vec2{5, 5},
-				z_,
+				pos_.xy(ctx.viewport) + glm::vec2{5, 5},
 				rectSize,
 				color_);
 	}

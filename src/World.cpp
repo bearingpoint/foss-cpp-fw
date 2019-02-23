@@ -303,7 +303,7 @@ void World::queueDeferredAction(std::function<void()> &&fun, int delayFrames) {
 		deferredActions_.push_back(std::make_pair(std::move(fun), delayFrames));
 }
 
-void World::draw(Viewport* vp) {
+void World::draw(RenderContext const& ctx) {
 	PERF_MARKER_FUNC;
 	// draw extent lines:
 	if (config.drawBoundaries) {
@@ -338,7 +338,7 @@ void World::draw(Viewport* vp) {
 
 	for (auto e : entsToDraw_) {
 		PERF_MARKER((std::string("Entity draw: ") + std::to_string((int)e->getEntityType())).c_str());
-		e->draw(vp);
+		e->draw(ctx);
 	}
 }
 

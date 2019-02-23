@@ -2,6 +2,8 @@
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/glToolkit.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
+#include <boglfw/renderOpenGL/RenderContext.h>
+#include <boglfw/utils/log.h>
 
 using namespace glm;
 
@@ -63,6 +65,10 @@ bool Viewport::containsPoint(glm::vec2 const&p) const {
 void Viewport::render(std::vector<drawable> const& list) {
 	if (!isEnabled())
 		return;
+	if (!pContext_) {
+		ERROR("No RenderContext created for the viewport!");
+		return;
+	}
 	// set up and clear viewport:
 	SSDescriptor ssDesc;
 	bool ssEnabled = gltGetSuperSampleInfo(ssDesc);
@@ -82,7 +88,7 @@ void Viewport::render(std::vector<drawable> const& list) {
 
 	// render objects from list:
 	for (auto &x : list) {
-		x.draw(this);
+		x.draw(*pContext_);
 	}
 
 	// flush all render helpers' pending commands

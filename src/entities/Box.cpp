@@ -20,6 +20,6 @@ void Box::update(float dt) {
 	//body_.update(dt);
 }
 
-void Box::draw(Viewport* vp) {
+void Box::draw(RenderContext const& ctx) {
 	MeshRenderer::get()->renderMesh(mesh_, transform_.glMatrix()/*body_.getTransformation(physics::DynamicBody::TransformSpace::World)*/);
 }

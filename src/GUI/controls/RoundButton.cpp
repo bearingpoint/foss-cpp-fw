@@ -27,18 +27,15 @@ void RoundButton::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm
 	Shape2D::get()->drawCircleFilled(
 			vec3xy(frameTranslation) + glm::vec2{radius_, radius_ },	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
 			radius_ - 2,
-			0.f,	// z
 			32,		// nSides
 			fillColor);
 	Shape2D::get()->drawCircle(
 			vec3xy(frameTranslation) + glm::vec2{radius_, radius_ },	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
 			radius_,
-			0.f,	// z
 			32,		// nSides
 			GuiTheme::getButtonFrameColor());
 	auto textRc = GLText::get()->getTextRect(text(), 16);
 	glm::vec2 offs = {isMousePressed(MouseButtons::Left) && isMouseIn() ? 1 : 0, isMousePressed(MouseButtons::Left) && isMouseIn() ? 3 : 2};
 	glm::vec2 textPos = {frameTranslation.x + radius_ - textRc.x / 2 + offs.x, frameTranslation.y + radius_ + textRc.y / 2 + offs.y};
-	float tz = 0.01f;
-	GLText::get()->print(text(), textPos, tz, 16, GuiTheme::getButtonTextColor());
+	GLText::get()->print(text(), textPos, 16, GuiTheme::getButtonTextColor());
 }

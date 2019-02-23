@@ -6,12 +6,12 @@
  */
 
 #include <boglfw/renderOpenGL/MeshRenderer.h>
-#include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Mesh.h>
 #include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/glToolkit.h>
+#include <boglfw/renderOpenGL/RenderHelpers.h>
 #include <boglfw/utils/log.h>
 
 #include <boglfw/utils/assert.h>
@@ -24,8 +24,7 @@
 
 static MeshRenderer* instance = nullptr;
 
-void MeshRenderer::init(Renderer* renderer) {
-	instance = new MeshRenderer(renderer);
+void MeshRenderer::init() {
 }
 
 MeshRenderer* MeshRenderer::get() {
@@ -38,9 +37,8 @@ void MeshRenderer::unload() {
 	instance = nullptr;
 }
 
-MeshRenderer::MeshRenderer(Renderer* renderer) {
+MeshRenderer::MeshRenderer() {
 	LOGPREFIX("MeshRenderer::ctor");
-	renderer->registerRenderable(this);
 	Shaders::createProgram("data/shaders/mesh.vert", "data/shaders/mesh-texture.frag", [this](unsigned id) {
 		meshShaderProgram_ = id;
 		if (meshShaderProgram_ == 0) {
@@ -63,12 +61,19 @@ void MeshRenderer::renderMesh(Mesh& mesh, glm::mat4 worldTransform) {
 	renderQueue_.push_back(meshRenderData(&mesh, worldTransform));
 }
 
-void MeshRenderer::render(Viewport* vp, unsigned batchId) {
-	LOGPREFIX("MeshRenderer::render");
-	assertDbg(batchId < batches_.size());
+void MeshRenderer::flush() {
+	LOGPREFIX("MeshRenderer::flush");
 
-	unsigned nMeshes = batchId == batches_.size() - 1 ? renderQueue_.size() - batches_.back()
-		: batches_[batchId+1] - batches_[batchId];
+	if (!meshShaderProgram_)
+		return;
+
+	Viewport* vp = RenderHelpers::getActiveViewport();
+	if (!vp) {
+		assertDbg(!!!"No viewport is currently rendering!");
+		return;
+	}
+
+	unsigned nMeshes = renderQueue_.size();
 	if (!nMeshes)
 		return;
 
@@ -77,7 +82,7 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 	auto matPV = vp->camera()->matProjView();
 
 	for (unsigned i=0; i<nMeshes; i++) {
-		auto &m = renderQueue_[batches_[batchId] + i];
+		auto &m = renderQueue_[i];
 		auto matPVW = matPV * m.wldTransform_;
 		glUniformMatrix4fv(indexMatPVW_, 1, GL_FALSE, glm::value_ptr(matPVW));
 		checkGLError("mPVW uniform setup");
@@ -126,18 +131,8 @@ void MeshRenderer::render(Viewport* vp, unsigned batchId) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
-}
 
-void MeshRenderer::startBatch() {
-	batches_.push_back(renderQueue_.size());
-}
-
-void MeshRenderer::setupFrameData() {
-	// nothing
-	// TODO -> if we have dynamic meshes, then call update on them or something
-}
-
-void MeshRenderer::purgeRenderQueue() {
+	// purge cached data:
 	renderQueue_.clear();
-	batches_.clear();
 }
+

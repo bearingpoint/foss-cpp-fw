@@ -64,7 +64,7 @@ EntityLabeler& EntityLabeler::getInstance() {
 	return instance;
 }
 
-void EntityLabeler::draw(Viewport* vp) {
+void EntityLabeler::draw(RenderContext const& ctx) {
 	std::vector<const Entity*> entsToRemove;
 	for (auto const& p : labels_) {
 		if (p.first->isZombie()) {
@@ -89,13 +89,13 @@ void EntityLabeler::setEntityLabel(const Entity* ent, std::string const& name, s
 	el.rgb_ = rgb;
 	el.value_ = value;
 	if (!el.label_) {
-		auto xc = [ent] (Viewport* vp) -> float {
-			return 0; //vp->project(ent->position()).x;
+		auto xc = [ent] (Viewport const& vp) -> float {
+			return vp.project(ent->getTransform().position()).x;
 		};
-		auto yc = [ent] (Viewport* vp) -> float {
-			return 0; //vp->project(ent->position()).y;
+		auto yc = [ent] (Viewport const& vp) -> float {
+			return vp.project(ent->getTransform().position()).y;
 		};
-		el.label_ = std::unique_ptr<Label>(new Label(el.value_, {xc, yc}, 0, LABEL_TEXT_SIZE, el.rgb_));
+		el.label_ = std::unique_ptr<Label>(new Label(el.value_, {xc, yc}, LABEL_TEXT_SIZE, el.rgb_));
 	} else {
 		el.label_->setText("[" + name + "] " + el.value_);
 		el.label_->setColor(el.rgb_);

@@ -9,6 +9,7 @@
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/GLText.h>
 #include <boglfw/renderOpenGL/Viewport.h>
+#include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/log.h>
 #include <boglfw/perf/marker.h>
@@ -41,8 +42,8 @@ void SignalDataSource::update(float dt) {
 	}
 }
 
-SignalViewer::SignalViewer(ViewportCoord pos, float z, ViewportCoord size, std::string viewportFilter)
-	: pos_(pos), z_(z), size_(size), viewportFilter_(viewportFilter) {
+SignalViewer::SignalViewer(ViewportCoord pos, ViewportCoord size)
+	: pos_(pos), size_(size) {
 }
 
 SignalViewer::~SignalViewer() {
@@ -61,11 +62,8 @@ void SignalViewer::update(float dt) {
 		s.source_->update(dt);
 }
 
-void SignalViewer::draw(Viewport* vp) {
+void SignalViewer::draw(RenderContext const& ctx) {
 	PERF_MARKER_FUNC;
-
-	if (!viewportFilter_.empty() && viewportFilter_ != vp->name())
-		return;
 
 	constexpr int maxYDivisions = 5;
 	constexpr float textSize = 16;
@@ -74,11 +72,11 @@ void SignalViewer::draw(Viewport* vp) {
 	const glm::vec4 divisionColor(1.f, 1.f, 1.f, 0.2f);
 	const glm::vec4 divisionLabelColor(1.f, 1.f, 1.f, 0.6f);
 
-	glm::vec2 pos = pos_.xy(vp);
-	glm::vec2 size = size_.xy(vp);
+	glm::vec2 pos = pos_.xy(ctx.viewport);
+	glm::vec2 size = size_.xy(ctx.viewport);
 
 	for (auto &s : sourceInfo_) {
-		Shape2D::get()->drawRectangle(pos, z_, size, frameColor);
+		Shape2D::get()->drawRectangle(pos, size, frameColor);
 		float sMin = 1.e20f, sMax = -1.e20f;
 		// scan all samples and seek min/max values:
 		for (unsigned i=0; i<s.source_->getNumSamples(); i++) {
@@ -119,7 +117,7 @@ void SignalViewer::draw(Viewport* vp) {
 			} else {
 				crtVertex.x += prevVertex.x + widthPerSample;
 			}
-			Shape2D::get()->drawLine(prevVertex, crtVertex, z_, s.color_);
+			Shape2D::get()->drawLine(prevVertex, crtVertex, s.color_);
 #warning "build an array and use drawLineStrip"
 			prevVertex = crtVertex;
 		}
@@ -127,7 +125,7 @@ void SignalViewer::draw(Viewport* vp) {
 		if (sMin * sMax < 0) {
 			// zero line is visible
 			glm::vec2 zeroY = {0, pos.y + size.y + pixelsPerYUnit*sMin};
-			Shape2D::get()->drawLine(pos + zeroY, pos + glm::vec2(size.x, 0) + zeroY, z_, frameColor);
+			Shape2D::get()->drawLine(pos + zeroY, pos + glm::vec2(size.x, 0) + zeroY, frameColor);
 		}
 		int nYDivs = maxYDivisions; //min(maxYDivisions, (int)(size.y / yDivisionSize));
 		int nDecimals = noData ? 0 : clamp((int)(4 - log10(sMax - sMin)), 0, 7);
@@ -136,10 +134,10 @@ void SignalViewer::draw(Viewport* vp) {
 		float yDivisionSize = size.y / nYDivs;
 		for (int i=1; i<nYDivs; i++) {
 			float lineY = size.y + yDivisionSize * (-i);
-			Shape2D::get()->drawLine(pos + glm::vec2{0, lineY}, pos + glm::vec2{size.x, lineY}, z_, divisionColor);
+			Shape2D::get()->drawLine(pos + glm::vec2{0, lineY}, pos + glm::vec2{size.x, lineY}, divisionColor);
 			std::stringstream ss;
 			ss << std::fixed << std::setprecision(nDecimals) << sMin + (sMax-sMin) * i / nYDivs;
-			GLText::get()->print(ss.str(), pos + glm::vec2{(ss.str().size()+1) * (-spacePerChar), textSize/2 + lineY}, z_, textSize, divisionLabelColor);
+			GLText::get()->print(ss.str(), pos + glm::vec2{(ss.str().size()+1) * (-spacePerChar), textSize/2 + lineY}, textSize, divisionLabelColor);
 		}
 		// draw title and current value:
 		std::stringstream stitle;
@@ -148,7 +146,7 @@ void SignalViewer::draw(Viewport* vp) {
 			stitle << " : " << std::fixed << std::setprecision(nDecimals) << s.source_->getSample(s.source_->getNumSamples()-1);
 		else
 			stitle << " (no values)";
-		GLText::get()->print(stitle.str(), pos, z_, textSize, s.color_);
+		GLText::get()->print(stitle.str(), pos, textSize, s.color_);
 
 		pos.y += size.y + 10 + textSize;
 	}

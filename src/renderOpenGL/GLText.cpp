@@ -11,13 +11,16 @@
 #include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
+#include <boglfw/utils/configFile.h>
 #include <boglfw/utils/assert.h>
+#include <boglfw/utils/log.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
 
 #include <vector>
+#include <map>
 
 using namespace glm;
 
@@ -26,8 +29,33 @@ bool GLText::disableMipMaps_ = false;
 
 void GLText::init(const char* fontPath) {
 	// load font file and parse properties
-	...
-	instance = new GLText(texturePath, rows, cols, firstChar, defaultSize);
+	const std::string kTexture = "texture";
+	const std::string kRows = "rows";
+	const std::string kColumns = "columns";
+	const std::string kFirstChar = "firstChar";
+	const std::string kDefaultSize = "defaultSize";
+	std::map<std::string, std::string> opts {
+		{ kTexture, {}},
+		{ kRows, {}},
+		{ kColumns, {}},
+		{ kFirstChar, {}},
+		{ kDefaultSize, {}}
+	};
+	std::vector<std::string> req { kTexture, kRows, kColumns, kFirstChar, kDefaultSize };
+	if (!parseConfigFile(fontPath, opts, req)) {
+		ERROR("Loading font from " << fontPath);
+		return;
+	}
+	if (opts[kFirstChar].size() != 3) {
+		ERROR("Parsing 'firstChar' value from font desc file. Must be in the form: 'c' (including quotes).");
+		return;
+	}
+	auto texturePath = opts[kTexture];
+	auto rows = atoi(opts[kRows].c_str());
+	auto cols = atoi(opts[kColumns].c_str());
+	auto defaultSize = atoi(opts[kDefaultSize].c_str());
+	char firstChar = opts[kFirstChar][1];
+	instance = new GLText(texturePath.c_str(), rows, cols, firstChar, defaultSize);
 }
 
 GLText* GLText::get() {
@@ -83,7 +111,7 @@ GLText::GLText(const char * texturePath, int rows, int cols, char firstChar, int
 
 		glBindBuffer(GL_ARRAY_BUFFER, posVBO_);
 		glEnableVertexAttribArray(vertexPosition_screenspaceID_);
-		glVertexAttribPointer(vertexPosition_screenspaceID_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(vertexPosition_screenspaceID_, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, uvVBO_);
 		glEnableVertexAttribArray(vertexUVID_);
@@ -141,7 +169,7 @@ glm::vec2 GLText::getTextRect(const std::string& text, int fontSize) {
 }
 
 void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::vec3 const& color) {
-	print(text, pos, z, size, glm::vec4(color, 1));
+	print(text, pos, size, glm::vec4(color, 1));
 }
 
 void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::vec4 const& color) {
@@ -169,10 +197,10 @@ void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::ve
 			continue;
 		}
 
-		glm::vec3 vertex_up_left    = glm::vec3(x      , y-size, zf);
-		glm::vec3 vertex_up_right   = glm::vec3(x+xSize, y-size, zf);
-		glm::vec3 vertex_down_right = glm::vec3(x+xSize, y,      zf);
-		glm::vec3 vertex_down_left  = glm::vec3(x      , y,      zf);
+		glm::vec2 vertex_up_left    { x      , y-size };
+		glm::vec2 vertex_up_right   { x+xSize, y-size };
+		glm::vec2 vertex_down_right { x+xSize, y };
+		glm::vec2 vertex_down_left  { x      , y };
 
 		x += xSize;
 
@@ -210,6 +238,13 @@ void GLText::flush() {
 	if (!shaderProgram_)
 		return;
 
+	Viewport* pCrtViewport = RenderHelpers::getActiveViewport();
+	if (!pCrtViewport) {
+		assertDbg(!!!"No viewport is currently rendering!");
+		return;
+	}
+	Viewport const& vp = *pCrtViewport;
+
 	unsigned nItems = itemPositions_.size();
 	if (!nItems)
 		return;
@@ -232,8 +267,7 @@ void GLText::flush() {
 	// Set our "myTextureSampler" sampler to user Texture Unit 0
 	glUniform1i(u_textureID_, 0);
 
-	Viewport* pCrtViewport = RenderHelpers::getActiveViewport();
-	vec2 halfVP(pCrtViewport->width() / 2, pCrtViewport->height() / 2);
+	vec2 halfVP(vp.width() / 2, vp.height() / 2);
 	glUniform2fv(indexViewportHalfSize_, 1, &halfVP[0]);
 
 	glBindVertexArray(VAO_);
@@ -245,7 +279,7 @@ void GLText::flush() {
 	// do the drawing:
 	unsigned offset = 0;
 	for (unsigned i=0; i<nItems; i++) {
-		glm::vec2 translate(itemPositions_[i].x(pCrtViewport), itemPositions_[i].y(pCrtViewport));
+		glm::vec2 translate(itemPositions_[i].x(vp), itemPositions_[i].y(vp));
 		glUniform2fv(indexTranslation_, 1, &translate[0]);
 		glDrawArrays(GL_TRIANGLES, offset, verticesPerItem_[i]);
 		offset += verticesPerItem_[i];

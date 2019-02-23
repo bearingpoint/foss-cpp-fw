@@ -24,7 +24,7 @@ class Viewport;
 class Shape3D {
 public:
 	static Shape3D* get();
-	virtual ~Shape3D() override;
+	virtual ~Shape3D();
 
 	// draw a single line segment
 	void drawLine(glm::vec3 point1, glm::vec3 point2, glm::vec3 rgb);
@@ -61,6 +61,7 @@ protected:
 	friend class RenderHelpers;
 	static void init();
 	static void unload();
+	void flush();
 	Shape3D();
 
 private:

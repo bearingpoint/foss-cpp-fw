@@ -16,7 +16,7 @@ class Mesh;
 class MeshRenderer {
 public:
 	static MeshRenderer* get();
-	virtual ~MeshRenderer() override;
+	virtual ~MeshRenderer();
 
 	void renderMesh(Mesh& mesh, glm::mat4 worldTransform = glm::mat4(1));
 
@@ -24,6 +24,7 @@ protected:
 	friend class RenderHelpers;
 	static void init();
 	static void unload();
+	void flush();
 	MeshRenderer();
 
 private:

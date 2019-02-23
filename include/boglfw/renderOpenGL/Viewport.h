@@ -43,11 +43,14 @@ public:
 	void render(std::vector<drawable> const& list);
 
 protected:
+	friend class RenderContext;
+
 	long userData_ = 0;
 	glm::vec4 viewportArea_;
 	Camera* pCamera_ = nullptr;
 	bool enabled_ = true;
 	glm::vec3 backgroundColor_;
+	RenderContext* pContext_ = nullptr;
 
 	mutable glm::mat4 mPV_cache_ {1};
 	mutable glm::mat4 mPV_inv_cache_ {1};

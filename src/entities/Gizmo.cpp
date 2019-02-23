@@ -13,6 +13,6 @@ Gizmo::~Gizmo()
 {
 }
 
-void Gizmo::draw(Viewport* vp) {
+void Gizmo::draw(RenderContext const& ctx) {
 	MeshRenderer::get()->renderMesh(mesh_, transform_.glMatrix());
 }

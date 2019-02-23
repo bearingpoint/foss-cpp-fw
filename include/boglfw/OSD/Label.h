@@ -6,11 +6,11 @@
 
 #include <string>
 
-class Label
-{
-public:
+class RenderContext;
 
-	Label(std::string value, ViewportCoord pos, float z, float textSize, glm::vec3 color, std::string viewportFilter_ = "");
+class Label {
+public:
+	Label(std::string value, ViewportCoord pos, float textSize, glm::vec3 color);
 
 	void setText(std::string text) { value_ = text; }
 	void setColor(glm::vec3 rgb) { color_ = rgb; }
@@ -19,15 +19,13 @@ public:
 
 	glm::vec2 boxSize() const;
 
-	void draw(Viewport* vp);
+	void draw(RenderContext const& ctx);
 
 	bool drawFrame = true;
 
 protected:
 	ViewportCoord pos_;
-	float z_;
 	glm::vec3 color_;
 	float textSize_;
 	std::string value_;
-	std::string viewportFilter_;
 };

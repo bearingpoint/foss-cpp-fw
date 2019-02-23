@@ -30,7 +30,7 @@ public:
 		callback		// coordinates will be provided by user callback on a per-viewport basis
 	};
 
-	using userCallback = std::function<float(Viewport* vp)>;
+	using userCallback = std::function<float(Viewport const& vp)>;
 
 	ViewportCoord() = default;
 
@@ -67,10 +67,10 @@ public:
 	ViewportCoord y() const;
 
 	// compute the actual pixel value within a viewport:
-	float x(Viewport* vp) const;
-	float y(Viewport* vp) const;
+	float x(Viewport const& vp) const;
+	float y(Viewport const& vp) const;
 
-	glm::vec2 xy(Viewport* vp) const;
+	glm::vec2 xy(Viewport const& vp) const;
 
 #ifdef DEBUG
 	void debugPrint();

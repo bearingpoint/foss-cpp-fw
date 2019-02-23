@@ -19,7 +19,7 @@
 #include <functional>
 
 class SignalDataSource;
-class Viewport;
+class RenderContext;
 
 class SignalViewer {
 public:
@@ -42,7 +42,7 @@ public:
 		}
 	};
 
-	SignalViewer(ViewportCoord pos, float z, ViewportCoord size, std::string viewportFilter="");
+	SignalViewer(ViewportCoord pos, ViewportCoord size);
 	virtual ~SignalViewer();
 
 	// displayPrecision < 0 means auto. n>=0 means max n decimal places
@@ -57,14 +57,12 @@ public:
 	}
 
 	void update(float dt);
-	void draw(Viewport* vp);
+	void draw(RenderContext const& ctx);
 
 private:
 	std::vector<DataInfo> sourceInfo_;
 	ViewportCoord pos_;
-	float z_;
 	ViewportCoord size_;
-	std::string viewportFilter_;
 };
 
 class SignalDataSource {

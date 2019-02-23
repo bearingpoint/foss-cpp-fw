@@ -48,7 +48,7 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 		if (!e->isVisible())
 			continue;
 		RenderHelpers::flushAll();
-		e->draw(vp, frameTranslation + e->getPosition(), frameScale);
+		e->draw(ctx, frameTranslation + e->getPosition(), frameScale);
 	}
 	// TODO draw frame around focused element:
 }

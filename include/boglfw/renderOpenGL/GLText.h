@@ -51,7 +51,7 @@ private:
 	int rows_, cols_, firstChar_;
 	float cellRatio_; 					// cellWeight / cellHidth
 	int defaultSize_;					// text size from the texture
-	std::vector<glm::vec3> vertices_;	// these are relative to item's position (below)
+	std::vector<glm::vec2> vertices_;	// these are relative to item's position (below)
 	std::vector<glm::vec2> UVs_;
 	std::vector<glm::vec4> colors_;
 	std::vector<ViewportCoord> itemPositions_;

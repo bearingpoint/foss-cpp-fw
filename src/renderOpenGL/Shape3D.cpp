@@ -6,10 +6,10 @@
  */
 
 #include <boglfw/renderOpenGL/Shape3D.h>
-#include <boglfw/renderOpenGL/Renderer.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/shader.h>
+#include <boglfw/renderOpenGL/RenderHelpers.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/log.h>
 
@@ -23,8 +23,8 @@
 
 static Shape3D* instance = nullptr;
 
-void Shape3D::init(Renderer* renderer) {
-	instance = new Shape3D(renderer);
+void Shape3D::init() {
+	instance = new Shape3D();
 }
 
 Shape3D* Shape3D::get() {
@@ -32,8 +32,7 @@ Shape3D* Shape3D::get() {
 	return instance;
 }
 
-Shape3D::Shape3D(Renderer* renderer) {
-	renderer->registerRenderable(this);
+Shape3D::Shape3D() {
 	glGenVertexArrays(1, &VAO_);
 	glGenBuffers(1, &VBO_);
 	glGenBuffers(1, &IBO_);
@@ -72,13 +71,27 @@ void Shape3D::unload() {
 	instance = nullptr;
 }
 
-void Shape3D::render(Viewport* vp, unsigned batchId) {
-	assertDbg(batchId < batches_.size());
+void Shape3D::flush() {
+	if (!lineShaderProgram_)
+		return;
 
-	unsigned nIndices = batchId == batches_.size() - 1 ? indices_.size() - batches_.back()
-		: batches_[batchId+1] - batches_[batchId];
+	Viewport* pCrtViewport = RenderHelpers::getActiveViewport();
+	if (!pCrtViewport) {
+		assertDbg(!!!"No viewport is currently rendering!");
+		return;
+	}
+
+	unsigned nIndices = indices_.size();
 	if (!nIndices)
 		return;
+
+	// update render buffers:
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertex) * buffer_.size(), &buffer_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_[0]) * indices_.size(), &indices_[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -86,30 +99,15 @@ void Shape3D::render(Viewport* vp, unsigned batchId) {
 
 	glUseProgram(lineShaderProgram_);
 	glBindVertexArray(VAO_);
-	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(vp->camera()->matProjView()));
+	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(pCrtViewport->camera()->matProjView()));
 
-	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_INT, (void*)(sizeof(indices_[0]) * batches_[batchId]));
+	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_INT, 0);
 
 	glDisable(GL_BLEND);
-}
 
-void Shape3D::startBatch() {
-	batches_.push_back(indices_.size());
-}
-
-void Shape3D::setupFrameData() {
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertex) * buffer_.size(), &buffer_[0], GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_[0]) * indices_.size(), &indices_[0], GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void Shape3D::purgeRenderQueue() {
+	// purge cached data:
 	buffer_.clear();
 	indices_.clear();
-	batches_.clear();
 }
 
 void Shape3D::drawLine(glm::vec3 point1, glm::vec3 point2, glm::vec3 rgb) {

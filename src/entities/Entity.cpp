@@ -7,6 +7,7 @@
 
 #include <boglfw/entities/Entity.h>
 #include <boglfw/World.h>
+#include <boglfw/math/aabb.h>
 #include <boglfw/utils/assert.h>
 #include <boglfw/utils/log.h>
 
@@ -36,7 +37,10 @@ int Entity::getSerializationType() const {
 	return 0;
 }
 
-//glm::vec2 Entity::getPosition() const {
-//	return vec3xy(getWorldTransform());
-//}
+AABB Entity::getAABB() const {
+	return AABB {
+		transform_.position() - glm::vec3(0.5f, 0.5f, 0.5f),
+		transform_.position() + glm::vec3(0.5f, 0.5f, 0.5f)
+	};
+}
 

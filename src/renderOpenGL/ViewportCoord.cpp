@@ -15,15 +15,15 @@
 #include <string>
 #endif
 
-float ViewportCoord::x(Viewport* vp) const {
+float ViewportCoord::x(Viewport const& vp) const {
 	float x = x_;
 	if (type_ == callback) {
 		if (xc_)
 			x += xc_(vp);
 	} else if (type_ == percent)
-		x *= vp->width() * 0.01f;
+		x *= vp.width() * 0.01f;
 	if (anchor_ & right)
-		x = vp->width() - x;
+		x = vp.width() - x;
 	for (auto& a : deferredAdjustments_) {
 		if (a.type == Adjustment::scale)
 			x *= a.weightX;
@@ -33,15 +33,15 @@ float ViewportCoord::x(Viewport* vp) const {
 	return x;
 }
 
-float ViewportCoord::y(Viewport* vp) const {
+float ViewportCoord::y(Viewport const& vp) const {
 	float y = y_;
 	if (type_ == callback) {
 		if (yc_)
 			y += yc_(vp);
 	} else if (type_ == percent)
-		y *= vp->height() * 0.01f;
+		y *= vp.height() * 0.01f;
 	if (anchor_ & bottom)
-		y = vp->height() - y;
+		y = vp.height() - y;
 	for (auto& a : deferredAdjustments_) {
 		if (a.type == Adjustment::scale)
 			y *= a.weightY;
@@ -51,7 +51,7 @@ float ViewportCoord::y(Viewport* vp) const {
 	return y;
 }
 
-glm::vec2 ViewportCoord::xy(Viewport* vp) const {
+glm::vec2 ViewportCoord::xy(Viewport const& vp) const {
 	return glm::vec2 { x(vp), y(vp) };
 }
 

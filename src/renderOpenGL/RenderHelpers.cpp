@@ -4,11 +4,13 @@
 #include <boglfw/renderOpenGL/MeshRenderer.h>
 #include <boglfw/renderOpenGL/GLText.h>
 
+Viewport* RenderHelpers::pActiveViewport = nullptr;
+
 void RenderHelpers::load(Config config) {
 	Shape3D::init();
 	MeshRenderer::init();
 	Shape2D::init();
-	GLText::init(config.fontPath);
+	GLText::init(config.fontPath.c_str());
 }
 
 void RenderHelpers::unload() {
@@ -19,8 +21,8 @@ void RenderHelpers::unload() {
 }
 
 void RenderHelpers::flushAll() {
-	Shape2D::flush();
-	Shape3D::flush();
-	MeshRenderer::flush();
-	GLText::flush();
+	Shape2D::get()->flush();
+	Shape3D::get()->flush();
+	MeshRenderer::get()->flush();
+	GLText::get()->flush();
 }

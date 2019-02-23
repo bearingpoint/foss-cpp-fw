@@ -16,7 +16,7 @@ public:
 
 	Gizmo(glm::mat4 transform, float axisLength = 1.f);
 
-	virtual void draw(Viewport* vp) override;
+	virtual void draw(RenderContext const& ctx) override;
 
 private:
 	float axisLength_;

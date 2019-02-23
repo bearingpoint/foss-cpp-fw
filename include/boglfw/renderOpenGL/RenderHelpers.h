@@ -28,14 +28,14 @@ public:
 
 	// flushes all render helpers. This is automatically called by the Viewport after drawing everything, so
 	// it's rarely required to call it directly.
-	void flushAll();
+	static void flushAll();
 
 	// returns the viewport for which rendering is currently on-going, or nullptr if rendering is not in progress.
-	Viewport* getActiveViewport() const { return pActiveViewport; }
+	static Viewport* getActiveViewport() { return pActiveViewport; }
 
 private:
 	friend class Viewport;
-	Viewport* pActiveViewport = nullptr;
+	static Viewport* pActiveViewport;
 };
 
 #endif // __RENDER_HELPERS_H__

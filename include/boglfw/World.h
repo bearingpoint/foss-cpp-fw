@@ -95,8 +95,10 @@ public:
 	void getEntitiesInBox(std::vector<Entity*> &out, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags, glm::vec2 const& pos, float radius, bool clipToCircle);
 #endif // WITH_BOX2D
 
+	// call update() on all UPDATABLE entities.
 	void update(float dt);
-	void draw(Viewport* vp);
+	// this will call draw() on *all* DRAWABLE entities; it's a naive render implementation when you don't need anything more complex.
+	void draw(RenderContext const& ctx);
 
 	// this is thread safe by design; if called from the synchronous loop that executes deferred actions, it's executed immediately (if delayFrames=0),
 	// else it's added to the queue
