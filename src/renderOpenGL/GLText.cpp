@@ -12,6 +12,7 @@
 #include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
 #include <boglfw/utils/configFile.h>
+#include <boglfw/utils/filesystem.h>
 #include <boglfw/utils/assert.h>
 #include <boglfw/utils/log.h>
 
@@ -50,7 +51,8 @@ void GLText::init(const char* fontPath) {
 		ERROR("Parsing 'firstChar' value from font desc file. Must be in the form: 'c' (including quotes).");
 		return;
 	}
-	auto texturePath = opts[kTexture];
+	auto textureRelPath = opts[kTexture];
+	auto texturePath = filesystem::getFileDirectory(fontPath) + textureRelPath;
 	auto rows = atoi(opts[kRows].c_str());
 	auto cols = atoi(opts[kColumns].c_str());
 	auto defaultSize = atoi(opts[kDefaultSize].c_str());
@@ -71,8 +73,18 @@ GLText::GLText(const char * texturePath, int rows, int cols, char firstChar, int
 	: rows_(rows), cols_(cols), firstChar_(firstChar), defaultSize_(defaultSize)
 {
 	cellRatio_ = (float)rows/cols;
+	// Initialize VAO & VBOs
+	glGenVertexArrays(1, &VAO_);
+	glGenBuffers(1, &posVBO_);
+	glGenBuffers(1, &uvVBO_);
+	glGenBuffers(1, &colorVBO_);
+
 	// Initialize texture
 	textureID_ = TextureLoader::loadFromPNG(texturePath, true);
+	if (!textureID_) {
+		ERROR("Can't initialize GLText - texture loading failed.");
+		return;
+	}
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID_);
 	if (!disableMipMaps_) {
@@ -83,12 +95,6 @@ GLText::GLText(const char * texturePath, int rows, int cols, char firstChar, int
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// Initialize VAO & VBOs
-	glGenVertexArrays(1, &VAO_);
-	glGenBuffers(1, &posVBO_);
-	glGenBuffers(1, &uvVBO_);
-	glGenBuffers(1, &colorVBO_);
 
 	// Initialize Shader
 	Shaders::createProgram("data/shaders/text.vert", "data/shaders/text.frag", [this] (unsigned id) {

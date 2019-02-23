@@ -27,7 +27,7 @@ static void internalLoadPNG(string const& filename, bool linearizeValues, textur
     // https://github.com/DavidEGrayson/ahrs-visualizer
 
 	LOGPREFIX("TextureLoader");
-	LOG("Loading texture from " << filename << " ...");
+	LOGLN("Loading texture from " << filename << " ...");
 
     png_byte header[8];
 

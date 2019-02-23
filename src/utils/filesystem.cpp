@@ -217,4 +217,9 @@ void applyRecursive(std::string const& baseDir, std::function<void(std::string c
 	}
 }
 
+std::string getFileDirectory(std::string const& filePath) {
+	auto fn = getFileName(filePath);
+	return filePath.substr(0, filePath.size() - fn.size());
+}
+
 } // namespace

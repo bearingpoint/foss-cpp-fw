@@ -22,6 +22,7 @@ bool mkDirRecursive(std::string const& path);
 std::string getFileName(std::string const& path);
 std::string stripExt(std::string const& path);
 std::string getFileExt(std::string const& path);
+std::string getFileDirectory(std::string const& filePath);
 unsigned long getFileTimestamp(std::string const& path);	// returns timestamp in seconds (since 1970 or something)
 bool touchFile(std::string const& path);
 bool copyFile(std::string const& source, std::string const& dest);
