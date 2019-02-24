@@ -101,6 +101,16 @@ bool gltGetSuperSampleInfo(SSDescriptor& outDesc);
 // The user is responsible for all other aspects of the post-process rendering - screen quad, shader etc.
 void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, unsigned multisamples);
 
+// creates a framebuffer and returns true on success or false on failure.
+// if [out_depthbuffer] contains a valid address, a depth buffer will also be created and returned via this pointer.
+// depending on multisamples parameter, the behaviour is slightly different:
+//		if [multisamples]==0 then a texture will be created and attached as the color attachment;
+//					this texture will be returned via [out_textureOrRenderbuffer]
+//		if [multisamples] > 0 then a renderbuffer will be created and attached as the color attachment;
+//					this renderbuffer is returned via [out_textureOrRenderbuffer]
+bool gltCreateFrameBuffer(unsigned width, unsigned height, unsigned format, unsigned multisamples,
+		unsigned &out_framebuffer, unsigned &out_textureOrRenderbuffer, unsigned *out_depthbuffer=nullptr);
+
 // checks if an OpenGL error has occured and prints it on stderr if so;
 // returns true if error, false if no error
 bool checkGLError(const char* operationName = nullptr);

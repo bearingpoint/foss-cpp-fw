@@ -20,7 +20,7 @@ public:
 
 	glm::vec3 bkColor() const { return backgroundColor_; }
 	void setBkColor(glm::vec3 c) { backgroundColor_ = c; }
-	Camera* camera() const { return pCamera_; }
+	Camera& camera() const { return *pCamera_; }
 	int width() const { return viewportArea_.z; }
 	int height() const { return viewportArea_.w; }
 	float aspect() const { return (float)width() / height(); }

@@ -80,7 +80,7 @@ void MeshRenderer::flush() {
 
 	glUseProgram(meshShaderProgram_);
 
-	auto matPV = vp->camera()->matProjView();
+	auto matPV = vp->camera().matProjView();
 
 	for (unsigned i=0; i<nMeshes; i++) {
 		auto &m = renderQueue_[i];

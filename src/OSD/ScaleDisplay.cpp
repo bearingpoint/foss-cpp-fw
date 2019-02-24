@@ -23,7 +23,7 @@ ScaleDisplay::ScaleDisplay(ViewportCoord pos, int maxPixelsPerUnit)
 }
 
 void ScaleDisplay::draw(RenderContext const& ctx) {
-	float pixelsPerUnit = ctx.viewport.camera()->getOrthoZoom();
+	float pixelsPerUnit = ctx.viewport.camera().getOrthoZoom();
 	int exponent = 0;
 
 	if (pixelsPerUnit > m_MaxSize) {

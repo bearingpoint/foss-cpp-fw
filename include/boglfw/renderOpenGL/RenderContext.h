@@ -6,6 +6,7 @@ class Viewport;
 class RenderContext {
 public:
 	RenderContext(Viewport& viewport);
+	virtual ~RenderContext() {}
 
 	Viewport const& viewport;
 

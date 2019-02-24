@@ -99,7 +99,7 @@ void Shape3D::flush() {
 
 	glUseProgram(lineShaderProgram_);
 	glBindVertexArray(VAO_);
-	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(pCrtViewport->camera()->matProjView()));
+	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(pCrtViewport->camera().matProjView()));
 
 	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_INT, 0);
 

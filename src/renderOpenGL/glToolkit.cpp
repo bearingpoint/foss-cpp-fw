@@ -79,10 +79,11 @@ static bool initGLEW() {
 	return true;
 }
 
-static bool createFrameBuffer(unsigned width, unsigned height, unsigned format, unsigned multisamples,
-		unsigned &out_framebuffer, unsigned &out_textureOrRenderbuffer, unsigned *out_depthbuffer=nullptr) {
-
+bool gltCreateFrameBuffer(unsigned width, unsigned height, unsigned format, unsigned multisamples,
+		unsigned &out_framebuffer, unsigned &out_textureOrRenderbuffer, unsigned *out_depthbuffer) {
 	checkGLError();
+	int initialDrawFB;
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &initialDrawFB);
 	glGenFramebuffers(1, &out_framebuffer);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, out_framebuffer);
 
@@ -107,8 +108,8 @@ static bool createFrameBuffer(unsigned width, unsigned height, unsigned format, 
 		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, *out_depthbuffer);
 	}
 
-	bool result = !checkGLError("createFrameBuffer") && glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	bool result = !checkGLError("gltCreateFrameBuffer") && glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, initialDrawFB);
 
 	return result;
 }
@@ -130,7 +131,7 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	}
 
 	// set up the super sampled framebuffer and attachments:
-	if (!createFrameBuffer(ss_bufferW, ss_bufferH, ss_descriptor.framebufferFormat, 0, ss_framebuffer, ss_texture, &ss_renderbuffer)) {
+	if (!gltCreateFrameBuffer(ss_bufferW, ss_bufferH, ss_descriptor.framebufferFormat, 0, ss_framebuffer, ss_texture, &ss_renderbuffer)) {
 		ERROR("Unable to create a supersampled framebuffer, falling back to the default one.");
 		return; // continue without supersampling
 	}
@@ -441,7 +442,7 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 	if (postProcessHooks[0]) {
 		if (!pp_framebuffer[0]) {
 			// post-processing enabled, need to create additional framebuffer
-			if (!createFrameBuffer(ss_bufferW, ss_bufferH, GL_RGB16, 0, pp_framebuffer[0], pp_texture[0], nullptr)) {
+			if (!gltCreateFrameBuffer(ss_bufferW, ss_bufferH, GL_RGB16, 0, pp_framebuffer[0], pp_texture[0], nullptr)) {
 				ERROR("Failed to create additional framebuffer for pre-downsampling post-processing; disabling post-processing at this step.");
 				postProcessHooks[0] = nullptr;
 			}
@@ -464,15 +465,15 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 			// post-processing enabled, need to create additional framebuffer(s)
 			if (multisampleFb > 0) {
 				// must create one multisampled framebuffer and one additional non-multisampled one to resolve it into
-				bool ok = createFrameBuffer(windowW, windowH, GL_RGB16, multisampleFb, pp_framebuffer[1], pp_texture[1], &pp1_depthBuffer);
-				ok &= createFrameBuffer(windowW, windowH, GL_RGB16, 0, pp_framebuffer[2], pp_texture[2], nullptr);
+				bool ok = gltCreateFrameBuffer(windowW, windowH, GL_RGB16, multisampleFb, pp_framebuffer[1], pp_texture[1], &pp1_depthBuffer);
+				ok &= gltCreateFrameBuffer(windowW, windowH, GL_RGB16, 0, pp_framebuffer[2], pp_texture[2], nullptr);
 				if (!ok) {
 					ERROR("Failed to create additional framebuffer for post-downsampling post-processing; disabling post-processing at this step.");
 					postProcessHooks[1] = nullptr;
 				}
 			} else {
 				unsigned *pDepthBuffer = ss_enabled ? nullptr : &pp1_depthBuffer;
-				if (!createFrameBuffer(windowW, windowH, GL_RGB16, 0, pp_framebuffer[1], pp_texture[1], pDepthBuffer)) {
+				if (!gltCreateFrameBuffer(windowW, windowH, GL_RGB16, 0, pp_framebuffer[1], pp_texture[1], pDepthBuffer)) {
 					ERROR("Failed to create additional framebuffer for post-downsampling post-processing; disabling post-processing at this step.");
 					postProcessHooks[1] = nullptr;
 				}

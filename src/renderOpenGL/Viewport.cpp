@@ -35,7 +35,7 @@ vec3 Viewport::unproject(vec3 point) const
 	unif.x = unif.x / viewportArea_.z * 2 - 1;
 	unif.y = 1 - unif.y / viewportArea_.w * 2;
 
-	auto camPV = camera()->matProjView();
+	auto camPV = camera().matProjView();
 	if (mPV_cache_ != camPV) {
 		mPV_cache_ = camPV;
 		mPV_inv_cache_ = glm::inverse(camPV);
@@ -47,7 +47,7 @@ vec3 Viewport::unproject(vec3 point) const
 
 vec3 Viewport::project(vec3 point) const
 {
-	auto matPV = camera()->matProjView();
+	auto matPV = camera().matProjView();
 	auto unif = matPV * vec4{point, 1};
 	vec3 ret { unif.x, unif.y, unif.z };
 	ret *= 1.f / unif.w;
