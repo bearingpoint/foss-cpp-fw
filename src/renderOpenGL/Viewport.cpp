@@ -71,7 +71,7 @@ void Viewport::clear() {
 	auto vpp = position();
 	glScissor(vpp.x * vpfx, vpp.y * vpfx, width() * vpfx, height() * vpfx);
 	glEnable(GL_SCISSOR_TEST);
-	glClearColor(backgroundColor_.r, backgroundColor_.g, backgroundColor_.b, 0);
+	glClearColor(backgroundColor_.r, backgroundColor_.g, backgroundColor_.b, backgroundColor_.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glDisable(GL_SCISSOR_TEST);
 	checkGLError("viewport clear");
