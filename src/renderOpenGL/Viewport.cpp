@@ -62,6 +62,21 @@ bool Viewport::containsPoint(glm::vec2 const&p) const {
 			p.y <= viewportArea_.y + viewportArea_.w;
 }
 
+void Viewport::clear() {
+	SSDescriptor ssDesc;
+	bool ssEnabled = gltGetSuperSampleInfo(ssDesc);
+	// when super sample is enabled we must adjust the viewport accordingly
+	unsigned vpfx = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
+	unsigned vpfy = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
+	auto vpp = position();
+	glScissor(vpp.x * vpfx, vpp.y * vpfx, width() * vpfx, height() * vpfx);
+	glEnable(GL_SCISSOR_TEST);
+	glClearColor(backgroundColor_.r, backgroundColor_.g, backgroundColor_.b, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glDisable(GL_SCISSOR_TEST);
+	checkGLError("viewport clear");
+}
+
 void Viewport::render(std::vector<drawable> const& list) {
 	if (!isEnabled())
 		return;
@@ -69,7 +84,7 @@ void Viewport::render(std::vector<drawable> const& list) {
 		ERROR("No RenderContext created for the viewport!");
 		return;
 	}
-	// set up and clear viewport:
+	// set up viewport:
 	SSDescriptor ssDesc;
 	bool ssEnabled = gltGetSuperSampleInfo(ssDesc);
 	// when super sample is enabled we must adjust the viewport accordingly
@@ -77,12 +92,6 @@ void Viewport::render(std::vector<drawable> const& list) {
 	unsigned vpfy = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
 	auto vpp = position();
 	glViewport(vpp.x * vpfx, vpp.y * vpfy, width() * vpfx, height() * vpfy);
-	glScissor(vpp.x * vpfx, vpp.y * vpfx, width() * vpfx, height() * vpfx);
-	glEnable(GL_SCISSOR_TEST);
-	glClearColor(backgroundColor_.r, backgroundColor_.g, backgroundColor_.b, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glDisable(GL_SCISSOR_TEST);
-	checkGLError("viewport clear");
 
 	RenderHelpers::pActiveViewport = this;
 

@@ -40,6 +40,7 @@ public:
 	long userData() { return userData_; }
 	void setUserData(long data) { userData_ = data; }
 
+	void clear();
 	void render(std::vector<drawable> const& list);
 
 protected:
