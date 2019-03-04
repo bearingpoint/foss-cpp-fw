@@ -350,8 +350,8 @@ void gltEnd() {
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffer[2]);
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffer[1]);
 			glBlitFramebuffer(0, 0, windowW, windowH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 			glBindTexture(GL_TEXTURE_2D, pp_texture[2]);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffer[2]);
 		} else {
 			glBindTexture(GL_TEXTURE_2D, pp_texture[1]);
 		}
@@ -360,6 +360,9 @@ void gltEnd() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		postProcessHooks[1]();
 		glEnable(GL_DEPTH_TEST);
+		if (pp_framebuffer[2] > 0) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		}
 	}
 #ifdef WITH_SDL
 	if (boundToSDL)

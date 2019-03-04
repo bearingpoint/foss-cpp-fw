@@ -35,6 +35,7 @@ public:
 	void lookAt(glm::vec3 where, glm::vec3 up = glm::vec3{0.f, 1.f, 0.f});
 	void transformView(glm::mat4 rTrans);
 	void setViewTransform(glm::mat4 aTrans);
+	void mirror(glm::vec4 mirrorPlane);
 	void setZPlanes(float zNear, float zFar);
 	float FOV() const { return fov_; }
 	void setFOV(float fov);

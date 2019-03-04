@@ -64,6 +64,15 @@ void Camera::lookAt(glm::vec3 where, glm::vec3 up) {
 	updateView();
 }
 
+void Camera::mirror(glm::vec4 plane) {
+	glm::vec3 N{plane.x, plane.y, plane.z};
+	float posDist = glm::dot(N, position_) + plane.w;
+	position_ -= N * 2.f * posDist;
+	direction_ -= N * 2.f * glm::dot(N, direction_);
+	up_ -= N * 2.f * glm::dot(N, up_);
+	updateView();
+}
+
 void Camera::updateView() {
 	matView_ = glm::lookAtLH(position_, position_ + direction_, up_);
 }
