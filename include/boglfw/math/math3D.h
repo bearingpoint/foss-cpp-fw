@@ -141,9 +141,10 @@ inline glm::vec2& vec3xy(V3 &in) {
 	return (glm::vec2&)in;
 }
 
-/*inline glm::vec2 vec3xy(glm::ivec3 const &in) {
-	return glm::vec2(in.x, in.y);
-}*/
+template <class V3>
+inline glm::vec2 vec3xz(V3 const &in) {
+	return glm::vec2(in.x, in.z);
+}
 
 inline glm::vec3 vec4xyz(glm::vec4 const& v) {
 	return {v.x, v.y, v.z};
@@ -232,12 +233,29 @@ template<typename T> inline T lerp_lookup(const T* v, int nV, float position) {
 	return value;
 }
 
+// returns the intersection point of two lines in 3D space (does not care if the point lies on the segments or outside)
+// if the lines don't intersect, false is returned in the second value.
+std::pair<glm::vec3, bool> intersectLines(glm::vec3 p1, glm::vec3 p2, glm::vec3 q1, glm::vec3 q2);
+
+// compute a normalized plane from 3 points (specified in CW order as seen from the positive side of the plane)
+glm::vec4 planeFromPoints(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3);
+
 /**
  * Casts a ray from the box's center in the given direction and returns the coordinates of the point
  * on the edge of the box that is intersected by the ray
  * length is along OX axis, and width along OY. direction is relative to trigonometric zero (OX+)
  */
 glm::vec2 rayIntersectBox(float length, float width, float direction);
+
+// Computes the intersection point of a ray and a plane.
+// Assumes [dir] is normalized.
+// The 4th component of the returned vector is the distance along the ray from the start (can be negative if the intersection is behind start)
+// The first 3 components of the returned vector are the intersection point coordinates.
+// Returns false in the second value if the ray is parallel to the plane.
+std::pair<glm::vec4, bool> rayIntersectPlane(glm::vec3 const& start, glm::vec3 const& dir, glm::vec4 const& plane);
+
+// computes the dot product of a point and a plane - the distance from the point to the plane
+float pointDotPlane(glm::vec3 const& point, glm::vec4 const& plane);
 
 // computes the intersection point between a ray and a triangle and fills [outIntersectionPoint] with the coordinates.
 // returns true if the ray intersects the triangle, or false otherwise

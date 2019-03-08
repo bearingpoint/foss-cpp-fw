@@ -70,6 +70,15 @@ glm::mat4 buildMatrixFromOrientation(glm::vec3 position, glm::vec3 direction, gl
 	return buildMatrix(right, up, direction, position);
 }
 
+std::pair<glm::vec4, bool> rayIntersectPlane(glm::vec3 const& start, glm::vec3 const& dir, glm::vec4 const& p) {
+	float grad = glm::dot(vec4xyz(p), dir);
+	if (abs(grad) <= EPS)
+		return {glm::vec4(INF), false};
+	float t = (-p.w - glm::dot(vec4xyz(p), start)) / grad;		// ray parameter t for intersection between ray and plane
+	glm::vec3 point = start + dir * t;
+	return {{point, t}, true};
+}
+
 bool rayIntersectTri(glm::vec3 const& start, glm::vec3 const& dir,
 	glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const&p3,
 	glm::vec3 &outIntersectionPoint) {
@@ -78,10 +87,15 @@ bool rayIntersectTri(glm::vec3 const& start, glm::vec3 const& dir,
 	glm::vec3 p1p2 = p2 - p1;
 	glm::vec3 triNorm = glm::normalize(glm::cross(p1p2, p1p3));				// triangle normal
 	float d = -glm::dot(triNorm, p1);										// d component of plane equation (triNorm has a,b,c)
-	float t = (-d - glm::dot(triNorm, start)) / glm::dot(triNorm, dir);		// ray parameter t for intersection between ray and triangle plane
+
+	auto I = rayIntersectPlane(start, dir, glm::vec4(triNorm, d));
+	if (!I.second)
+		return false;														// ray is parallel to triangle's plane
+	float t = I.first.w;													// ray parameter t for intersection between ray and triangle plane
 	if (t < 0.f)															// t<0 means intersection point is behind start
 		return false;
-	outIntersectionPoint = start + dir * t;									// this is the point in the triangle's plane where the ray hits
+
+	outIntersectionPoint = vec4xyz(I.first);								// this is the point in the triangle's plane where the ray hits
 	glm::vec3 p1P = outIntersectionPoint - p1;
 	// now check if the point is within the triangle
 	float d00 = glm::dot(p1p3, p1p3);
@@ -95,4 +109,19 @@ bool rayIntersectTri(glm::vec3 const& start, glm::vec3 const& dir,
 	float v = (d00 * d12 - d01 * d02) * invDenom;
 
 	return u >= 0 && v >= 0 && (u+v) <= 1;
+}
+
+std::pair<glm::vec3, bool> intersectLines(glm::vec3 p1, glm::vec3 p2, glm::vec3 q1, glm::vec3 q2) {
+	// TODO
+	return {glm::vec3(0), false};
+}
+
+glm::vec4 planeFromPoints(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
+	glm::vec3 n = glm::normalize(glm::cross(p2 - p1, p3 - p1));
+	float d = -glm::dot(p1, n);
+	return {n.x, n.y, n.z, d};
+}
+
+float pointDotPlane(glm::vec3 const& point, glm::vec4 const& plane) {
+	return point.x*plane.x + point.y*plane.y + point.z*plane.z + plane.w;
 }
