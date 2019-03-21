@@ -239,15 +239,23 @@ void Shaders::reloadAllShaders() {
 		d.shaderId = createAndCompileShader(shaderCode, d.shaderType);
 		if (d.callback)
 			d.callback(d.shaderId);
+		checkGLError("reloadShader::compile");
 	}
 	for (auto &d : loadedPrograms_) {
 		if (d.programId)
 			glDeleteProgram(d.programId), d.programId = 0;
+#if (0)
+		// verbose program linking info
+		LOGLN("Linking program from: \n\tVS: " << loadedShaders_[d.vertexDescIdx].filename
+					<< "\n\tFS: " << loadedShaders_[d.fragDescIdx].filename);
+#endif
 		d.programId = linkProgram(d.vertexDescIdx >= 0 ? loadedShaders_[d.vertexDescIdx].shaderId : 0,
 									d.fragDescIdx >= 0 ? loadedShaders_[d.fragDescIdx].shaderId : 0,
 									d.geomDescIdx >= 0 ? loadedShaders_[d.geomDescIdx].shaderId : 0);
+		checkGLError("reloadShader::link");
 		if (d.callback)
 			d.callback(d.programId);
+		checkGLError("reloadShader::callback");
 	}
 	LOGLN("All shaders reloaded.");
 }

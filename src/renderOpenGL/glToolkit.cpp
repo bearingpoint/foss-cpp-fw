@@ -292,6 +292,7 @@ bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDesc
 // begins a frame
 void gltBegin(glm::vec4 clearColor) {
 	LOGPREFIX("gltBegin");
+	checkGLError("before gltBegin()");
 	if (ss_enabled)
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ss_framebuffer);
 	else if (postProcessHooks[1])
@@ -328,6 +329,7 @@ static void ssFBToScreen() {
 // finishes a frame and displays the result
 void gltEnd() {
 	LOGPREFIX("gltEnd");
+	checkGLError("before gltEnd()");
 	if (ss_enabled) {
 		if (postProcessHooks[0]) {
 			// pre-downsampling post processing step
@@ -341,6 +343,7 @@ void gltEnd() {
 			glEnable(GL_DEPTH_TEST);
 		}
 		ssFBToScreen(); // render the off-screen framebuffer to the display backbuffer
+		checkGLError("gltEnd() -> ssFBToScreen()");
 	}
 	if (postProcessHooks[1]) {
 		glDisable(GL_DEPTH_TEST);
@@ -355,6 +358,7 @@ void gltEnd() {
 		} else {
 			glBindTexture(GL_TEXTURE_2D, pp_texture[1]);
 		}
+		checkGLError("gltEnd() PostProcess #1");
 		// post-downsampling post-processing step into the default screen framebuffer
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
