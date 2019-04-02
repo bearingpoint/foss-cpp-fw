@@ -19,7 +19,7 @@ public:
 	virtual ~Viewport();
 
 	glm::vec3 bkColor() const { return backgroundColor_; }
-	void setBkColor(glm::vec3 const& c) { backgroundColor_ = glm::vec4(c, 0.f); }
+	void setBkColor(glm::vec3 const& c) { backgroundColor_ = glm::vec4(c, 1.f); }
 	void setBkColor(glm::vec4 c) { backgroundColor_ = c; }
 	Camera& camera() const { return *pCamera_; }
 	int width() const { return viewportArea_.z; }

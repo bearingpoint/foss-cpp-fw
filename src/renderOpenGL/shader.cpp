@@ -12,20 +12,30 @@ using namespace std;
 
 vector<Shaders::shaderDesc> Shaders::loadedShaders_;
 vector<Shaders::programDesc> Shaders::loadedPrograms_;
+IShaderPreprocessor* Shaders::pPreprocessor_ = nullptr;
+
+void Shaders::useShaderPreprocessor(IShaderPreprocessor* ppp) {
+	pPreprocessor_ = ppp;
+}
 
 std::string Shaders::readShaderFile(const char* path) {
-	std::ifstream VertexShaderStream(path, std::ios::in);
-	if (VertexShaderStream.is_open()) {
+	std::ifstream shaderStream(path, std::ios::in);
+	if (shaderStream.is_open()) {
 		std::string str;
-		VertexShaderStream.seekg(0, std::ios::end);
-		str.reserve(VertexShaderStream.tellg());
-		VertexShaderStream.seekg(0, std::ios::beg);
+		shaderStream.seekg(0, std::ios::end);
+		str.reserve(shaderStream.tellg());
+		shaderStream.seekg(0, std::ios::beg);
 
-		str.assign((std::istreambuf_iterator<char>(VertexShaderStream)), std::istreambuf_iterator<char>());
-		VertexShaderStream.close();
+		str.assign((std::istreambuf_iterator<char>(shaderStream)), std::istreambuf_iterator<char>());
+		shaderStream.close();
+		if (pPreprocessor_ != nullptr)
+			str = pPreprocessor_->preprocess(str, path);
+		if (str == "") {
+			ERROR("Shader preprocessing failed for: " << path);
+		}
 		return str;
 	} else {
-		std::cerr << "Impossible to open file: " << path << std::endl;
+		ERROR("Impossible to open file: " << path);
 		return "";
 	}
 }
@@ -44,17 +54,15 @@ unsigned Shaders::createAndCompileShader(std::string const &code, unsigned shade
 	// Check Shader
 	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &Result);
 	if (Result != GL_TRUE) {
-		std::cerr << "ERROR!!!";
 		int infoLogLength;
 		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 		if (infoLogLength > 0) {
 			std::vector<char> shaderErrorMessage(infoLogLength + 1);
 			glGetShaderInfoLog(shaderID, infoLogLength, NULL, &shaderErrorMessage[0]);
-			cerr << endl << &shaderErrorMessage[0];
+			ERROR("ERROR!!!\n" << &shaderErrorMessage[0]);
 		} else {
-			cerr << endl << "(no error description)" << endl;
+			ERROR("ERROR!!!\n(no error description)");
 		}
-		std::cerr << std::endl;
 		return 0;
 	}
 	LOGNP("Shader OK\n");

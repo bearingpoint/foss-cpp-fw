@@ -8,6 +8,11 @@
 using shaderCallback = std::function<void(unsigned shaderId)>;
 using programCallback = std::function<void(unsigned programId)>;
 
+class IShaderPreprocessor {
+public:
+	virtual std::string preprocess(std::string const& code, std::string const& originalFilePath) = 0;
+};
+
 class Shaders {
 public:
 	static void loadVertexShader(const char* path, shaderCallback cb);
@@ -22,9 +27,14 @@ public:
 	// reloads all shaders that were loaded from files, recompiles them and calls the callbacks again with the new values
 	static void reloadAllShaders();
 
+	// if the provided pointer is not null, then it will be used as the preprocessor on the shader files loaded from disk
+	// otherwise the preprocessing is disabled.
+	static void useShaderPreprocessor(IShaderPreprocessor*);
+
+	static std::string readShaderFile(const char* path);
+
 private:
 	Shaders() {}
-	static std::string readShaderFile(const char* path);
 
 	struct shaderDesc {
 		unsigned shaderType;
@@ -43,6 +53,7 @@ private:
 
 	static std::vector<shaderDesc> loadedShaders_;
 	static std::vector<programDesc> loadedPrograms_;
+	static IShaderPreprocessor* pPreprocessor_;
 };
 
 #endif
