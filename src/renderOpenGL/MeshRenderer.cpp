@@ -78,28 +78,47 @@ void MeshRenderer::flush() {
 	if (!nMeshes)
 		return;
 
-	glUseProgram(meshShaderProgram_);
-
 	auto matPV = vp->camera().matProjView();
 
 	for (unsigned i=0; i<nMeshes; i++) {
 		auto &m = renderQueue_[i];
+
+		unsigned iPos, iNorm, iUV, iColor, iMPVW;
+
+		if (m.pMesh_->customProgram_.programID) {
+			glUseProgram(m.pMesh_->customProgram_.programID);
+
+			iPos = m.pMesh_->customProgram_.indexPos;
+			iNorm = m.pMesh_->customProgram_.indexNorm;
+			iUV = m.pMesh_->customProgram_.indexUV1;
+			iColor = m.pMesh_->customProgram_.indexColor;
+			iMPVW = m.pMesh_->customProgram_.indexMatPVW;
+		} else {
+			glUseProgram(meshShaderProgram_);
+
+			iPos = indexPos_;
+			iNorm = indexNorm_;
+			iUV = indexUV1_;
+			iColor = indexColor_;
+			iMPVW = indexMatPVW_;
+		}
+
 		auto matPVW = matPV * m.wldTransform_;
-		glUniformMatrix4fv(indexMatPVW_, 1, GL_FALSE, glm::value_ptr(matPVW));
+		glUniformMatrix4fv(iMPVW, 1, GL_FALSE, glm::value_ptr(matPVW));
 		checkGLError("mPVW uniform setup");
 
 		glBindVertexArray(m.pMesh_->getVAO());
 		if (!m.pMesh_->vertexAttribsSet_) {
 			glBindBuffer(GL_ARRAY_BUFFER, m.pMesh_->getVBO());
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.pMesh_->getIBO());
-			glEnableVertexAttribArray(indexPos_);
-			glEnableVertexAttribArray(indexNorm_);
-			glEnableVertexAttribArray(indexUV1_);
-			glEnableVertexAttribArray(indexColor_);
-			glVertexAttribPointer(indexPos_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, position));
-			glVertexAttribPointer(indexNorm_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, normal));
-			glVertexAttribPointer(indexUV1_, 2, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, UV1));
-			glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, color));
+			glEnableVertexAttribArray(iPos);
+			glEnableVertexAttribArray(iNorm);
+			glEnableVertexAttribArray(iUV);
+			glEnableVertexAttribArray(iColor);
+			glVertexAttribPointer(iPos, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, position));
+			glVertexAttribPointer(iNorm, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, normal));
+			glVertexAttribPointer(iUV, 2, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, UV1));
+			glVertexAttribPointer(iColor, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, color));
 			m.pMesh_->vertexAttribsSet_ = true;
 			checkGLError("attrib arrays setup");
 		}
