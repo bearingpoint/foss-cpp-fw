@@ -39,15 +39,8 @@ public:
 	unsigned getVBO() const { return VBO_; }
 	unsigned getIBO() const { return IBO_; }
 
-private:
-	friend class MeshRenderer;
-
-	unsigned VAO_ = 0;
-	unsigned VBO_ = 0;
-	unsigned IBO_ = 0;
-	unsigned indexCount_ = 0;
-	bool vertexAttribsSet_ = false;
-	RENDER_MODES mode_ = RENDER_MODE_TRIANGLES;
+	// the following are used only by Mesh renderers
+	int vertexAttribsProgramBinding_ = 0;
 
 	struct s_Vertex {
 		glm::vec3 position;
@@ -55,6 +48,13 @@ private:
 		glm::vec2 UV1;
 		glm::vec4 color;
 	};
+
+private:
+	unsigned VAO_ = 0;
+	unsigned VBO_ = 0;
+	unsigned IBO_ = 0;
+	unsigned indexCount_ = 0;
+	RENDER_MODES mode_ = RENDER_MODE_TRIANGLES;
 };
 
 #endif /* RENDEROPENGL_MESH_H_ */

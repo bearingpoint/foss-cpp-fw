@@ -89,7 +89,7 @@ void MeshRenderer::flush() {
 		checkGLError("mPVW uniform setup");
 
 		glBindVertexArray(m.pMesh_->getVAO());
-		if (!m.pMesh_->vertexAttribsSet_) {
+		if (!m.pMesh_->vertexAttribsProgramBinding_ != meshShaderProgram_) {
 			glBindBuffer(GL_ARRAY_BUFFER, m.pMesh_->getVBO());
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.pMesh_->getIBO());
 			glEnableVertexAttribArray(indexPos_);
@@ -100,12 +100,12 @@ void MeshRenderer::flush() {
 			glVertexAttribPointer(indexNorm_, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, normal));
 			glVertexAttribPointer(indexUV1_, 2, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, UV1));
 			glVertexAttribPointer(indexColor_, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::s_Vertex), (void*)offsetof(Mesh::s_Vertex, color));
-			m.pMesh_->vertexAttribsSet_ = true;
+			m.pMesh_->vertexAttribsProgramBinding_ = meshShaderProgram_;
 			checkGLError("attrib arrays setup");
 		}
 		// decide what to draw:
 		unsigned drawMode = 0;
-		switch (m.pMesh_->mode_) {
+		switch (m.pMesh_->getRenderMode()) {
 			case Mesh::RENDER_MODE_POINTS:
 				drawMode = GL_POINTS; break;
 			case Mesh::RENDER_MODE_LINES:
@@ -116,19 +116,19 @@ void MeshRenderer::flush() {
 			default:
 				assert(false && "Unknown mesh draw mode!");
 		}
-		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME || m.pMesh_->mode_ == Mesh::RENDER_MODE_LINES) {
+		if (m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME || m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_LINES) {
 			glLineWidth(2.f);
 		}
-		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
+		if (m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 		glDrawElements(drawMode, m.pMesh_->getElementsCount(), GL_UNSIGNED_SHORT, 0);
 		checkGLError("mesh draw");
 		glBindVertexArray(0);
-		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME || m.pMesh_->mode_ == Mesh::RENDER_MODE_LINES) {
+		if (m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME || m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_LINES) {
 			glLineWidth(1.f);
 		}
-		if (m.pMesh_->mode_ == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
+		if (m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
