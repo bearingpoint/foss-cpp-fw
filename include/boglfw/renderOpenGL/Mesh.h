@@ -13,8 +13,6 @@
 #include <glm/vec4.hpp>
 #include <vector>
 
-using customProgramSetup = std::function<void(M)
-
 class Mesh {
 public:
 
@@ -33,7 +31,6 @@ public:
 	void createGizmo(float axisLength);
 	
 	void setRenderMode(RENDER_MODES mode) { mode_ = mode; }
-	void useProgram(unsigned progID);
 
 	unsigned getRenderMode() const { return mode_; }
 	unsigned getElementsCount() const { return indexCount_; }
@@ -51,15 +48,6 @@ private:
 	unsigned indexCount_ = 0;
 	bool vertexAttribsSet_ = false;
 	RENDER_MODES mode_ = RENDER_MODE_TRIANGLES;
-
-	struct {
-		unsigned programID = 0;
-		unsigned indexPos = 0;
-		unsigned indexNorm = 0;
-		unsigned indexUV1 = 0;
-		unsigned indexColor = 0;
-		unsigned indexMatPVW = 0;
-	} customProgram_;
 
 	struct s_Vertex {
 		glm::vec3 position;

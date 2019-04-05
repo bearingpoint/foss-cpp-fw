@@ -6,7 +6,6 @@
  */
 
 #include <boglfw/renderOpenGL/Mesh.h>
-#include <boglfw/renderOpenGL/glToolkit.h>
 
 #include <GL/glew.h>
 
@@ -206,17 +205,4 @@ void Mesh::createGizmo(float axisLength) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	mode_ = RENDER_MODE_LINES;
-}
-
-void Mesh::useProgram(unsigned progID) {
-	customProgram_.programID = progID;
-	vertexAttribsSet_ = false;
-	if (progID) {
-		customProgram_.indexPos = glGetAttribLocation(progID, "vPos");
-		customProgram_.indexNorm = glGetAttribLocation(progID, "vNormal");
-		customProgram_.indexUV1 = glGetAttribLocation(progID, "vUV1");
-		customProgram_.indexColor = glGetAttribLocation(progID, "vColor");
-		customProgram_.indexMatPVW = glGetUniformLocation(progID, "mPVW");
-	}
-	checkGLError("getAttribs");
 }
