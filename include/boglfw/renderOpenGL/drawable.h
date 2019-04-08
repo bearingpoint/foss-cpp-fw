@@ -20,8 +20,7 @@ void draw(Callable *fn, RenderContext const& ctx) {
 }
 
 // special handling for plain function pointers:
-template<class FnType=void(*)(RenderContext const&)>
-void draw(FnType fn, RenderContext const& ctx) {
+inline void draw(void(*fn)(RenderContext const&), RenderContext const& ctx) {
 	(*fn)(ctx);
 }
 

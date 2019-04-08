@@ -89,7 +89,7 @@ void MeshRenderer::flush() {
 		checkGLError("mPVW uniform setup");
 
 		glBindVertexArray(m.pMesh_->getVAO());
-		if (!m.pMesh_->vertexAttribsProgramBinding_ != meshShaderProgram_) {
+		if (m.pMesh_->vertexAttribsProgramBinding_ != meshShaderProgram_) {
 			glBindBuffer(GL_ARRAY_BUFFER, m.pMesh_->getVBO());
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.pMesh_->getIBO());
 			glEnableVertexAttribArray(indexPos_);
@@ -136,4 +136,3 @@ void MeshRenderer::flush() {
 	// purge cached data:
 	renderQueue_.clear();
 }
-

@@ -29,6 +29,7 @@ static GLText* instance = nullptr;
 bool GLText::disableMipMaps_ = false;
 
 void GLText::init(const char* fontPath) {
+	LOGPREFIX("GLText");
 	// load font file and parse properties
 	const std::string kTexture = "texture";
 	const std::string kRows = "rows";
@@ -303,4 +304,3 @@ void GLText::flush() {
 	itemPositions_.clear();
 	verticesPerItem_.clear();
 }
-
