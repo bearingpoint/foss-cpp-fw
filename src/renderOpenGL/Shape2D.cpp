@@ -128,7 +128,6 @@ void Shape2D::flush() {
 	checkGLError("Shape2D::render() : setup");
 
 	// render triangle primitives:
-	glDisable(GL_CULL_FACE); // TODO do we need this?
 	auto nTriIndices = triangleIndices_.size();
 	if (nTriIndices) {
 		glBindVertexArray(triangleVAO_);
