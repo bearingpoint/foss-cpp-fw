@@ -54,7 +54,7 @@
 	for (auto stream : {&std::cerr, logger::instance().getErrStream()}) {\
 		if (!stream)\
 			continue;\
-		*stream << "[ERROR]";\
+		*stream << "!!!ERROR!!!";\
 		logger::instance().writeprefix(*stream);\
 		*stream << X << "\n";\
 	}\

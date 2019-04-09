@@ -36,6 +36,7 @@ Shape2D* Shape2D::get() {
 }
 
 Shape2D::Shape2D() {
+	LOGPREFIX("Shape2D");
 	glGenVertexArrays(1, &lineVAO_);
 	glGenBuffers(1, &lineVBO_);
 	glGenBuffers(1, &lineIBO_);

@@ -39,7 +39,7 @@ void MeshRenderer::unload() {
 }
 
 MeshRenderer::MeshRenderer() {
-	LOGPREFIX("MeshRenderer::ctor");
+	LOGPREFIX("MeshRenderer");
 	Shaders::createProgram("data/shaders/mesh.vert", "data/shaders/mesh-texture.frag", [this](unsigned id) {
 		meshShaderProgram_ = id;
 		if (meshShaderProgram_ == 0) {

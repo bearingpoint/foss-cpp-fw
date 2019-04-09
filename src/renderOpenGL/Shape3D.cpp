@@ -33,6 +33,8 @@ Shape3D* Shape3D::get() {
 }
 
 Shape3D::Shape3D() {
+	LOGPREFIX("Shape3D");
+
 	glGenVertexArrays(1, &VAO_);
 	glGenBuffers(1, &VBO_);
 	glGenBuffers(1, &IBO_);
