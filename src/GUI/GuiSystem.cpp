@@ -18,7 +18,7 @@
 
 #include <algorithm>
 
-GuiSystem::GuiSystem(Viewport* viewport, glm::vec2 position, glm::vec2 size)
+GuiSystem::GuiSystem(const Viewport* viewport, glm::vec2 position, glm::vec2 size)
 	: viewport_(viewport)
 	, rootElement_(position, size) {
 	rootElement_.setTransparentBackground(true);
@@ -150,4 +150,12 @@ void GuiSystem::handleInput(InputEvent &ev) {
 	default:
 		LOGLN("unknown event type: " << ev.type);
 	}
+}
+
+glm::vec2 GuiSystem::getViewportSize() const {
+	return {viewport_->width(), viewport_->height()};
+}
+
+void GuiSystem::clear() {
+	rootElement_.clear();
 }

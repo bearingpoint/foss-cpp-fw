@@ -8,15 +8,29 @@
 #ifndef EVENT_H_
 #define EVENT_H_
 
+#include "assert.h"
 #include <functional>
 #include <vector>
-#include <cassert>
-#include "assert.h"
+#include <type_traits>
 
-template <typename T>
+template <class T, bool>
+struct is_invokable_s : std::false_type {};
+
+template <class T>
+struct is_invokable_s<T, true> : std::true_type {};
+
+template <class T>
+struct is_invokable :
+is_invokable_s<T, std::is_constructible<std::function<T>, decltype(nullptr)>::value>
+{};
+
+template <class T>
+constexpr bool is_invokable_v = is_invokable<T>::value;
+
+
+template <class T, std::enable_if_t<is_invokable_v<T>, int> = 0>
 class Event {
 public:
-
 	using handler_type = std::function<T>;
 
 	Event() = default;
@@ -47,15 +61,16 @@ public:
 	void trigger() {
 		if (pForwarded_)
 			pForwarded_->trigger();
-		for (auto c : callbackList_)
-			c();
+		for (auto &c : callbackList_)
+			if (c)
+				c();
 	}
 
-	template<typename... argTypes>
+	template<class... argTypes>
 	void trigger(argTypes... argList) {
 		if (pForwarded_)
 			pForwarded_->trigger(argList...);
-		for (auto c : callbackList_)
+		for (auto &c : callbackList_)
 			if (c)
 				c(argList...);
 	}

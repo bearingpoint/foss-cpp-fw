@@ -156,3 +156,7 @@ void GuiContainerElement::getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize
 	outOffset = clientAreaOffset_;
 	outSize = clientAreaSize_;
 }
+
+void GuiContainerElement::clear() {
+	children_.clear();
+}

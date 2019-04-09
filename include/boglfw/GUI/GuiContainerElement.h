@@ -23,17 +23,19 @@ public:
 	void addElement(std::shared_ptr<GuiBasicElement> e);
 	void removeElement(std::shared_ptr<GuiBasicElement> e);
 	std::shared_ptr<GuiBasicElement> findElement(GuiBasicElement* e) const;
+	// removes all UI elements from the GUI system
+	void clear();
 	void setSize(glm::vec2 size) override;
 	//std::shared_ptr<GuiBasicElement> getPointedElement() { return elementUnderMouse_; }
 
 	// transparent background will be invisible and will not consume mouse events - they will fall through to the underlying elements
 	// by default the background is not transparent.
 	void setTransparentBackground(bool transp) { transparentBackground_ = transp; }
-	
+
 	void setClientArea(glm::vec2 offset, glm::vec2 counterOffset);
 	void getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const;
 	glm::vec2 getClientOffset() const { return clientAreaOffset_; }
-	
+
 	virtual bool isContainer() const override { return true; }
 	virtual size_t childrenCount() const { return children_.size(); }
 	virtual std::shared_ptr<GuiBasicElement> nthChild(size_t n) const { return children_[n]; }
