@@ -212,11 +212,11 @@ void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::ve
 		x += xSize;
 
 		vertices_.push_back(vertex_up_left   );
-		vertices_.push_back(vertex_down_left );
 		vertices_.push_back(vertex_up_right  );
+		vertices_.push_back(vertex_down_left );
 
-		vertices_.push_back(vertex_down_right);
 		vertices_.push_back(vertex_up_right);
+		vertices_.push_back(vertex_down_right);
 		vertices_.push_back(vertex_down_left);
 
 		float uv_x = ((character - firstChar_) % cols_) / (float)cols_;
@@ -227,11 +227,11 @@ void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::ve
 		glm::vec2 uv_down_right = glm::vec2( uv_x+1.0f/cols_, uv_y - 1.0f/rows_ );
 		glm::vec2 uv_down_left  = glm::vec2( uv_x          , uv_y - 1.0f/rows_ );
 		UVs_.push_back(uv_up_left   );
-		UVs_.push_back(uv_down_left );
 		UVs_.push_back(uv_up_right  );
+		UVs_.push_back(uv_down_left );
 
-		UVs_.push_back(uv_down_right);
 		UVs_.push_back(uv_up_right);
+		UVs_.push_back(uv_down_right);
 		UVs_.push_back(uv_down_left);
 
 		for (int ci=0; ci<6; ci++)
