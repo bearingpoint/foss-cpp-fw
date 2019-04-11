@@ -20,9 +20,7 @@ GuiContainerElement::GuiContainerElement(glm::vec2 position, glm::vec2 size)
 }
 
 GuiContainerElement::~GuiContainerElement() {
-	for (auto &c : children_)
-		c->parent_ = nullptr;
-	children_.clear();
+	clear();
 }
 
 bool GuiContainerElement::containsPoint(glm::vec2 const& p) const {
@@ -158,5 +156,7 @@ void GuiContainerElement::getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize
 }
 
 void GuiContainerElement::clear() {
+	for (auto &c : children_)
+		c->parent_ = nullptr;
 	children_.clear();
 }
