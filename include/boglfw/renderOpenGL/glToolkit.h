@@ -1,6 +1,8 @@
 #ifndef __glToolkit_h__
 #define __glToolkit_h__
 
+#include <boglfw/utils/assert.h>
+
 #define GLEW_NO_GLU
 #include <GL/glew.h>
 #include <glm/vec4.hpp>
@@ -41,7 +43,7 @@ struct SSDescriptor {
 		else if (mode == SS_16X)
 			return 4;
 		else {
-			assert("invalid super sampling mode!");
+			assertDbg("invalid super sampling mode!");
 			return 1;
 		}
 	}

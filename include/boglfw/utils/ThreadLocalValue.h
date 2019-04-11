@@ -19,19 +19,19 @@ template <class C>
 class ThreadLocalValue {
 public:
 	static_assert(sizeof(C) <= sizeof(ThreadLocalValuePrivate::vtype), "Not enough storage space for type!");
-	
+
 	C get() const;
 	void set(C value);
-	
+
 	ThreadLocalValue& operator=(C val) {
 		set(val);
 		return *this;
 	}
-	
+
 	operator C() const {
 		return get();
 	}
-	
+
 	ThreadLocalValue();
 	ThreadLocalValue(C initial);
 	~ThreadLocalValue();

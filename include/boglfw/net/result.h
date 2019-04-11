@@ -1,7 +1,8 @@
 #pragma once
 
+#include <boglfw/utils/assert.h>
+
 #include <string>
-#include <cassert>
 
 namespace net {
 
@@ -46,7 +47,7 @@ inline std::string errorString(net::result const& err) {
 		case net::result::err_unreachable: return "[HostUnreachable] " + err.message;
 		case net::result::err_unknown: return "[Unknown] " + err.message;
 		default:
-			assert("unhandled error type");
+			assertDbg("unhandled error type");
 			return "[Unknown] " + err.message;
 	}
 }

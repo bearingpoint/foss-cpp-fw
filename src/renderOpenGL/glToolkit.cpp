@@ -150,7 +150,7 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 			});
 			break;
 		default:
-			assert("Invalid super sampling mode!");
+			assertDbg("Invalid super sampling mode!");
 			return;
 	}
 	if (!ss_shaderProgram) {
@@ -381,7 +381,7 @@ void gltEnd() {
 
 #ifdef WITH_SDL
 bool gltInitSDL(SDL_Window* window) {
-	assert(window);
+	assertDbg(window);
 	sdl_window = window;
 	SDL_GetWindowSize(window, (int*)&windowW, (int*)&windowH);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, SDL_TRUE);

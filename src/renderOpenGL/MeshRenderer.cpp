@@ -114,7 +114,7 @@ void MeshRenderer::flush() {
 			case Mesh::RENDER_MODE_TRIANGLES_WIREFRAME:
 				drawMode = GL_TRIANGLES; break;
 			default:
-				assert(false && "Unknown mesh draw mode!");
+				assertDbg(false && "Unknown mesh draw mode!");
 		}
 		if (m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_TRIANGLES_WIREFRAME || m.pMesh_->getRenderMode() == Mesh::RENDER_MODE_LINES) {
 			glLineWidth(2.f);

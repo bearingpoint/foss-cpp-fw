@@ -11,7 +11,10 @@
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
+#include <boglfw/utils/assert.h>
+
 #include <glm/vec3.hpp>
+
 #include <algorithm>
 
 GuiContainerElement::GuiContainerElement(glm::vec2 position, glm::vec2 size)
@@ -71,7 +74,7 @@ void GuiContainerElement::addElement(std::shared_ptr<GuiBasicElement> e) {
 }
 
 void GuiContainerElement::removeElement(std::shared_ptr<GuiBasicElement> e) {
-	assert(e && e->parent_ == this && findElement(e.get()));
+	assertDbg(e && e->parent_ == this && findElement(e.get()));
 	e->parent_ = nullptr;
 	children_.erase(std::find(children_.begin(), children_.end(), e));
 }

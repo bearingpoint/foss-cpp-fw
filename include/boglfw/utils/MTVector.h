@@ -83,7 +83,7 @@ public:
 	class iterator : public std::iterator<std::random_access_iterator_tag, C> {
 	public:
 		C& operator *() {
-			assert(pos_ < parent_.size_.load(std::memory_order_consume));
+			assertDbg(pos_ < parent_.size_.load(std::memory_order_consume));
 			if (extra_)
 				return parent_.extra_[offs_];
 			else

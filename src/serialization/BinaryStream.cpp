@@ -68,7 +68,7 @@ void BinaryStream::readNextBufferChunk() {
 	if (pos_ >= fileSize_)  // this also asserts ifstream otherwise fileSize_ would be zero
 		throw std::runtime_error("Attempted to read past the end of the file!");
 	bool isInitialRead = (size_t)ifstream_->tellg() == initialFilePosition_;
-	assert(isInitialRead || pos_ - bufferOffset_ == size_); // all internal buffer has been consumed
+	assertDbg(isInitialRead || pos_ - bufferOffset_ == size_); // all internal buffer has been consumed
 	if (!isInitialRead)
 		bufferOffset_ += size_;
 	size_t toRead = std::min(size_, fileSize_ - bufferOffset_);

@@ -33,12 +33,12 @@ public:
 	}
 
 	C& operator[](unsigned i) {
-		assert(i < n_);
+		assertDbg(i < n_);
 		return *(start_ + i);
 	}
 
 	const C& operator[](unsigned i) const {
-		assert(i < n_);
+		assertDbg(i < n_);
 		return *(start_ + i);
 	}
 
@@ -60,7 +60,7 @@ public:
 			return !operator==(i);
 		}
 		bool operator < (iterator const& i) const {
-			assert(&owner_ == &i.owner_);
+			assertDbg(&owner_ == &i.owner_);
 			return offset_ < i.offset_;
 		}
 	private:

@@ -55,7 +55,7 @@ bool Serializer::serializeToFile(const std::string &path) {
 	int fileIndex = 1;
 	for (auto &e : serializationQueue_) {
 		int objType = e.getType();
-		assert(mapTypesToFuncs_.find(objType) != mapTypesToFuncs_.end());
+		assertDbg(mapTypesToFuncs_.find(objType) != mapTypesToFuncs_.end());
 		masterStream << objType;
 		std::stringstream pathBuild;
 		pathBuild << getObjectTypeString(e.getType()) << fileIndex << ".data";
@@ -117,4 +117,3 @@ bool Serializer::deserializeFromFile(const std::string &path) {
 		return false;
 	}
 }
-

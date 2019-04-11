@@ -113,7 +113,7 @@ public:
 
 #ifdef DEBUG
 	static void assertOnMainThread() {
-		assert(std::this_thread::get_id() == getInstance().ownerThreadId_);
+		assertDbg(std::this_thread::get_id() == getInstance().ownerThreadId_);
 	}
 #else
 	static void assertOnMainThread() {

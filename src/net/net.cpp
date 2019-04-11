@@ -28,7 +28,7 @@ static void checkFinish(std::unique_lock<std::mutex> &lk);	// checks if all conn
 static result translateError(const asio::error_code &err);
 
 static tcp::socket* getSocket(connection con) {
-	assert(con < connections.size() && connections[con] != nullptr);
+	assertDbg(con < connections.size() && connections[con] != nullptr);
 	std::lock_guard<std::mutex> lk(asyncOpMutex);
 	return connections[con];
 }
@@ -65,7 +65,7 @@ listener startListen(uint16_t port, newConnectionCallback callback) {
 
 void stopListen(listener lis) {
 	std::unique_lock<std::mutex> lk(asyncOpMutex);
-	assert(lis < listeners.size() && listeners[lis] != nullptr);
+	assertDbg(lis < listeners.size() && listeners[lis] != nullptr);
 	listeners[lis]->cancel();
 	listeners[lis]->close();
 	listenersToDelete.push_back(listeners[lis]);
@@ -129,7 +129,7 @@ void connect_async(std::string host, uint16_t port, newConnectionCallback callba
 
 void closeConnection(connection con) {
 	std::unique_lock<std::mutex> lk(asyncOpMutex);
-	assert(con < connections.size() && connections[con] != nullptr);
+	assertDbg(con < connections.size() && connections[con] != nullptr);
 	connections[con]->shutdown(tcp::socket::shutdown_both);
 	connections[con]->close();
 	connectionsToDelete.push_back(connections[con]);
@@ -145,7 +145,7 @@ result write(connection con, const void* buffer, size_t count) {
 }
 
 result read(connection con, void* buffer, size_t bufSize, size_t count) {
-	assert(count <= bufSize);
+	assertDbg(count <= bufSize);
 	auto socket = getSocket(con);
 	asio::error_code err;
 	asio::read(*socket, asio::buffer(buffer, count), err);

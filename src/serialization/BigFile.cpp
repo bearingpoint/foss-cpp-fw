@@ -127,7 +127,7 @@ bool BigFile::loadFromDisk(const std::string &path) {
 		ERROR("EXCEPTION during deserialization from file "<< path<<":\n" << e.what());
 		return false;
 	}
-	assert(!!!"should never reach this");
+	assertDbg(!!!"should never reach this");
 	return false;
 }
 

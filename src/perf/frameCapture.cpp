@@ -21,7 +21,7 @@ MTVector<FrameCapture*> FrameCapture::allInstances_ {8};
 #endif
 
 void FrameCapture::start(FrameCapture::CaptureMode mode) {
-	assert(mode_.load(std::memory_order_acquire) == Disabled && "Capture already in progress!");
+	assertDbg(mode_.load(std::memory_order_acquire) == Disabled && "Capture already in progress!");
 	if (mode == ThisThreadOnly)
 		exclusiveThreadID_.store(std::this_thread::get_id(), std::memory_order_release);
 	captureStartTime_ = std::chrono::high_resolution_clock::now();
@@ -39,12 +39,12 @@ void FrameCapture::stop() {
 }
 
 std::string FrameCapture::getThreadNameForIndex(unsigned index) {
-	assert(index < threadNames_.size());
+	assertDbg(index < threadNames_.size());
 	return threadNames_[index];
 }
 
 std::vector<FrameCapture::frameData> FrameCapture::getResults() {
-	assert(mode_.load(std::memory_order_acquire) == Disabled && "Don't call this while capturing!!!");
+	assertDbg(mode_.load(std::memory_order_acquire) == Disabled && "Don't call this while capturing!!!");
 	std::vector<FrameCapture::frameData> ret;
 	for (auto &fv : allFrames_) {
 		assert (fv != nullptr);
@@ -58,7 +58,7 @@ std::vector<FrameCapture::frameData> FrameCapture::getResults() {
 }
 
 void FrameCapture::cleanup() {
-	assert(mode_ == Disabled && "Don't call this while capturing!!!");
+	assertDbg(mode_ == Disabled && "Don't call this while capturing!!!");
 	for (auto &fv : allFrames_) {
 		fv->clear();
 	}

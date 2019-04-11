@@ -12,6 +12,7 @@
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/math/math3D.h>
+#include <boglfw/utils/assert.h>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -38,9 +39,9 @@ void GuiSystem::setMouseCapture(GuiBasicElement* elementOrNull) {
 	if (!elementOrNull)
 		pCaptured_ = {};
 	else {
-		assert(elementOrNull->parent());
+		assertDbg(elementOrNull->parent());
 		auto captured = elementOrNull->parent()->findElement(elementOrNull);
-		assert(captured);
+		assertDbg(captured != nullptr);
 		pCaptured_ = captured;
 	}
 }

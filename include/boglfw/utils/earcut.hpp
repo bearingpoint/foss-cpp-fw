@@ -538,7 +538,7 @@ Earcut<N>::findHoleBridge(Node* hole, Node* outerNode) {
 // interlink polygon nodes in z-order
 template <typename N>
 void Earcut<N>::indexCurve(Node* start) {
-	assert(start);
+	assertDbg(start);
 	Node* p = start;
 
 	do {
@@ -559,7 +559,7 @@ void Earcut<N>::indexCurve(Node* start) {
 template <typename N>
 typename Earcut<N>::Node*
 Earcut<N>::sortLinked(Node* list) {
-	assert(list);
+	assertDbg(list);
 	Node* p;
 	Node* q;
 	Node* e;
@@ -768,7 +768,7 @@ Earcut<N>::insertNode(std::size_t i, const Point& pt, Node* last) {
 		p->next = p;
 
 	} else {
-		assert(last);
+		assertDbg(last);
 		p->next = last->next;
 		p->prev = last;
 		last->next->prev = p;
