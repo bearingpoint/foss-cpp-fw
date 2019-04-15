@@ -10,12 +10,18 @@
 
 #include <cassert>
 
+#ifdef __GNUC__
+#define FUNC_NOT_USED_NO_WARN __attribute__ ((unused))
+#else
+#define FUNC_NOT_USED_NO_WARN
+#endif
+
 #ifdef DEBUG
 #define ASSERTDBG_ENABLE
 #endif
 
 #ifdef ASSERTDBG_ENABLE
-static void assertDbg(bool e) {
+static void FUNC_NOT_USED_NO_WARN assertDbg(bool e) {
 	if (!e) {
 		__builtin_trap();
 	}
