@@ -4,11 +4,13 @@
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
+#include <vector>
+
 struct BlendOperation {
 	enum BlendMode {
-		MODE_NORMAL,		// linear interpolation between blendColor and texture, according to blendFactor
-		MODE_ADDITIVE,		// blendColor + blendFactor * texture
-		MODE_MULTIPLY,		// blendColor * texture * blendFactor
+		MODE_NORMAL = 0,		// linear interpolation between blendColor and texture, according to blendFactor
+		MODE_ADDITIVE = 1,		// blendColor + blendFactor * texture
+		MODE_MULTIPLY = 2,		// blendColor * texture * blendFactor
 	} blendMode;
 
 	// the source texture is blended with this color [rgba] according to blendMode and blendFactor:
@@ -20,6 +22,8 @@ struct BlendOperation {
 	// if this is set to true, blendFactor is multiplied by source texture's alpha value at each pixel
 	bool multiplyByTextureAlpha = true;
 };
+
+struct PictureVertex;
 
 /* Renders pictures (gl textures) in 2D viewport space */
 class PictureDraw {
@@ -46,6 +50,10 @@ private:
 
 	struct RenderData;
 	RenderData *pRenderData = nullptr;
+
+	std::vector<PictureVertex> verts_;
+	std::vector<int> texIds_;
+	std::vector<BlendOperation> blendOps_;
 };
 
 #endif // BOGLFW_PICTURE_DRAW_H

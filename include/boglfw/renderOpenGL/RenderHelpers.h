@@ -12,6 +12,7 @@ class Viewport;
  * * Shape3D
  * * GLText
  * * MeshRenderer
+ * * PictureDraw
  */
 class RenderHelpers {
 public:

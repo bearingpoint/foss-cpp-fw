@@ -84,7 +84,7 @@ void Viewport::clear() {
 	unsigned vpfx = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
 	unsigned vpfy = ssEnabled ? ssDesc.getLinearSampleFactor() : 1;
 	auto vpp = position();
-	glScissor(vpp.x * vpfx, vpp.y * vpfx, width() * vpfx, height() * vpfx);
+	glScissor(vpp.x * vpfx, vpp.y * vpfy, width() * vpfx, height() * vpfy);
 	glEnable(GL_SCISSOR_TEST);
 	glClearColor(backgroundColor_.r, backgroundColor_.g, backgroundColor_.b, backgroundColor_.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

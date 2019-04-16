@@ -3,6 +3,7 @@
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/MeshRenderer.h>
 #include <boglfw/renderOpenGL/GLText.h>
+#include <boglfw/renderOpenGL/PictureDraw.h>
 
 Viewport* RenderHelpers::pActiveViewport = nullptr;
 
@@ -11,6 +12,7 @@ void RenderHelpers::load(Config config) {
 	MeshRenderer::init();
 	Shape2D::init();
 	GLText::init(config.fontPath.c_str());
+	PictureDraw::init();
 }
 
 void RenderHelpers::unload() {
@@ -18,6 +20,7 @@ void RenderHelpers::unload() {
 	Shape2D::unload();
 	MeshRenderer::unload();
 	GLText::unload();
+	PictureDraw::unload();
 }
 
 void RenderHelpers::flushAll() {
@@ -25,4 +28,5 @@ void RenderHelpers::flushAll() {
 	Shape3D::get()->flush();
 	MeshRenderer::get()->flush();
 	GLText::get()->flush();
+	PictureDraw::get()->flush();
 }
