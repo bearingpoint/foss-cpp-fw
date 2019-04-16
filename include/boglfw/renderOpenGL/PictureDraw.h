@@ -43,6 +43,9 @@ private:
 	static void init();
 	static void unload();
 	PictureDraw();
+
+	struct RenderData;
+	RenderData *pRenderData = nullptr;
 };
 
 #endif // BOGLFW_PICTURE_DRAW_H

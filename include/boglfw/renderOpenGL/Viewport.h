@@ -34,6 +34,8 @@ public:
 	glm::vec4 screenRect() const {return viewportArea_; }
 	glm::vec3 project(glm::vec3 point) const;
 	glm::vec3 unproject(glm::vec3 point) const;
+	// returns a transformation matrix from viewport space to device uniform space -> useful for drawing viewport-space stuff
+	glm::mat4 viewport2Uniform() const { return mVieport2Uniform_; }
 
 	void setEnabled(bool enabled) { enabled_ = enabled; }
 	void setArea(int vpX, int vpY, int vpW, int vpH);
@@ -54,6 +56,9 @@ protected:
 	glm::vec4 backgroundColor_;
 	RenderContext* pContext_ = nullptr;
 
+	glm::mat4 mVieport2Uniform_;
 	mutable glm::mat4 mPV_cache_ {1};
 	mutable glm::mat4 mPV_inv_cache_ {1};
+
+	void updateVP2UMat();
 };

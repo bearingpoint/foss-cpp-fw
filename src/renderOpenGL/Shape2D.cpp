@@ -17,7 +17,6 @@
 #include <boglfw/perf/marker.h>
 
 #include <glm/mat4x4.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #define GLEW_NO_GLU
@@ -117,13 +116,7 @@ void Shape2D::flush() {
 		assertDbg(!!!"No viewport is currently rendering!");
 		return;
 	}
-	int vpw = vp->width(), vph = vp->height();
-	float sx = 2.f / (vpw-1);
-	float sy = -2.f / (vph-1);
-	float sz = -1.e-2f;
-	glm::mat4x4 matVP_to_UniformScale(glm::scale(glm::mat4(1), glm::vec3(sx, sy, sz)));
-	glm::mat4x4 matVP_to_Uniform(glm::translate(matVP_to_UniformScale,
-			glm::vec3(-vpw/2, -vph/2, 0)));
+	glm::mat4x4 matVP_to_Uniform = vp->viewport2Uniform();
 	glUniformMatrix4fv(indexMatViewport_, 1, GL_FALSE, glm::value_ptr(matVP_to_Uniform));
 
 	checkGLError("Shape2D::render() : setup");

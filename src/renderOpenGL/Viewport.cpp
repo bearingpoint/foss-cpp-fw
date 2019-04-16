@@ -5,6 +5,9 @@
 #include <boglfw/renderOpenGL/RenderContext.h>
 #include <boglfw/utils/log.h>
 
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 using namespace glm;
 
 Viewport::Viewport(int x, int y, int w, int h)
@@ -13,6 +16,7 @@ Viewport::Viewport(int x, int y, int w, int h)
 	, pCamera_(new Camera(this))
 	, enabled_(true)
 {
+	updateVP2UMat();
 	pCamera_->moveTo({0, 0, -1});
 	pCamera_->updateProj();
 }
@@ -26,7 +30,18 @@ void Viewport::setArea(int vpX, int vpY, int vpW, int vpH)
 {
 	viewportArea_ = vec4(vpX, vpY, vpW, vpH);
 
+	updateVP2UMat();
 	pCamera_->updateProj();
+}
+
+void Viewport::updateVP2UMat() {
+	int vpw = width(), vph = height();
+	float sx = 2.f / (vpw-1);
+	float sy = -2.f / (vph-1);
+	float sz = -1.e-2f;
+	glm::mat4x4 matVP_to_UniformScale(glm::scale(glm::mat4(1), glm::vec3(sx, sy, sz)));
+	mVieport2Uniform_ = glm::translate(matVP_to_UniformScale,
+			glm::vec3(-vpw/2, -vph/2, 0));
 }
 
 vec3 Viewport::unproject(vec3 point) const
