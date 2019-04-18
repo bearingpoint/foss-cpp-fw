@@ -49,6 +49,29 @@ struct SSDescriptor {
 	}
 };
 
+// Describes a framebuffer's parameters.
+// depending on multisamples parameter, the behaviour is slightly different:
+//		if [multisamples]==0 then the created framebuffer will get a texture attached as the color attachment;
+//		if [multisamples] > 0 then the created framebuffer will get a renderbuffer attached as the color attachment;
+// validate() validates the parameters.
+struct FrameBufferDescriptor {
+	unsigned width = 256;
+	unsigned height = 256;
+	unsigned format = GL_RGB;
+	unsigned multisamples = 0;
+	bool requireDepthBuffer = false;
+
+	bool validate() const;
+};
+
+// this object represents an OpenGL frame-buffer along with all its color (texture or renderbuffer) and depth (renderbuffer) attachments
+struct FrameBuffer {
+	unsigned frameBufferId = 0;
+	unsigned fbTextureId = 0;
+	unsigned fbRenderbufferId = 0;
+	unsigned depthRenderbufferId = 0;
+};
+
 enum class PostProcessStep {
 	PRE_DOWNSAMPLING,
 	POST_DOWNSAMPLING
@@ -104,14 +127,11 @@ bool gltGetSuperSampleInfo(SSDescriptor& outDesc);
 void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, unsigned multisamples);
 
 // creates a framebuffer and returns true on success or false on failure.
-// if [out_depthbuffer] contains a valid address, a depth buffer will also be created and returned via this pointer.
-// depending on multisamples parameter, the behaviour is slightly different:
-//		if [multisamples]==0 then a texture will be created and attached as the color attachment;
-//					this texture will be returned via [out_textureOrRenderbuffer]
-//		if [multisamples] > 0 then a renderbuffer will be created and attached as the color attachment;
-//					this renderbuffer is returned via [out_textureOrRenderbuffer]
-bool gltCreateFrameBuffer(unsigned width, unsigned height, unsigned format, unsigned multisamples,
-		unsigned &out_framebuffer, unsigned &out_textureOrRenderbuffer, unsigned *out_depthbuffer=nullptr);
+// see FrameBufferDescriptor documentation for details
+bool gltCreateFrameBuffer(FrameBufferDescriptor const& desc, FrameBuffer &outFB);
+
+// destroys all openGL resources associated with the framebuffer
+void gltDestroyFrameBuffer(FrameBuffer &fbuf);
 
 // checks if an OpenGL error has occured and prints it on stderr if so;
 // returns true if error, false if no error

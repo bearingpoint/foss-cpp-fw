@@ -30,32 +30,40 @@ static unsigned defaultMultisamples = 0;
 
 // variables for super-sampling:
 static bool ss_enabled = false;
-static unsigned ss_bufferW = 0;		// the full width of the SS frame buffer
-static unsigned ss_bufferH = 0;		// the full height of the SS frame buffer
+//static unsigned ss_bufferW = 0;		// the full width of the SS frame buffer
+//static unsigned ss_bufferH = 0;		// the full height of the SS frame buffer
 static unsigned ss_bufferVPW = 0;	// the "viewport" (usable) width of the SS frame buffer
 static unsigned ss_bufferVPH = 0;	// the "viewport" (usable) height of the SS frame buffer
 									// if forcePowerOfTwoFramebuffer is set, the "viewport" w/h may be different
 									// from the full w/h when the latter are increased to the nearest power of two
-static unsigned ss_framebuffer = 0;
-static unsigned ss_texture = 0;
-static unsigned ss_renderbuffer = 0;
+//static unsigned ss_framebuffer = 0;
+//static unsigned ss_texture = 0;
+//static unsigned ss_renderbuffer = 0;
 static unsigned ss_shaderProgram = 0;
 static unsigned ss_shaderUSampOffs = 0;	// sample offsets uniform location
 static unsigned ss_shaderUTexture = 0;	// texture sampler uniform location
 static float ss_sampleOffsets[8];
 static unsigned ss_quadVAO = 0;
 static SSDescriptor ss_descriptor;
+static FrameBufferDescriptor ss_framebufferDesc;
+static FrameBuffer ss_framebuffer;
 
 static std::function<void()> postProcessHooks[2] { nullptr, nullptr };
-static unsigned pp_framebuffer[3] { 0, 0, 0 };
-static unsigned pp_texture[3] { 0, 0, 0 };
-static unsigned pp1_depthBuffer = 0;	// if using only post-downsampling pp and no supersampling, we need an additional depth buffer
+static FrameBuffer pp_framebuffers[3]; // if using only post-downsampling pp and no supersampling, #1 needs a depth buffer
+//static unsigned pp_framebuffer[3] { 0, 0, 0 };
+//static unsigned pp_texture[3] { 0, 0, 0 };
+//static unsigned pp1_depthBuffer = 0;
 
 #ifdef WITH_GLFW
 GLFWwindow* gltGetWindow() {
 	return window;
 }
 #endif
+
+bool FrameBufferDescriptor::validate() const {
+	// TODO
+	return true;
+}
 
 bool gltGetSuperSampleInfo(SSDescriptor& outDesc) {
 	if (!ss_enabled)
@@ -79,39 +87,62 @@ static bool initGLEW() {
 	return true;
 }
 
-bool gltCreateFrameBuffer(unsigned width, unsigned height, unsigned format, unsigned multisamples,
-		unsigned &out_framebuffer, unsigned &out_textureOrRenderbuffer, unsigned *out_depthbuffer) {
+bool gltCreateFrameBuffer(FrameBufferDescriptor const& desc, FrameBuffer &outFB) {
+	if (!desc.validate())
+		return false;
 	checkGLError();
 	int initialDrawFB;
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &initialDrawFB);
-	glGenFramebuffers(1, &out_framebuffer);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, out_framebuffer);
+	glGenFramebuffers(1, &outFB.frameBufferId);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, outFB.frameBufferId);
 
-	if (multisamples > 0) {
-		glGenRenderbuffers(1, &out_textureOrRenderbuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, out_textureOrRenderbuffer);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, multisamples, format, width, height);
-		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, out_textureOrRenderbuffer);
+	if (desc.multisamples > 0) {
+		outFB.fbTextureId = 0;
+		glGenRenderbuffers(1, &outFB.fbRenderbufferId);
+		glBindRenderbuffer(GL_RENDERBUFFER, outFB.fbRenderbufferId);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, desc.multisamples, desc.format, desc.width, desc.height);
+		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, outFB.fbRenderbufferId);
 	} else {
-		glGenTextures(1, &out_textureOrRenderbuffer);
-		glBindTexture(GL_TEXTURE_2D, out_textureOrRenderbuffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		outFB.fbRenderbufferId = 0;
+		glGenTextures(1, &outFB.fbTextureId);
+		glBindTexture(GL_TEXTURE_2D, outFB.fbTextureId);
+		glTexImage2D(GL_TEXTURE_2D, 0, desc.format, desc.width, desc.height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, out_textureOrRenderbuffer, 0);
+		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, outFB.fbTextureId, 0);
 	}
 
-	if (out_depthbuffer) {
-		glGenRenderbuffers(1, out_depthbuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, *out_depthbuffer);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, multisamples, GL_DEPTH24_STENCIL8, width, height);
-		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, *out_depthbuffer);
-	}
+	if (desc.requireDepthBuffer) {
+		glGenRenderbuffers(1, &outFB.depthRenderbufferId);
+		glBindRenderbuffer(GL_RENDERBUFFER, outFB.depthRenderbufferId);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, desc.multisamples, GL_DEPTH24_STENCIL8, desc.width, desc.height);
+		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, outFB.depthRenderbufferId);
+	} else
+		outFB.depthRenderbufferId = 0;
 
 	bool result = !checkGLError("gltCreateFrameBuffer") && glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, initialDrawFB);
 
 	return result;
+}
+
+void gltDestroyFrameBuffer(FrameBuffer &fbuf) {
+	if (fbuf.frameBufferId == 0) {
+		ERROR("gltDestroyFrameBuffer: Attempting to destroy already destroyed FrameBuffer");
+	}
+
+	if (fbuf.fbTextureId > 0)
+		glDeleteTextures(1, &fbuf.fbTextureId);
+	if (fbuf.fbRenderbufferId > 0)
+		glDeleteRenderbuffers(1, &fbuf.fbRenderbufferId);
+	if (fbuf.depthRenderbufferId > 0)
+		glDeleteRenderbuffers(1, &fbuf.depthRenderbufferId);
+	glDeleteRenderbuffers(1, &fbuf.frameBufferId);
+
+	fbuf.depthRenderbufferId = 0;
+	fbuf.fbRenderbufferId = 0;
+	fbuf.fbTextureId = 0;
+	fbuf.frameBufferId = 0;
 }
 
 static void setupSSFramebuffer(SSDescriptor descriptor) {
@@ -120,8 +151,10 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	ss_bufferVPW = windowW * descriptor.getLinearSampleFactor();
 	ss_bufferVPH = windowH * descriptor.getLinearSampleFactor();
 
-	ss_bufferW = ss_bufferVPW;
-	ss_bufferH = ss_bufferVPH;
+	ss_framebufferDesc.width = ss_bufferVPW;
+	ss_framebufferDesc.height = ss_bufferVPH;
+	ss_framebufferDesc.format = ss_descriptor.framebufferFormat;
+	ss_framebufferDesc.requireDepthBuffer = true;
 
 	if (descriptor.forcePowerOfTwoFramebuffer) {
 		// TODO - implement power of two framebuffer
@@ -131,7 +164,7 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	}
 
 	// set up the super sampled framebuffer and attachments:
-	if (!gltCreateFrameBuffer(ss_bufferW, ss_bufferH, ss_descriptor.framebufferFormat, 0, ss_framebuffer, ss_texture, &ss_renderbuffer)) {
+	if (!gltCreateFrameBuffer(ss_framebufferDesc, ss_framebuffer)) {
 		ERROR("Unable to create a supersampled framebuffer, falling back to the default one.");
 		return; // continue without supersampling
 	}
@@ -166,8 +199,8 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	float screenQuadUV[] {
 		0.f,
 		0.f,
-		ss_bufferVPW / (float)ss_bufferW,
-		ss_bufferVPH / (float)ss_bufferH,
+		ss_bufferVPW / (float)ss_framebufferDesc.width,
+		ss_bufferVPH / (float)ss_framebufferDesc.height,
 	};
 	float screenQuadPosUV[] {
 		-1.f, -1.f, screenQuadUV[0], screenQuadUV[1], 	// bottom-left
@@ -196,8 +229,8 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 
 	// compute sample offsets - offsets are considered from the pixel's default UV coordinates:
 	// (we use built-in linear interpolation to reduce the number of sample points needed)
-	float htU = 0.5f / ss_bufferW;	// half-texel U
-	float htV = 0.5f / ss_bufferH;	// half-texel V
+	float htU = 0.5f / ss_framebufferDesc.width;	// half-texel U
+	float htV = 0.5f / ss_framebufferDesc.height;	// half-texel V
 	if (descriptor.mode == SSDescriptor::SS_4X) {
 		/* nothing to do here, the default sample point is already correctly positioned at the intersection of the 4 texels
 		 * +---+---+--
@@ -294,9 +327,9 @@ void gltBegin(glm::vec4 clearColor) {
 	LOGPREFIX("gltBegin");
 	checkGLError("before gltBegin()");
 	if (ss_enabled)
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ss_framebuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ss_framebuffer.frameBufferId);
 	else if (postProcessHooks[1])
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffer[1]);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[1].frameBufferId);
 	else
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
@@ -306,16 +339,16 @@ void gltBegin(glm::vec4 clearColor) {
 }
 
 static void ssFBToScreen() {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessHooks[1] ? pp_framebuffer[1] : 0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessHooks[1] ? pp_framebuffers[1].frameBufferId : 0);
 //	glBindFramebuffer(GL_READ_FRAMEBUFFER, ss_framebuffer);
 //	glBlitFramebuffer(0, 0, ss_bufferW, ss_bufferH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 //	return;
 	glViewport(0, 0, windowW, windowH);
 	glActiveTexture(GL_TEXTURE0);
 	if (postProcessHooks[0])
-		glBindTexture(GL_TEXTURE_2D, pp_texture[0]);	// read from the post-process target
+		glBindTexture(GL_TEXTURE_2D, pp_framebuffers[0].fbTextureId);	// read from the post-process target
 	else
-		glBindTexture(GL_TEXTURE_2D, ss_texture);		// read from the supersampled framebuffer directly
+		glBindTexture(GL_TEXTURE_2D, ss_framebuffer.fbTextureId);		// read from the supersampled framebuffer directly
 	glUseProgram(ss_shaderProgram);
 	glBindVertexArray(ss_quadVAO);
 	glUniform2fv(ss_shaderUSampOffs, 4, ss_sampleOffsets);
@@ -334,10 +367,10 @@ void gltEnd() {
 		if (postProcessHooks[0]) {
 			// pre-downsampling post processing step
 			glDisable(GL_DEPTH_TEST);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffer[0]);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[0].frameBufferId);
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, ss_texture);
-			glViewport(0, 0, ss_bufferW, ss_bufferH);
+			glBindTexture(GL_TEXTURE_2D, ss_framebuffer.fbTextureId);
+			glViewport(0, 0, ss_framebufferDesc.width, ss_framebufferDesc.height);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			postProcessHooks[0]();
 			glEnable(GL_DEPTH_TEST);
@@ -348,15 +381,15 @@ void gltEnd() {
 	if (postProcessHooks[1]) {
 		glDisable(GL_DEPTH_TEST);
 		glActiveTexture(GL_TEXTURE0);
-		if (pp_framebuffer[2] > 0) {
+		if (pp_framebuffers[2].frameBufferId > 0) {
 			// we used a multisampled framebuffer to render the scene, must resolve it before post-processing
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffer[2]);
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffer[1]);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[1].frameBufferId);
 			glBlitFramebuffer(0, 0, windowW, windowH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			glBindTexture(GL_TEXTURE_2D, pp_texture[2]);
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffer[2]);
+			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[2].fbTextureId);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
 		} else {
-			glBindTexture(GL_TEXTURE_2D, pp_texture[1]);
+			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[1].fbTextureId);
 		}
 		checkGLError("gltEnd() PostProcess #1");
 		// post-downsampling post-processing step into the default screen framebuffer
@@ -364,7 +397,7 @@ void gltEnd() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		postProcessHooks[1]();
 		glEnable(GL_DEPTH_TEST);
-		if (pp_framebuffer[2] > 0) {
+		if (pp_framebuffers[2].frameBufferId > 0) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		}
 	}
@@ -447,20 +480,22 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 
 	// now check if we need to create or destroy additional framebuffers:
 	if (postProcessHooks[0]) {
-		if (!pp_framebuffer[0]) {
+		if (!pp_framebuffers[0].frameBufferId) {
 			// post-processing enabled, need to create additional framebuffer
-			if (!gltCreateFrameBuffer(ss_bufferW, ss_bufferH, GL_RGB16, 0, pp_framebuffer[0], pp_texture[0], nullptr)) {
+			FrameBufferDescriptor desc = ss_framebufferDesc;
+			desc.format = GL_RGB16;
+			desc.requireDepthBuffer = false;
+			if (!gltCreateFrameBuffer(desc, pp_framebuffers[0])) {
 				ERROR("Failed to create additional framebuffer for pre-downsampling post-processing; disabling post-processing at this step.");
 				postProcessHooks[0] = nullptr;
 			}
 		}
-	} else if (pp_framebuffer[0]) {
+	} else if (pp_framebuffers[0].frameBufferId) {
 		// post-processign disabled, destroy additional framebuffer
-		glDeleteTextures(1, &pp_texture[0]), pp_texture[0] = 0;
-		glDeleteFramebuffers(1, &pp_framebuffer[0]), pp_framebuffer[0] = 0;
+		gltDestroyFrameBuffer(pp_framebuffers[0]);
 	}
 	if (postProcessHooks[1]) {
-		if (!pp_framebuffer[1]) {
+		if (!pp_framebuffers[1].frameBufferId) {
 			if (defaultMultisamples > 0) {
 				ERROR("WARNING: Creating a post-processing hook while the Default Framebuffer is multisampled. "
 						"Disable the default multisampling to stop wasting memory (it has no effect).");
@@ -472,35 +507,45 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 			// post-processing enabled, need to create additional framebuffer(s)
 			if (multisampleFb > 0) {
 				// must create one multisampled framebuffer and one additional non-multisampled one to resolve it into
-				bool ok = gltCreateFrameBuffer(windowW, windowH, GL_RGB16, multisampleFb, pp_framebuffer[1], pp_texture[1], &pp1_depthBuffer);
-				ok &= gltCreateFrameBuffer(windowW, windowH, GL_RGB16, 0, pp_framebuffer[2], pp_texture[2], nullptr);
+				FrameBufferDescriptor desc;
+				desc.format = GL_RGB16;
+				desc.height = windowH;
+				desc.width = windowW;
+				desc.multisamples = multisampleFb;
+				desc.requireDepthBuffer = true;
+				bool ok = gltCreateFrameBuffer(desc, pp_framebuffers[1]);
+				desc.multisamples = 0;
+				desc.requireDepthBuffer = false;
+				ok &= gltCreateFrameBuffer(desc, pp_framebuffers[2]);
 				if (!ok) {
 					ERROR("Failed to create additional framebuffer for post-downsampling post-processing; disabling post-processing at this step.");
 					postProcessHooks[1] = nullptr;
+					if (pp_framebuffers[1].frameBufferId)
+						gltDestroyFrameBuffer(pp_framebuffers[1]);
+					if (pp_framebuffers[2].frameBufferId)
+						gltDestroyFrameBuffer(pp_framebuffers[2]);
 				}
 			} else {
-				unsigned *pDepthBuffer = ss_enabled ? nullptr : &pp1_depthBuffer;
-				if (!gltCreateFrameBuffer(windowW, windowH, GL_RGB16, 0, pp_framebuffer[1], pp_texture[1], pDepthBuffer)) {
+				FrameBufferDescriptor desc;
+				desc.format = GL_RGB16;
+				desc.height = windowH;
+				desc.width = windowW;
+				desc.multisamples = 0;
+				desc.requireDepthBuffer = !ss_enabled;
+				if (!gltCreateFrameBuffer(desc, pp_framebuffers[1])) {
 					ERROR("Failed to create additional framebuffer for post-downsampling post-processing; disabling post-processing at this step.");
 					postProcessHooks[1] = nullptr;
 				}
 			}
 		}
-	} else if (pp_framebuffer[1]) {
-		if (pp_framebuffer[2]) {
+	} else if (pp_framebuffers[1].frameBufferId) {
+		if (pp_framebuffers[2].frameBufferId) {
 			// hook #1 used multisampled framebuffer
-			glDeleteTextures(1, &pp_texture[2]), pp_texture[2] = 0;
-			glDeleteFramebuffers(1, &pp_framebuffer[2]), pp_framebuffer[2] = 0;
-			if (pp1_depthBuffer != 0)
-				glDeleteRenderbuffers(1, &pp1_depthBuffer);
-			glDeleteRenderbuffers(1, &pp_texture[1]), pp_texture[1] = 0;
-			glDeleteFramebuffers(1, &pp_framebuffer[1]), pp_framebuffer[1] = 0;
+			gltDestroyFrameBuffer(pp_framebuffers[1]);
+			gltDestroyFrameBuffer(pp_framebuffers[2]);
 		} else {
 			// post-processign disabled, destroy additional framebuffer
-			glDeleteTextures(1, &pp_texture[1]), pp_texture[1] = 0;
-			if (pp1_depthBuffer != 0)
-				glDeleteRenderbuffers(1, &pp1_depthBuffer);
-			glDeleteFramebuffers(1, &pp_framebuffer[1]), pp_framebuffer[1] = 0;
+			gltDestroyFrameBuffer(pp_framebuffers[1]);
 		}
 	}
 }
