@@ -93,6 +93,7 @@ void Viewport::clear() {
 }
 
 void Viewport::render(std::vector<drawable> const& list, RenderContext const& ctx) {
+	assertDbg(RenderHelpers::pActiveViewport == nullptr && "Another viewport is already rendering");
 	if (!isEnabled())
 		return;
 
@@ -105,6 +106,7 @@ void Viewport::render(std::vector<drawable> const& list, RenderContext const& ct
 	auto vpp = position();
 	glViewport(vpp.x * vpfx, vpp.y * vpfy, width() * vpfx, height() * vpfy);
 
+	// make sure the context is refering to this viewport:
 	ctx.pViewport = this;
 	RenderHelpers::pActiveViewport = this;
 
@@ -117,5 +119,4 @@ void Viewport::render(std::vector<drawable> const& list, RenderContext const& ct
 	RenderHelpers::flushAll();
 
 	RenderHelpers::pActiveViewport = nullptr;
-	ctx.pViewport = nullptr;
 }
