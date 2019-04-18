@@ -72,8 +72,8 @@ void SignalViewer::draw(RenderContext const& ctx) {
 	const glm::vec4 divisionColor(1.f, 1.f, 1.f, 0.2f);
 	const glm::vec4 divisionLabelColor(1.f, 1.f, 1.f, 0.6f);
 
-	glm::vec2 pos = pos_.xy(ctx.viewport);
-	glm::vec2 size = size_.xy(ctx.viewport);
+	glm::vec2 pos = pos_.xy(ctx.viewport());
+	glm::vec2 size = size_.xy(ctx.viewport());
 
 	for (auto &s : sourceInfo_) {
 		Shape2D::get()->drawRectangle(pos, size, frameColor);

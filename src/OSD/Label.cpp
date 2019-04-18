@@ -22,7 +22,7 @@ void Label::draw(RenderContext const& ctx) {
 	if (drawFrame) {
 		glm::vec2 rectSize = boxSize() + glm::vec2(5, 5);
 		Shape2D::get()->drawRectangle(
-				pos_.xy(ctx.viewport) + glm::vec2{5, 5},
+				pos_.xy(ctx.viewport()) + glm::vec2{5, 5},
 				rectSize,
 				color_);
 	}

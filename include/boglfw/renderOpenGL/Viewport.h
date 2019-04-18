@@ -44,7 +44,7 @@ public:
 	void setUserData(long data) { userData_ = data; }
 
 	void clear();
-	void render(std::vector<drawable> const& list);
+	void render(std::vector<drawable> const& list, RenderContext const& ctx);
 
 protected:
 	friend class RenderContext;
@@ -54,7 +54,6 @@ protected:
 	Camera* pCamera_ = nullptr;
 	bool enabled_ = true;
 	glm::vec4 backgroundColor_;
-	RenderContext* pContext_ = nullptr;
 
 	glm::mat4 mVieport2Uniform_;
 	mutable glm::mat4 mPV_cache_ {1};

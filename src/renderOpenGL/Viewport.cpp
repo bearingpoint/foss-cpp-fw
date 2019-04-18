@@ -92,13 +92,10 @@ void Viewport::clear() {
 	checkGLError("viewport clear");
 }
 
-void Viewport::render(std::vector<drawable> const& list) {
+void Viewport::render(std::vector<drawable> const& list, RenderContext const& ctx) {
 	if (!isEnabled())
 		return;
-	if (!pContext_) {
-		ERROR("No RenderContext created for the viewport!");
-		return;
-	}
+
 	// set up viewport:
 	SSDescriptor ssDesc;
 	bool ssEnabled = gltGetSuperSampleInfo(ssDesc);
@@ -108,15 +105,17 @@ void Viewport::render(std::vector<drawable> const& list) {
 	auto vpp = position();
 	glViewport(vpp.x * vpfx, vpp.y * vpfy, width() * vpfx, height() * vpfy);
 
+	ctx.pViewport = this;
 	RenderHelpers::pActiveViewport = this;
 
 	// render objects from list:
 	for (auto &x : list) {
-		x.draw(*pContext_);
+		x.draw(ctx);
 	}
 
 	// flush all render helpers' pending commands
 	RenderHelpers::flushAll();
 
 	RenderHelpers::pActiveViewport = nullptr;
+	ctx.pViewport = nullptr;
 }
