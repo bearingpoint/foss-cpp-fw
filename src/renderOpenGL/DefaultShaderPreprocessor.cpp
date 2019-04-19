@@ -3,6 +3,10 @@
 
 #include <sstream>
 
+static bool isWhiteSpace(char c) {
+	return c == ' ' || c == '\t';
+}
+
 std::string DefaultShaderPreprocessor::preprocess
 (std::string const& code, std::string const& originalFilePath) {
 	size_t lastWrittenPos = 0;
@@ -12,9 +16,17 @@ std::string DefaultShaderPreprocessor::preprocess
 	do {
 		// find next directive:
 		linePointer = code.find(directiveToken, lastWrittenPos);
+		while (linePointer > 0 && isWhiteSpace(code[linePointer-1]))
+			linePointer--;
 		// write everything up to the directive
 		ss << code.substr(lastWrittenPos, linePointer - lastWrittenPos);
 		lastWrittenPos = linePointer;
+
+		if (linePointer > 1 && code[linePointer-1] == '/' && code[linePointer-2] == '/') {
+			// this #include is commented out, ignore it
+			lastWrittenPos = code.find('\n', linePointer);
+			continue;
+		}
 
 		if (linePointer != std::string::npos) {
 			// replace the directive with the contents of the referred file

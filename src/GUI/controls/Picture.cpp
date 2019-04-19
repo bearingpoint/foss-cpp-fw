@@ -17,3 +17,16 @@ void Picture::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::ve
 			getSize() - glm::vec2(2, 2),
 			enableGammaCorrection_);
 }
+
+void Picture::mouseDown(MouseButtons button) {
+
+}
+
+void Picture::mouseUp(MouseButtons button) {
+
+}
+
+void Picture::mouseMoved(glm::vec2 delta, glm::vec2 position) {
+
+
+}

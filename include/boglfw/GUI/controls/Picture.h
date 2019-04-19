@@ -33,6 +33,10 @@ protected:
 	int texture_ = 0;
 	bool enableAlphaBlend_ = false;
 	bool enableGammaCorrection_ = false;
+
+	virtual void mouseDown(MouseButtons button) override;
+	virtual void mouseUp(MouseButtons button) override;
+	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) override;
 };
 
 #endif /* GUI_CONTROLS_PICTURE_H_ */
