@@ -31,15 +31,10 @@ static unsigned defaultMultisamples = 0;
 
 // variables for super-sampling:
 static bool ss_enabled = false;
-//static unsigned ss_bufferW = 0;		// the full width of the SS frame buffer
-//static unsigned ss_bufferH = 0;		// the full height of the SS frame buffer
 static unsigned ss_bufferVPW = 0;	// the "viewport" (usable) width of the SS frame buffer
 static unsigned ss_bufferVPH = 0;	// the "viewport" (usable) height of the SS frame buffer
 									// if forcePowerOfTwoFramebuffer is set, the "viewport" w/h may be different
 									// from the full w/h when the latter are increased to the nearest power of two
-//static unsigned ss_framebuffer = 0;
-//static unsigned ss_texture = 0;
-//static unsigned ss_renderbuffer = 0;
 static unsigned ss_shaderProgram = 0;
 static unsigned ss_shaderUSampOffs = 0;	// sample offsets uniform location
 static unsigned ss_shaderUTexture = 0;	// texture sampler uniform location
@@ -51,9 +46,6 @@ static FrameBuffer ss_framebuffer;
 
 static std::function<void()> postProcessHooks[2] { nullptr, nullptr };
 static FrameBuffer pp_framebuffers[3]; // if using only post-downsampling pp and no supersampling, #1 needs a depth buffer
-//static unsigned pp_framebuffer[3] { 0, 0, 0 };
-//static unsigned pp_texture[3] { 0, 0, 0 };
-//static unsigned pp1_depthBuffer = 0;
 
 #ifdef WITH_GLFW
 GLFWwindow* gltGetWindow() {
@@ -271,8 +263,6 @@ void gltBegin(glm::vec4 clearColor) {
 		ss_framebuffer.bind();
 	else if (postProcessHooks[1])
 		pp_framebuffers[1].bind();
-	//else
-	//	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClearDepth(1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -341,18 +331,14 @@ void gltEnd() {
 			pp_framebuffers[1].unbindRead();
 			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[2].fbTextureId());
 			pp_framebuffers[2].unbind();
-			//pp_framebuffers[2].bindRead(); //glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
 		} else {
 			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[1].fbTextureId());
 		}
 		checkGLError("gltEnd() PostProcess #1");
 		// post-downsampling post-processing step into the default screen framebuffer
-		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glViewport(0, 0, windowW, windowH);
 		postProcessHooks[1]();
 		glEnable(GL_DEPTH_TEST);
-		//if (pp_framebuffers[2].valid()) {
-		//	pp_framebuffers[2].unbind(); //glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-		//}
 	}
 #ifdef WITH_SDL
 	if (boundToSDL)
