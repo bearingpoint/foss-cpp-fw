@@ -488,3 +488,24 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 		}
 	}
 }
+
+void gltShutDown() {
+	if (ss_framebuffer.valid()) {
+		if (ss_framebuffer.isActive())
+			ss_framebuffer.unbind();
+		ss_framebuffer.destroy();
+	}
+	for (int i=0; i<3; i++) {
+		if (pp_framebuffers[i].valid()) {
+			if (pp_framebuffers[i].isActive())
+				pp_framebuffers[i].unbind();
+			pp_framebuffers[i].destroy();
+		}
+	}
+#ifdef WITH_SDL
+	SDL_DestroyWindow(sdl_window);
+#endif
+#ifdef WITH_GLFW
+	glfwDestroyWindow(window);
+#endif
+}

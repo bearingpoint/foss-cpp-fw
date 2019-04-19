@@ -74,6 +74,8 @@ bool gltInitSDL(SDL_Window* window);
 bool gltInitSDLSupersampled(SDL_Window* window, SSDescriptor desc);
 #endif
 
+void gltShutDown();
+
 // begins a frame
 void gltBegin(glm::vec4 clearColor = glm::vec4{0});
 
