@@ -1,5 +1,6 @@
 #include <boglfw/renderOpenGL/glToolkit.h>
 #include <boglfw/renderOpenGL/shader.h>
+#include <boglfw/renderOpenGL/Framebuffer.h>
 #include <boglfw/utils/log.h>
 
 #ifdef WITH_GLFW
@@ -60,14 +61,13 @@ GLFWwindow* gltGetWindow() {
 }
 #endif
 
-bool FrameBufferDescriptor::validate() const {
-	// TODO
-	return true;
-}
-
 bool gltGetSuperSampleInfo(SSDescriptor& outDesc) {
 	if (!ss_enabled)
 		return false;
+	int crtFramebuffer;
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &crtFramebuffer);
+	if (crtFramebuffer != ss_framebuffer.framebufferId())
+		return false;	// a framebuffer other than the supersampled framebuffer is currently bound so we don't interfere
 	outDesc = ss_descriptor;
 	return true;
 }
@@ -81,68 +81,9 @@ static bool initGLEW() {
 	}
 
 	glEnable(GL_DEPTH_TEST);
-//	glEnable(GL_MULTISAMPLE);
 	glDepthFunc(GL_LEQUAL);
 	checkGLError("init GLEW");
 	return true;
-}
-
-bool gltCreateFrameBuffer(FrameBufferDescriptor const& desc, FrameBuffer &outFB) {
-	if (!desc.validate())
-		return false;
-	checkGLError();
-	int initialDrawFB;
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &initialDrawFB);
-	glGenFramebuffers(1, &outFB.frameBufferId);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, outFB.frameBufferId);
-
-	if (desc.multisamples > 0) {
-		outFB.fbTextureId = 0;
-		glGenRenderbuffers(1, &outFB.fbRenderbufferId);
-		glBindRenderbuffer(GL_RENDERBUFFER, outFB.fbRenderbufferId);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, desc.multisamples, desc.format, desc.width, desc.height);
-		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, outFB.fbRenderbufferId);
-	} else {
-		outFB.fbRenderbufferId = 0;
-		glGenTextures(1, &outFB.fbTextureId);
-		glBindTexture(GL_TEXTURE_2D, outFB.fbTextureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, desc.format, desc.width, desc.height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, outFB.fbTextureId, 0);
-	}
-
-	if (desc.requireDepthBuffer) {
-		glGenRenderbuffers(1, &outFB.depthRenderbufferId);
-		glBindRenderbuffer(GL_RENDERBUFFER, outFB.depthRenderbufferId);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, desc.multisamples, GL_DEPTH24_STENCIL8, desc.width, desc.height);
-		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, outFB.depthRenderbufferId);
-	} else
-		outFB.depthRenderbufferId = 0;
-
-	bool result = !checkGLError("gltCreateFrameBuffer") && glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, initialDrawFB);
-
-	return result;
-}
-
-void gltDestroyFrameBuffer(FrameBuffer &fbuf) {
-	if (fbuf.frameBufferId == 0) {
-		ERROR("gltDestroyFrameBuffer: Attempting to destroy already destroyed FrameBuffer");
-	}
-
-	if (fbuf.fbTextureId > 0)
-		glDeleteTextures(1, &fbuf.fbTextureId);
-	if (fbuf.fbRenderbufferId > 0)
-		glDeleteRenderbuffers(1, &fbuf.fbRenderbufferId);
-	if (fbuf.depthRenderbufferId > 0)
-		glDeleteRenderbuffers(1, &fbuf.depthRenderbufferId);
-	glDeleteRenderbuffers(1, &fbuf.frameBufferId);
-
-	fbuf.depthRenderbufferId = 0;
-	fbuf.fbRenderbufferId = 0;
-	fbuf.fbTextureId = 0;
-	fbuf.frameBufferId = 0;
 }
 
 static void setupSSFramebuffer(SSDescriptor descriptor) {
@@ -164,7 +105,7 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 	}
 
 	// set up the super sampled framebuffer and attachments:
-	if (!gltCreateFrameBuffer(ss_framebufferDesc, ss_framebuffer)) {
+	if (!ss_framebuffer.create(ss_framebufferDesc)) {
 		ERROR("Unable to create a supersampled framebuffer, falling back to the default one.");
 		return; // continue without supersampling
 	}
@@ -327,11 +268,11 @@ void gltBegin(glm::vec4 clearColor) {
 	LOGPREFIX("gltBegin");
 	checkGLError("before gltBegin()");
 	if (ss_enabled)
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ss_framebuffer.frameBufferId);
+		ss_framebuffer.bind();
 	else if (postProcessHooks[1])
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[1].frameBufferId);
-	else
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		pp_framebuffers[1].bind();
+	//else
+	//	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClearDepth(1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -339,16 +280,19 @@ void gltBegin(glm::vec4 clearColor) {
 }
 
 static void ssFBToScreen() {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessHooks[1] ? pp_framebuffers[1].frameBufferId : 0);
-//	glBindFramebuffer(GL_READ_FRAMEBUFFER, ss_framebuffer);
-//	glBlitFramebuffer(0, 0, ss_bufferW, ss_bufferH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-//	return;
+	if (postProcessHooks[1])
+		pp_framebuffers[1].bind();
+	else
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	glDisable(GL_DEPTH_TEST);
+
 	glViewport(0, 0, windowW, windowH);
 	glActiveTexture(GL_TEXTURE0);
 	if (postProcessHooks[0])
-		glBindTexture(GL_TEXTURE_2D, pp_framebuffers[0].fbTextureId);	// read from the post-process target
+		glBindTexture(GL_TEXTURE_2D, pp_framebuffers[0].fbTextureId());	// read from the post-process target
 	else
-		glBindTexture(GL_TEXTURE_2D, ss_framebuffer.fbTextureId);		// read from the supersampled framebuffer directly
+		glBindTexture(GL_TEXTURE_2D, ss_framebuffer.fbTextureId());		// read from the supersampled framebuffer directly
 	glUseProgram(ss_shaderProgram);
 	glBindVertexArray(ss_quadVAO);
 	glUniform2fv(ss_shaderUSampOffs, 4, ss_sampleOffsets);
@@ -357,49 +301,58 @@ static void ssFBToScreen() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glUseProgram(0);
 	glBindVertexArray(0);
+
+	glEnable(GL_DEPTH_TEST);
+
+	if (postProcessHooks[1])
+		pp_framebuffers[1].unbind();
 }
 
 // finishes a frame and displays the result
 void gltEnd() {
 	LOGPREFIX("gltEnd");
 	checkGLError("before gltEnd()");
+
 	if (ss_enabled) {
+		ss_framebuffer.unbind();
 		if (postProcessHooks[0]) {
 			// pre-downsampling post processing step
 			glDisable(GL_DEPTH_TEST);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[0].frameBufferId);
+			pp_framebuffers[0].bind();
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, ss_framebuffer.fbTextureId);
+			glBindTexture(GL_TEXTURE_2D, ss_framebuffer.fbTextureId());
 			glViewport(0, 0, ss_framebufferDesc.width, ss_framebufferDesc.height);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			postProcessHooks[0]();
 			glEnable(GL_DEPTH_TEST);
+			pp_framebuffers[0].unbind();
 		}
-		ssFBToScreen(); // render the off-screen framebuffer to the display backbuffer
+		ssFBToScreen(); // render the off-screen framebuffer to the display/post-process backbuffer
 		checkGLError("gltEnd() -> ssFBToScreen()");
 	}
 	if (postProcessHooks[1]) {
+		pp_framebuffers[1].unbind();
 		glDisable(GL_DEPTH_TEST);
 		glActiveTexture(GL_TEXTURE0);
-		if (pp_framebuffers[2].frameBufferId > 0) {
+		if (pp_framebuffers[2].valid()) {
 			// we used a multisampled framebuffer to render the scene, must resolve it before post-processing
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[1].frameBufferId);
+			pp_framebuffers[2].bind(); //glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
+			pp_framebuffers[1].bindRead(); //glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[1].frameBufferId);
 			glBlitFramebuffer(0, 0, windowW, windowH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[2].fbTextureId);
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
+			pp_framebuffers[1].unbindRead();
+			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[2].fbTextureId());
+			pp_framebuffers[2].unbind();
+			//pp_framebuffers[2].bindRead(); //glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
 		} else {
-			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[1].fbTextureId);
+			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[1].fbTextureId());
 		}
 		checkGLError("gltEnd() PostProcess #1");
 		// post-downsampling post-processing step into the default screen framebuffer
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		postProcessHooks[1]();
 		glEnable(GL_DEPTH_TEST);
-		if (pp_framebuffers[2].frameBufferId > 0) {
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-		}
+		//if (pp_framebuffers[2].valid()) {
+		//	pp_framebuffers[2].unbind(); //glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		//}
 	}
 #ifdef WITH_SDL
 	if (boundToSDL)
@@ -480,22 +433,22 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 
 	// now check if we need to create or destroy additional framebuffers:
 	if (postProcessHooks[0]) {
-		if (!pp_framebuffers[0].frameBufferId) {
+		if (!pp_framebuffers[0].valid()) {
 			// post-processing enabled, need to create additional framebuffer
 			FrameBufferDescriptor desc = ss_framebufferDesc;
 			desc.format = GL_RGB16;
 			desc.requireDepthBuffer = false;
-			if (!gltCreateFrameBuffer(desc, pp_framebuffers[0])) {
+			if (!pp_framebuffers[0].create(desc)) {
 				ERROR("Failed to create additional framebuffer for pre-downsampling post-processing; disabling post-processing at this step.");
 				postProcessHooks[0] = nullptr;
 			}
 		}
-	} else if (pp_framebuffers[0].frameBufferId) {
-		// post-processign disabled, destroy additional framebuffer
-		gltDestroyFrameBuffer(pp_framebuffers[0]);
+	} else if (pp_framebuffers[0].valid()) {
+		// post-processing disabled, destroy additional framebuffer
+		pp_framebuffers[0].destroy();
 	}
 	if (postProcessHooks[1]) {
-		if (!pp_framebuffers[1].frameBufferId) {
+		if (!pp_framebuffers[1].valid()) {
 			if (defaultMultisamples > 0) {
 				ERROR("WARNING: Creating a post-processing hook while the Default Framebuffer is multisampled. "
 						"Disable the default multisampling to stop wasting memory (it has no effect).");
@@ -513,17 +466,17 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 				desc.width = windowW;
 				desc.multisamples = multisampleFb;
 				desc.requireDepthBuffer = true;
-				bool ok = gltCreateFrameBuffer(desc, pp_framebuffers[1]);
+				bool ok = pp_framebuffers[1].create(desc);
 				desc.multisamples = 0;
 				desc.requireDepthBuffer = false;
-				ok &= gltCreateFrameBuffer(desc, pp_framebuffers[2]);
+				ok &= pp_framebuffers[2].create(desc);
 				if (!ok) {
 					ERROR("Failed to create additional framebuffer for post-downsampling post-processing; disabling post-processing at this step.");
 					postProcessHooks[1] = nullptr;
-					if (pp_framebuffers[1].frameBufferId)
-						gltDestroyFrameBuffer(pp_framebuffers[1]);
-					if (pp_framebuffers[2].frameBufferId)
-						gltDestroyFrameBuffer(pp_framebuffers[2]);
+					if (pp_framebuffers[1].valid())
+						pp_framebuffers[1].destroy();
+					if (pp_framebuffers[2].valid())
+						pp_framebuffers[2].destroy();
 				}
 			} else {
 				FrameBufferDescriptor desc;
@@ -532,20 +485,20 @@ void gltSetPostProcessHook(PostProcessStep step, std::function<void()> hook, uns
 				desc.width = windowW;
 				desc.multisamples = 0;
 				desc.requireDepthBuffer = !ss_enabled;
-				if (!gltCreateFrameBuffer(desc, pp_framebuffers[1])) {
+				if (!pp_framebuffers[1].create(desc)) {
 					ERROR("Failed to create additional framebuffer for post-downsampling post-processing; disabling post-processing at this step.");
 					postProcessHooks[1] = nullptr;
 				}
 			}
 		}
-	} else if (pp_framebuffers[1].frameBufferId) {
-		if (pp_framebuffers[2].frameBufferId) {
+	} else if (pp_framebuffers[1].valid()) {
+		if (pp_framebuffers[2].valid()) {
 			// hook #1 used multisampled framebuffer
-			gltDestroyFrameBuffer(pp_framebuffers[1]);
-			gltDestroyFrameBuffer(pp_framebuffers[2]);
+			pp_framebuffers[1].destroy();
+			pp_framebuffers[2].destroy();
 		} else {
 			// post-processign disabled, destroy additional framebuffer
-			gltDestroyFrameBuffer(pp_framebuffers[1]);
+			pp_framebuffers[1].destroy();
 		}
 	}
 }

@@ -92,12 +92,11 @@ void Viewport::clear() {
 	checkGLError("viewport clear");
 }
 
-void Viewport::render(std::vector<drawable> const& list, RenderContext const& ctx) {
-	assertDbg(RenderHelpers::pActiveViewport == nullptr && "Another viewport is already rendering");
-	if (!isEnabled())
-		return;
-
+void Viewport::prepareRendering(RenderContext const& ctx) {
 	// set up viewport:
+	assertDbg(RenderHelpers::pActiveViewport == nullptr && "Another viewport is already rendering");
+	RenderHelpers::pActiveViewport = this;
+
 	SSDescriptor ssDesc;
 	bool ssEnabled = gltGetSuperSampleInfo(ssDesc);
 	// when super sample is enabled we must adjust the viewport accordingly
@@ -108,15 +107,35 @@ void Viewport::render(std::vector<drawable> const& list, RenderContext const& ct
 
 	// make sure the context is refering to this viewport:
 	ctx.pViewport = this;
-	RenderHelpers::pActiveViewport = this;
+}
+
+void Viewport::resetRendering() {
+	// flush all render helpers' pending commands
+	RenderHelpers::flushAll();
+	RenderHelpers::pActiveViewport = nullptr;
+}
+
+void Viewport::render(drawable element, RenderContext const& ctx) {
+	if (!isEnabled())
+		return;
+
+	prepareRendering(ctx);
+
+	element.draw(ctx);
+
+	resetRendering();
+}
+
+void Viewport::render(std::vector<drawable> const& list, RenderContext const& ctx) {
+	if (!isEnabled())
+		return;
+
+	prepareRendering(ctx);
 
 	// render objects from list:
 	for (auto &x : list) {
 		x.draw(ctx);
 	}
 
-	// flush all render helpers' pending commands
-	RenderHelpers::flushAll();
-
-	RenderHelpers::pActiveViewport = nullptr;
+	resetRendering();
 }
