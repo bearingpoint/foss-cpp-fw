@@ -18,6 +18,7 @@ Label::Label(glm::vec2 pos, int fontSize, std::string text)
 	: GuiBasicElement(pos, GLText::get()->getTextRect(text, fontSize))
 	, text_(text)
 	, fontSize_(fontSize)
+	, color_(GuiTheme::getButtonTextColor())
 {
 }
 
@@ -27,5 +28,5 @@ Label::~Label() {
 void Label::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	float tx = frameTranslation.x;
 	float ty = frameTranslation.y;
-	GLText::get()->print(text_, {tx, ty}, fontSize_, GuiTheme::getButtonTextColor());
+	GLText::get()->print(text_, {tx, ty}, fontSize_, color_);
 }
