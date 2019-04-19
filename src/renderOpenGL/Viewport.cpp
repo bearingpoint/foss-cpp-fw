@@ -110,8 +110,6 @@ void Viewport::prepareRendering(RenderContext const& ctx) {
 }
 
 void Viewport::resetRendering() {
-	// flush all render helpers' pending commands
-	RenderHelpers::flushAll();
 	RenderHelpers::pActiveViewport = nullptr;
 }
 
@@ -122,6 +120,8 @@ void Viewport::render(drawable element, RenderContext const& ctx) {
 	prepareRendering(ctx);
 
 	element.draw(ctx);
+	// flush all render helpers' pending commands
+	RenderHelpers::flushAll();
 
 	resetRendering();
 }
@@ -136,6 +136,8 @@ void Viewport::render(std::vector<drawable> const& list, RenderContext const& ct
 	for (auto &x : list) {
 		x.draw(ctx);
 	}
+	// flush all render helpers' pending commands
+	RenderHelpers::flushAll();
 
 	resetRendering();
 }

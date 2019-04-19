@@ -325,8 +325,8 @@ void gltEnd() {
 		glActiveTexture(GL_TEXTURE0);
 		if (pp_framebuffers[2].valid()) {
 			// we used a multisampled framebuffer to render the scene, must resolve it before post-processing
-			pp_framebuffers[2].bind(); //glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pp_framebuffers[2].frameBufferId);
-			pp_framebuffers[1].bindRead(); //glBindFramebuffer(GL_READ_FRAMEBUFFER, pp_framebuffers[1].frameBufferId);
+			pp_framebuffers[2].bind();
+			pp_framebuffers[1].bindRead();
 			glBlitFramebuffer(0, 0, windowW, windowH, 0, 0, windowW, windowH, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 			pp_framebuffers[1].unbindRead();
 			glBindTexture(GL_TEXTURE_2D, pp_framebuffers[2].fbTextureId());
