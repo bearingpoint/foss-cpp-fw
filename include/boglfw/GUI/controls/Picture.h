@@ -19,7 +19,11 @@ public:
 	virtual ~Picture();
 
 	void setBackgroundColor(glm::vec3 color) { bkColor_ = color; }
-	void setPictureTexture(int texId) { texture_ = texId; }
+	// sets an OpenGL texture as the picture to be displayed.
+	// [applyGammaCorrection] specifies whether gamma correction should be applied to the picture when rendering;
+	// if you are displaying a rendered scene, you should specify this
+	// as true unless the entire GUI is gamma-corrected in post processing.
+	void setPictureTexture(int texId, bool applyGammaCorrection=false) { texture_ = texId; enableGammaCorrection_ = applyGammaCorrection; }
 	void enablePictureTransparency(bool enable) { enableAlphaBlend_ = enable; }
 
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
@@ -28,6 +32,7 @@ protected:
 	glm::vec3 bkColor_ {0.f};
 	int texture_ = 0;
 	bool enableAlphaBlend_ = false;
+	bool enableGammaCorrection_ = false;
 };
 
 #endif /* GUI_CONTROLS_PICTURE_H_ */

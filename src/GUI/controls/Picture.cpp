@@ -12,5 +12,8 @@ Picture::~Picture() {
 void Picture::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	Shape2D::get()->drawRectangleFilled(frameTranslation, getSize(), bkColor_);
 	if (texture_)
-		PictureDraw::get()->draw(texture_, frameTranslation + glm::vec2(1, 1), getSize() - glm::vec2(2, 2));
+		PictureDraw::get()->draw(texture_,
+			frameTranslation + glm::vec2(1, 1),
+			getSize() - glm::vec2(2, 2),
+			enableGammaCorrection_);
 }

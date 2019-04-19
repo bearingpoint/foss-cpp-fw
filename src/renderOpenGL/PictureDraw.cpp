@@ -23,6 +23,7 @@ struct PictureDraw::RenderData {
 	int iuBlendFactor;
 	int iuBlendMode;
 	int iuMulTexAlpha;
+	int iuGammaCorrection;
 	int iuMatV2U;
 	int iuTexture;
 
@@ -75,6 +76,7 @@ PictureDraw::PictureDraw() {
 		pRenderData->iuColor = glGetUniformLocation(pRenderData->program, "blendColor");
 		pRenderData->iuMatV2U = glGetUniformLocation(pRenderData->program, "matV2U");
 		pRenderData->iuMulTexAlpha = glGetUniformLocation(pRenderData->program, "mulTextureAlpha");
+		pRenderData->iuGammaCorrection = glGetUniformLocation(pRenderData->program, "gammaCorrection");
 		pRenderData->iuTexture = glGetUniformLocation(pRenderData->program, "texPicture");
 
 		glBindVertexArray(pRenderData->VAO);
@@ -121,13 +123,14 @@ void PictureDraw::flush() {
 	checkGLError("PictureDraw::flush() : setup");
 
 	glBindVertexArray(pRenderData->VAO);
-	for (unsigned i=0; i<blendOps_.size(); i++) {
-		glUniform1f(pRenderData->iuBlendFactor, blendOps_[i].blendFactor);
-		glUniform1i(pRenderData->iuBlendMode, (int)blendOps_[i].blendMode);
-		glUniform4fv(pRenderData->iuColor, 1, glm::value_ptr(blendOps_[i].blendColor));
-		glUniform1i(pRenderData->iuMulTexAlpha, blendOps_[i].multiplyByTextureAlpha ? 1 : 0);
+	for (unsigned i=0; i<attribs_.size(); i++) {
+		glUniform1f(pRenderData->iuBlendFactor, attribs_[i].blendOp.blendFactor);
+		glUniform1i(pRenderData->iuBlendMode, (int)attribs_[i].blendOp.blendMode);
+		glUniform4fv(pRenderData->iuColor, 1, glm::value_ptr(attribs_[i].blendOp.blendColor));
+		glUniform1i(pRenderData->iuMulTexAlpha, attribs_[i].blendOp.multiplyByTextureAlpha ? 1 : 0);
+		glUniform1i(pRenderData->iuGammaCorrection, attribs_[i].applyGammaCorrection ? 1 : 0);
 
-		glBindTexture(GL_TEXTURE_2D, texIds_[i]);
+		glBindTexture(GL_TEXTURE_2D, attribs_[i].texId);
 		glUniform1i(pRenderData->iuTexture, 0);
 
 		unsigned vOffs = i * 4;
@@ -142,23 +145,17 @@ void PictureDraw::flush() {
 
 	checkGLError("PictureDraw::flush() : done");
 
-	blendOps_.clear();
+	attribs_.clear();
 	verts_.clear();
 }
 
 // draws a texture in viewport coordinates
-void PictureDraw::draw(int texId, glm::vec2 pos, glm::vec2 size) {
-	BlendOperation blendOp {
-		BlendOperation::MODE_NORMAL,	// blend mode
-		{ 1.f, 0.f, 0.f, 1.f },			// blend color
-		1.f,							// blend factor
-		false,							// multiply texture alpha
-	};
-	draw(texId, pos, size, blendOp);
+void PictureDraw::draw(int texId, glm::vec2 pos, glm::vec2 size, bool applyGammaCorrection) {
+	draw(texId, pos, size, BlendOperation{}, applyGammaCorrection);
 }
 
 // draws a texture with advanced blending
-void PictureDraw::draw(int texId, glm::vec2 pos, glm::vec2 size, BlendOperation blendOp) {
+void PictureDraw::draw(int texId, glm::vec2 pos, glm::vec2 size, BlendOperation blendOp, bool applyGammaCorrection) {
 
 	PictureVertex top_left {
 		pos,
@@ -182,6 +179,5 @@ void PictureDraw::draw(int texId, glm::vec2 pos, glm::vec2 size, BlendOperation 
 	verts_.push_back(bottom_left);
 	verts_.push_back(bottom_right);
 
-	blendOps_.push_back(blendOp);
-	texIds_.push_back(texId);
+	attribs_.push_back({texId, blendOp, applyGammaCorrection});
 }

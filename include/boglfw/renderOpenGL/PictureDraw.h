@@ -11,7 +11,7 @@ struct BlendOperation {
 		MODE_NORMAL = 0,		// linear interpolation between blendColor and texture, according to blendFactor
 		MODE_ADDITIVE = 1,		// blendColor + blendFactor * texture
 		MODE_MULTIPLY = 2,		// blendColor * texture * blendFactor
-	} blendMode;
+	} blendMode = MODE_NORMAL;
 
 	// the source texture is blended with this color [rgba] according to blendMode and blendFactor:
 	glm::vec4 blendColor {1.f, 0.f, 0.f, 1.f};
@@ -37,10 +37,10 @@ public:
 	void flush();
 
 	// draws a texture in viewport coordinates
-	void draw(int texId, glm::vec2 pos, glm::vec2 size);
+	void draw(int texId, glm::vec2 pos, glm::vec2 size, bool applyGammaCorrection=false);
 
 	// draws a texture with advanced blending
-	void draw(int texId, glm::vec2 pos, glm::vec2 size, BlendOperation blendOp);
+	void draw(int texId, glm::vec2 pos, glm::vec2 size, BlendOperation blendOp, bool applyGammaCorrection=false);
 
 private:
 	friend class RenderHelpers;
@@ -52,8 +52,13 @@ private:
 	RenderData *pRenderData = nullptr;
 
 	std::vector<PictureVertex> verts_;
-	std::vector<int> texIds_;
-	std::vector<BlendOperation> blendOps_;
+
+	struct pictureAttrib {
+		int texId;
+		BlendOperation blendOp;
+		bool applyGammaCorrection;
+	};
+	std::vector<pictureAttrib> attribs_;
 };
 
 #endif // BOGLFW_PICTURE_DRAW_H
