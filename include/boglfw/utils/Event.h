@@ -12,6 +12,7 @@
 #include <functional>
 #include <vector>
 #include <type_traits>
+#include <utility>
 
 template <class T, bool>
 struct is_invokable_s : std::false_type {};
@@ -69,10 +70,10 @@ public:
 	template<class... argTypes>
 	void trigger(argTypes... argList) {
 		if (pForwarded_)
-			pForwarded_->trigger(argList...);
+			pForwarded_->trigger(std::forward<argTypes...>(argList...));
 		for (auto &c : callbackList_)
 			if (c)
-				c(argList...);
+				c(std::forward<argTypes...>(argList...));
 	}
 
 protected:

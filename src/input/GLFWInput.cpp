@@ -4,7 +4,7 @@
  *  Created on: Nov 7, 2014
  *      Author: bog
  */
- 
+
 #ifdef WITH_GLFW
 
 #include <boglfw/input/GLFWInput.h>
@@ -34,7 +34,7 @@ void GLFWInput::initialize(GLFWwindow* pWindow) {
 bool GLFWInput::checkInput() {
 	glfwPollEvents();
 	for (InputEvent& ev : eventQueue) {
-		onInputEvent.trigger(ev);
+		onInputEvent.trigger(std::ref(ev));
 	}
 	eventQueue.clear();
 	return glfwWindowShouldClose(window) == 0;
