@@ -19,16 +19,15 @@ void UniformPackProxy::updateMappings(unsigned programId) {
 		auto &desc = pack_->element(i);
 
 		int location = glGetUniformLocation(programId, desc.name.c_str());
-		if (location >= 0) {
-			assertDbg(uniformIndexes_.size() == i);
-			uniformIndexes_.push_back(location);
-		}
+		assertDbg(uniformIndexes_.size() == i);
+		uniformIndexes_.push_back(location);
 	}
 }
 
 // pushes all uniform values from the uniform pack into corresponding openGL's uniform locations
 void UniformPackProxy::pushValues() {
 	for (unsigned i=0; i<uniformIndexes_.size(); i++) {
-		pack_->pushValue(i, uniformIndexes_[i]);
+		if (uniformIndexes_[i] >= 0)
+			pack_->pushValue(i, uniformIndexes_[i]);
 	}
 }
