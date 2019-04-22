@@ -11,6 +11,12 @@ UniformPackProxy::UniformPackProxy(std::shared_ptr<UniformPack> pack)
 	assertDbg(pack_ && "invalid uniformPack pointer provided!");
 }
 
+UniformPackProxy::UniformPackProxy(UniformPackProxy &&upp)
+	: pack_(upp.pack_) {
+	upp.pack_.reset();
+	uniformIndexes_.swap(upp.uniformIndexes_);
+}
+
 // updates the internal mappings between the uniform pack and the opengl program.
 void UniformPackProxy::updateMappings(unsigned programId) {
 	assertDbg(programId > 0 && "Invalid gl program provided!");

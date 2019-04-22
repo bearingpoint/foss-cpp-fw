@@ -21,12 +21,11 @@ public:
 	void useUniformPack(std::shared_ptr<UniformPack> pack);
 
 	// defines vertex attribute parameters for this program.
-	// The actual vertex attrib pointers are set up using this data when [setupVAO] is called.
+	// 		The actual vertex attrib pointers are set up using this data when [setupVAO] is called.
+	// [name] is the name of the attribute as it appears in the shader;
 	// [componentType] must be one of GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, GL_UNSIGNED_INT, GL_FLOAT, GL_HALF_FLOAT;
-	// [componentCount] represents the number of [componentType] components within this attribute;
-	// for example, for a vec3, [componentCount] is 3 and [componentType] is GL_FLOAT.
-	// [componentCount] can be larger for attributes that are arrays, for example:
-	// for a vec3[4], [componentCount] is 3*4=12, and [componentType] is GL_FLOAT
+	// [componentCount] represents the number of [componentType] components within this attribute; must be 1,2,3,4
+	// 		for example, for a vec3, [componentCount] is 3 and [componentType] is GL_FLOAT.
 	// [name] specifies the name of the attribute within the shader.
 	// [stride] represents the stride (distance between consecutive attribute values) within the vertex buffer object
 	// [offset] represents the offset of the attribute within the vertex buffer object

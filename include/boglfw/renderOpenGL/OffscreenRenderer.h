@@ -33,7 +33,7 @@ public:
 
 	Viewport& viewport();
 	unsigned getFBTexture() const;
-	const RenderContext& getRenderContext() const;
+	RenderContext& getRenderContext();
 
 private:
 	struct PrivateData;

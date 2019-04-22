@@ -24,7 +24,7 @@ struct OffscreenRenderer::PrivateData {
 	}
 };
 
-const RenderContext& OffscreenRenderer::getRenderContext() const {
+RenderContext& OffscreenRenderer::getRenderContext() {
 	return *pData_->renderContext.get();
 }
 

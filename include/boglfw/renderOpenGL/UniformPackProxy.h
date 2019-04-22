@@ -9,6 +9,8 @@ class UniformPack;
 class UniformPackProxy {
 public:
 	UniformPackProxy(std::shared_ptr<UniformPack> pack);
+	~UniformPackProxy() = default;
+	UniformPackProxy(UniformPackProxy &&upp);
 
 	// updates the internal mappings between the uniform pack and the opengl program.
 	void updateMappings(unsigned programId);
