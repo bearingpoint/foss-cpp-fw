@@ -38,9 +38,12 @@ ShaderProgram::~ShaderProgram() {
 
 // Assigns a uniform pack to be used by this program.
 // This can be called multiple times with different packs, all of which will be used.
-// The method must be called before loading the program.
 void ShaderProgram::useUniformPack(std::shared_ptr<UniformPack> pack) {
 	uniformPackProxies_.push_back(UniformPackProxy{pack});
+	if (programId_ != 0) {
+		// program has already been linked, let's update the uniforms mapping
+		uniformPackProxies_.back().updateMappings(programId_);
+	}
 }
 
 // loads and compiles the shaders, then links the program and fetches all uniform locations that have been mapped

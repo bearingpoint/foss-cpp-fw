@@ -17,7 +17,7 @@ public:
 
 	// Assigns a uniform pack to be used by this program.
 	// This can be called multiple times with different packs, all of which will be used.
-	// The method must be called before loading the program.
+	// The method can be called before or after loading the program, but not while the program is active for rendering.
 	void useUniformPack(std::shared_ptr<UniformPack> pack);
 
 	// defines vertex attribute parameters for this program.
