@@ -240,6 +240,8 @@ void Shaders::reloadAllShaders() {
 	LOGPREFIX("SHADERS");
 	LOGLN("Reloading all shaders . . .");
 	for (auto &d : loadedShaders_) {
+		if (d.destroyed)
+			continue;
 		if (d.shaderId)
 			glDeleteShader(d.shaderId), d.shaderId = 0;
 		string shaderCode = readShaderFile(d.filename.c_str());
@@ -250,6 +252,8 @@ void Shaders::reloadAllShaders() {
 		checkGLError("reloadShader::compile");
 	}
 	for (auto &d : loadedPrograms_) {
+		if (d.destroyed)
+			continue;
 		if (d.programId)
 			glDeleteProgram(d.programId), d.programId = 0;
 #if (0)
@@ -266,4 +270,33 @@ void Shaders::reloadAllShaders() {
 		checkGLError("reloadShader::callback");
 	}
 	LOGLN("All shaders reloaded.");
+}
+
+void Shaders::deleteLoadedShader(unsigned index) {
+	if (loadedShaders_[index].shaderId) {
+		glDeleteShader(loadedShaders_[index].shaderId);
+		loadedShaders_[index].shaderId = 0;
+	}
+	loadedShaders_[index].destroyed = true;
+	loadedShaders_[index].callback = nullptr;
+}
+
+void Shaders::deleteProgram(unsigned programId) {
+	assertDbg(programId && "invalid program provided");
+	for (auto &d : loadedPrograms_) {
+		if (d.programId != programId)
+			continue;
+		glDeleteProgram(programId);
+		d.programId = 0;
+		d.destroyed = true;
+		d.callback = nullptr;
+		if (d.vertexDescIdx >=0 )
+			deleteLoadedShader(d.vertexDescIdx);
+		if (d.fragDescIdx >=0 )
+			deleteLoadedShader(d.fragDescIdx);
+		if (d.geomDescIdx >=0 )
+			deleteLoadedShader(d.geomDescIdx);
+
+		break;
+	}
 }

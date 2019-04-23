@@ -34,6 +34,7 @@ ShaderProgram::ShaderProgram() {
 }
 
 ShaderProgram::~ShaderProgram() {
+	reset();
 }
 
 // Assigns a uniform pack to be used by this program.
@@ -109,4 +110,11 @@ void ShaderProgram::setupVAO(unsigned VAO) {
 int ShaderProgram::getUniformLocation(const char* uName) {
 	assertDbg(programId_ != 0 && "This ShaderProgram has not been loaded (or there was a compile/link error)!");
 	return glGetUniformLocation(programId_, uName);
+}
+
+void ShaderProgram::reset() {
+	if (programId_)
+		Shaders::deleteProgram(programId_), programId_ = 0;
+	uniformPackProxies_.clear();
+	vertexAttribs_.clear();
 }

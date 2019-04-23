@@ -24,6 +24,9 @@ public:
 	static unsigned createAndCompileShader(std::string const &code, unsigned shaderType);
 	static unsigned linkProgram(unsigned vertexShader, unsigned fragmentShader, unsigned geomShader=0);
 
+	// deletes the openGL program and its metadata and stops sending the associated callback when reloading shaders.
+	static void deleteProgram(unsigned programId);
+
 	// reloads all shaders that were loaded from files, recompiles them and calls the callbacks again with the new values
 	static void reloadAllShaders();
 
@@ -41,6 +44,7 @@ private:
 		unsigned shaderId;
 		std::string filename;
 		shaderCallback callback;
+		bool destroyed = false;
 	};
 
 	struct programDesc {
@@ -49,11 +53,14 @@ private:
 		int fragDescIdx = -1;
 		int geomDescIdx = -1;
 		programCallback callback;
+		bool destroyed = false;
 	};
 
 	static std::vector<shaderDesc> loadedShaders_;
 	static std::vector<programDesc> loadedPrograms_;
 	static IShaderPreprocessor* pPreprocessor_;
+
+	static void deleteLoadedShader(unsigned index);
 };
 
 #endif

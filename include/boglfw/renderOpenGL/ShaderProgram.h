@@ -36,6 +36,11 @@ public:
 	// returns true on success or false if there was an error with loading/compiling/linking the shaders.
 	bool load(std::string const& vertPath, std::string const& fragPath, std::string const& geomPath="");
 
+	// destroys all openGL resources associated with this object and removes all uniform packs and vertex attribute descriptors.
+	// this is automatically called on destructor.
+	// It is safe to call it more than once.
+	void reset();
+
 	// sets up the vertex attribute arrays for a specified VAO, using the previously defined vertex attributes.
 	// This call is only valid after the program has been loaded.
 	// this needs to be called again if the shaders are reloaded, since the attribute locations may change.
