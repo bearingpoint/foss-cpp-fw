@@ -19,20 +19,24 @@ void Picture::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::ve
 }
 
 void Picture::mouseDown(MouseButtons button) {
+	GuiBasicElement::mouseDown(button);
 	if (button == MouseButtons::Left)
 		onStartDrag.trigger(getLastMousePosition().x, getLastMousePosition().y);
 }
 
 void Picture::mouseUp(MouseButtons button) {
+	GuiBasicElement::mouseUp(button);
 	if (button == MouseButtons::Left)
 		onEndDrag.trigger();
 }
 
 void Picture::mouseMoved(glm::vec2 delta, glm::vec2 position) {
+	GuiBasicElement::mouseMoved(delta, position);
 	if (isMousePressed(MouseButtons::Left))
 		onDrag.trigger(delta.x, delta.y);
 }
 
 void Picture::mouseScroll(float delta) {
+	GuiBasicElement::mouseScroll(delta);
 	onScroll.trigger(delta);
 }
