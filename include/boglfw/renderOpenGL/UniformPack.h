@@ -31,8 +31,12 @@ public:
 	virtual ~UniformPack() = default;
 
 	struct UniformDescriptor {
+		// name of the uniform as it appears in the shader
 		std::string name;
+		// type of the uniform as it is declared in the shader
 		UniformType type;
+		// number of array elements if the uniform is an array, or zero otherwise.
+		unsigned arrayLength = 0;
 	};
 
 	// adds a uniform description to the pack;
@@ -48,18 +52,31 @@ public:
 	// Note that these values are not sent to OpenGL yet, that only happens
 	// when a ShaderProgram that uses this pack is being set up for rendering.
 
-	void setUniform(unsigned indexInPack, int value);
-	void setUniform(unsigned indexInPack, float value);
-	void setUniform(unsigned indexInPack, glm::vec2 const& value);
-	void setUniform(unsigned indexInPack, glm::ivec2 const& value);
-	void setUniform(unsigned indexInPack, glm::vec3 const& value);
-	void setUniform(unsigned indexInPack, glm::ivec3 const& value);
-	void setUniform(unsigned indexInPack, glm::vec4 const& value);
-	void setUniform(unsigned indexInPack, glm::ivec4 const& value);
-	void setUniform(unsigned indexInPack, glm::mat3 const& value, bool transpose=false);
-	void setUniform(unsigned indexInPack, glm::mat4 const& value, bool transpose=false);
+	// set a simple uniform value;
+	// [indexInPack] represents the uniform index within the current UniformPack, as the value
+	// 		returned by addUniform()
+	template <class C>
+	void setUniform(unsigned indexInPack, C value) {
+		setUniformIndexed(indexInPack, 0, value);
+	}
+
+	// set an indexed uniform value (for array uniforms);
+	// [indexInPack] represents the uniform index within the current UniformPack, as the value
+	// 		returned by addUniform()
+	// [locationIndex] represents the array index to set the value for
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, int value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, float value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::vec2 const& value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::ivec2 const& value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::vec3 const& value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::ivec3 const& value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::vec4 const& value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::ivec4 const& value);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::mat3 const& value, bool transpose=false);
+	void setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::mat4 const& value, bool transpose=false);
 
 	// pushes a uniform value from this pack into OpenGL's pipeline at the specified location.
+	// for array uniforms, all array elements are pushed at locations starting from [glLocation] incrementally.
 	void pushValue(unsigned indexInPack, unsigned glLocation);
 
 private:
@@ -77,8 +94,25 @@ private:
 	};
 	struct Element {
 		UniformDescriptor descriptor;
-		UniformValue value;
+		UniformValue* values;
 		bool transposed = false;
+
+		Element(UniformDescriptor desc, bool transposed)
+			: descriptor(desc), transposed(transposed) {
+			values = new UniformValue[desc.arrayLength];
+		}
+
+		Element(Element && el)
+			: descriptor(el.descriptor), transposed(el.transposed)
+			, values(el.values) {
+			el.values = nullptr;
+			el.descriptor.arrayLength = 0;
+		}
+
+		~Element() {
+			if (values)
+				delete [] values;
+		}
 	};
 	std::vector<Element> elements_;
 };
