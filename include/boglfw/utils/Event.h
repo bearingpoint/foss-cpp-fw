@@ -70,10 +70,10 @@ public:
 	template<class... argTypes>
 	void trigger(argTypes... argList) {
 		if (pForwarded_)
-			pForwarded_->trigger(std::forward<argTypes...>(argList...));
+			pForwarded_->trigger(argList...);
 		for (auto &c : callbackList_)
 			if (c)
-				c(std::forward<argTypes...>(argList...));
+				c(argList...);
 	}
 
 protected:

@@ -16,42 +16,42 @@ unsigned UniformPack::addUniform(UniformDescriptor desc) {
 	return elements_.size() - 1;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, int value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, int value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::INT);
 	el.value.int_ = value;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, float value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, float value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::FLOAT);
 	el.value.float_ = value;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, glm::vec2 const& value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::vec2 const& value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::VEC2);
 	el.value.vec2_ = value;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, glm::ivec2 const& value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::ivec2 const& value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::iVEC2);
 	el.value.ivec2_ = value;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, glm::vec3 const& value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::vec3 const& value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::VEC3);
 	el.value.vec3_ = value;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, glm::ivec3 const& value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::ivec3 const& value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::iVEC3);
@@ -59,21 +59,21 @@ void UniformPack::setUniform(unsigned indexInPack, glm::ivec3 const& value) {
 }
 
 
-void UniformPack::setUniform(unsigned indexInPack, glm::vec4 const& value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::vec4 const& value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::VEC4);
 	el.value.vec4_ = value;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, glm::ivec4 const& value) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::ivec4 const& value) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::iVEC4);
 	el.value.ivec4_ = value;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, glm::mat3 const& value, bool transpose) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::mat3 const& value, bool transpose) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::MAT3);
@@ -81,7 +81,7 @@ void UniformPack::setUniform(unsigned indexInPack, glm::mat3 const& value, bool 
 	el.transposed = transpose;
 }
 
-void UniformPack::setUniform(unsigned indexInPack, glm::mat4 const& value, bool transpose) {
+void UniformPack::setUniformIndexed(unsigned indexInPack, unsigned locationIndex, glm::mat4 const& value, bool transpose) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 	assertDbg(el.descriptor.type == UniformType::MAT4);
@@ -90,7 +90,7 @@ void UniformPack::setUniform(unsigned indexInPack, glm::mat4 const& value, bool 
 }
 
 // pushes a uniform value from this pack into OpenGL's pipeline at the specified location.
-void UniformPack::pushValue(unsigned indexInPack, unsigned glLocation) {
+void UniformPack::pushValue(unsigned indexInPack, unsigned locationIndex, unsigned glLocation) {
 	assertDbg(indexInPack < elements_.size());
 	Element& el = elements_[indexInPack];
 

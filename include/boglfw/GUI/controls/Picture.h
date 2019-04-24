@@ -9,9 +9,11 @@
 #define GUI_CONTROLS_PICTURE_H_
 
 #include <boglfw/GUI/GuiBasicElement.h>
-#include <string>
+#include <boglfw/utils/Event.h>
 
 #include <glm/vec3.hpp>
+
+#include <string>
 
 class Picture: public GuiBasicElement {
 public:
@@ -28,6 +30,11 @@ public:
 
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 
+	Event<void(float x, float y)> onStartDrag;
+	Event<void()> onEndDrag;
+	Event<void(float dx, float dy)> onDrag;
+	Event<void(float dz)> onScroll;
+
 protected:
 	glm::vec3 bkColor_ {0.f};
 	int texture_ = 0;
@@ -37,6 +44,7 @@ protected:
 	virtual void mouseDown(MouseButtons button) override;
 	virtual void mouseUp(MouseButtons button) override;
 	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) override;
+	virtual void mouseScroll(float delta) override;
 };
 
 #endif /* GUI_CONTROLS_PICTURE_H_ */
