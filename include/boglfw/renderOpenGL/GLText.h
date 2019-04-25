@@ -8,13 +8,13 @@
 #ifndef RENDEROPENGL_GLTEXT_H_
 #define RENDEROPENGL_GLTEXT_H_
 
+#include <boglfw/renderOpenGL/ViewportCoord.h>
+
 #include <string>
 #include <vector>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-
-class ViewportCoord;
 
 class GLText {
 public:

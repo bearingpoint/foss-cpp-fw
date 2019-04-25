@@ -17,12 +17,9 @@ Button::Button(glm::vec2 pos, glm::vec2 size, std::string text)
 	, text_(text) {
 }
 
-Button::~Button() {
-}
-
 void Button::clicked(glm::vec2 clickPosition, MouseButtons button) {
 	if (button == MouseButtons::Left)
-		onClick.trigger(this);
+		onClick.trigger();
 }
 
 void Button::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {

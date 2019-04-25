@@ -15,9 +15,8 @@
 class Button: public GuiBasicElement {
 public:
 	Button(glm::vec2 pos, glm::vec2 size, std::string text);
-	virtual ~Button() override;
 
-	Event<void(Button*)> onClick;
+	Event<void()> onClick;
 
 	using buttonHandler = decltype(Button::onClick)::handler_type;
 
