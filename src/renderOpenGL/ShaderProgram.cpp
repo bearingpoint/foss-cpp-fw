@@ -3,6 +3,7 @@
 
 #include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/utils/assert.h>
+#include <boglfw/utils/log.h>
 
 #include <GL/glew.h>
 
@@ -10,8 +11,6 @@ struct ShaderProgram::VertexAttribDescriptor {
 	std::string name;
 	int componentType;
 	unsigned componentCount;
-	unsigned stride;
-	unsigned offset;
 
 	static bool validateParams(int type) {
 		switch (type) {
@@ -55,6 +54,11 @@ bool ShaderProgram::load(std::string const& vertPath, std::string const& fragPat
 	} else {
 		Shaders::createProgramGeom(vertPath.c_str(), geomPath.c_str(), fragPath.c_str(), std::bind(&ShaderProgram::onProgramLinked, this, std::placeholders::_1));
 	}
+#ifdef DEBUG
+	vertPath_ = vertPath;
+	fragPath_ = fragPath;
+	geomPath_ = geomPath;
+#endif
 	return programId_ != 0;
 }
 
@@ -82,29 +86,35 @@ void ShaderProgram::end() {
 	glUseProgram(0);
 }
 
-void ShaderProgram::defineVertexAttrib(std::string name, int componentType, unsigned componentCount, unsigned stride, unsigned offset) {
+void ShaderProgram::defineVertexAttrib(std::string name, int componentType, unsigned componentCount) {
 	assertDbg(VertexAttribDescriptor::validateParams(componentType) && "Invalid vertex attribute type!");
 	vertexAttribs_.push_back({
 		name,
 		componentType,
-		componentCount,
-		stride,
-		offset
+		componentCount
 	});
 }
 
-void ShaderProgram::setupVAO(unsigned VAO) {
+void ShaderProgram::setupVertexStreams(std::map<std::string, VertexAttribSource> const& mapAttribSource) {
 	assertDbg(programId_ != 0 && "This ShaderProgram has not been loaded (or there was a compile/link error)!");
-	assertDbg(VAO > 0 && "invalid VAO specified");
-	glBindVertexArray(VAO);
+	unsigned boundVBO = 0;
 	for (auto &vad : vertexAttribs_) {
+		auto it = mapAttribSource.find(vad.name);
+		if (it == mapAttribSource.end()) {
+			ERROR("Source for attribute '" << vad.name << "' not specified in attribute source map!");
+			continue;
+		}
+		const VertexAttribSource &attrSrc = it->second;
 		int location = glGetAttribLocation(programId_, vad.name.c_str());
 		if (location >= 0) {
+			if (attrSrc.VBO != boundVBO) {
+				glBindBuffer(GL_ARRAY_BUFFER, attrSrc.VBO);
+				boundVBO = attrSrc.VBO;
+			}
 			glEnableVertexAttribArray(location);
-			glVertexAttribPointer(location, vad.componentCount, vad.componentType, GL_FALSE, vad.stride, (void*)vad.offset);
+			glVertexAttribPointer(location, vad.componentCount, vad.componentType, GL_FALSE, attrSrc.stride, (void*)attrSrc.offset);
 		}
 	}
-	glBindVertexArray(0);
 }
 
 int ShaderProgram::getUniformLocation(const char* uName) {

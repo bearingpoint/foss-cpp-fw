@@ -1,4 +1,5 @@
 #include <boglfw/renderOpenGL/UniformPack.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 
 #include <boglfw/utils/assert.h>
 
@@ -137,4 +138,6 @@ void UniformPack::pushValue(unsigned indexInPack, unsigned glLocation) {
 		break;
 		}
 	}
+
+	checkGLError("UniformPack::pushValue");
 }

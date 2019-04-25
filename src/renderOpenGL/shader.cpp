@@ -265,7 +265,7 @@ void Shaders::reloadAllShaders() {
 									d.fragDescIdx >= 0 ? loadedShaders_[d.fragDescIdx].shaderId : 0,
 									d.geomDescIdx >= 0 ? loadedShaders_[d.geomDescIdx].shaderId : 0);
 		checkGLError("reloadShader::link");
-		if (d.callback)
+		if (d.callback && d.programId)
 			d.callback(d.programId);
 		checkGLError("reloadShader::callback");
 	}

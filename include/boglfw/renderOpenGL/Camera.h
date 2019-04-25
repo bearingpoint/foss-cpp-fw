@@ -12,6 +12,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class Viewport;
 
@@ -27,14 +28,24 @@ public:
 	float getOrthoZoom() { return zoomLevel_; } // how many pixels per meter?
 	void setOrthoZoom(float zoom);
 
+	// returns the camera position in world space
 	const glm::vec3& position() const { return position_; }
+	// returns the camera look direction in world space
 	const glm::vec3& direction() const { return direction_; }
+	// returns the local Y axis (up) vector of the camera, expressed in world space
+	glm::vec3 localY() const;
+	// returns the local X axis (right) vector of the camera, expressed in world space
+	glm::vec3 localX() const;
 
 	void move(glm::vec3 delta);
 	void moveTo(glm::vec3 where);
 	void lookAt(glm::vec3 where, glm::vec3 up = glm::vec3{0.f, 1.f, 0.f});
 	void transformView(glm::mat4 rTrans);
 	void setViewTransform(glm::mat4 aTrans);
+	// orbits the camera around a central point, with a rotation quaternion expressed in local camera coordinates
+	// if [lookTowardCenter] is true, the camera is also redirected to look toward the center point,
+	// otherwise its original orientation is kept
+	void orbit(glm::vec3 center, glm::quat rotation, bool lookTowardCenter=true);
 	void mirror(glm::vec4 mirrorPlane);
 	void setZPlanes(float zNear, float zFar);
 	float FOV() const { return fov_; }

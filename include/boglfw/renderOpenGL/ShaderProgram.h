@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 class UniformPack;
 class UniformPackProxy;
@@ -12,6 +13,13 @@ class UniformPackProxy;
 class ShaderProgram
 {
 public:
+
+	struct VertexAttribSource {
+		unsigned VBO;		// VBO to stream a vertex attribute from
+		unsigned stride;	// stride of the vertex attribute within the VBO
+		unsigned offset;	// offset of the first vertex attribute from the start of the buffer
+	};
+
 	ShaderProgram();
 	virtual ~ShaderProgram();
 
@@ -20,16 +28,18 @@ public:
 	// The method can be called before or after loading the program, but not while the program is active for rendering.
 	void useUniformPack(std::shared_ptr<UniformPack> pack);
 
-	// defines vertex attribute parameters for this program.
-	// 		The actual vertex attrib pointers are set up using this data when [setupVAO] is called.
+	// defines vertex attributes for this program.
 	// [name] is the name of the attribute as it appears in the shader;
 	// [componentType] must be one of GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, GL_UNSIGNED_INT, GL_FLOAT, GL_HALF_FLOAT;
 	// [componentCount] represents the number of [componentType] components within this attribute; must be 1,2,3,4
 	// 		for example, for a vec3, [componentCount] is 3 and [componentType] is GL_FLOAT.
-	// [name] specifies the name of the attribute within the shader.
-	// [stride] represents the stride (distance between consecutive attribute values) within the vertex buffer object
-	// [offset] represents the offset of the attribute within the vertex buffer object
-	void defineVertexAttrib(std::string name, int componentType, unsigned componentCount, unsigned stride, unsigned offset);
+	// The vertex attribute pointers are set when calling [setupVertexStreams()].
+	void defineVertexAttrib(std::string name, int componentType, unsigned componentCount);
+
+	// sets up the vertex attribute pointers (each attribute name must match one of the attributes defined by [defineVertexAttrib()])
+	// call this while you have bound your VAO in order to store this state within it.
+	// this needs to be called only once per VAO, after the program is loaded and each time after the program is reloaded ( [onProgramReloaded] event is triggered ).
+	void setupVertexStreams(std::map<std::string, VertexAttribSource> const& mapAttribSource);
 
 	// loads and compiles the shaders, then links the program and fetches all uniform locations that have been mapped;
 	// this should only be called one time.
@@ -40,12 +50,6 @@ public:
 	// this is automatically called on destructor.
 	// It is safe to call it more than once.
 	void reset();
-
-	// sets up the vertex attribute arrays for a specified VAO, using the previously defined vertex attributes.
-	// This call is only valid after the program has been loaded.
-	// this needs to be called again if the shaders are reloaded, since the attribute locations may change.
-	// Thus, call this again when the [onProgramReloaded] event is triggered.
-	void setupVAO(unsigned VAO);
 
 	// sets this program up for rendering. This will also push all uniform values from all
 	// assigned uniform packs into the openGL pipeline
@@ -73,6 +77,12 @@ protected:
 	std::vector<VertexAttribDescriptor> vertexAttribs_;
 
 	void onProgramLinked(unsigned programId);
+
+#ifdef DEBUG
+	std::string vertPath_;
+	std::string fragPath_;
+	std::string geomPath_;
+#endif
 };
 
 #endif // SHADERPROGRAM_H

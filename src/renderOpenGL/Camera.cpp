@@ -27,6 +27,14 @@ Camera::Camera(Viewport* vp)
 Camera::~Camera() {
 }
 
+glm::vec3 Camera::localX() const {
+	return vec4xyz(m4row(matView_, 0));
+}
+
+glm::vec3 Camera::localY() const {
+	return vec4xyz(m4row(matView_, 1));
+}
+
 void Camera::setFOV(float fov) {
 	fov_ = fov;
 	updateProj();
@@ -61,6 +69,15 @@ void Camera::moveTo(glm::vec3 where) {
 void Camera::lookAt(glm::vec3 where, glm::vec3 up) {
 	direction_ = glm::normalize(where - position_);
 	up_ = up;
+	updateView();
+}
+
+void Camera::orbit(glm::vec3 center, glm::quat rotation, bool lookTowardCenter) {
+	glm::vec3 offset = position_ - center;
+	glm::vec3 newOffset = vec4xyz(rotation * glm::vec4(offset, 1.f));
+	position_ = center + newOffset;
+	if (lookTowardCenter)
+		direction_ = glm::normalize(-newOffset);
 	updateView();
 }
 
