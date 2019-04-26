@@ -15,11 +15,12 @@ public:
 	// [min] specifies the value for the left-most end.
 	// [max] specifies the value for the right-most end.
 	// the values are distributed equally along the length of the slider
-	// [steps] if greater than zero, then the range will be split into this number of segments,
-	//		so there will be [steps]+1 possible positions in total;
+	// [stepSize] if greater than zero, then the slider will be constrained to jump to values
+	//		that are equal to [min] + multiple of stepSize
+	//		so there will be (([max]-[min])/[stepSize]) + 1 possible positions in total;
 	// 		the slider will jump from one position to the next.
 	//		if it's zero, then the slider can be freely moved to any intermediate position.
-	void setRange(float min, float max, unsigned steps = 0);
+	void setRange(float min, float max, float stepSize = 0);
 	// sets the number of divisions to be drawn;
 	// [divisionLabelStep] dictates which divisions get labels;
 	//		labels are always drawn for the endpoints;

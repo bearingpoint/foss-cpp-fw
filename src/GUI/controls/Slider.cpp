@@ -19,16 +19,18 @@ Slider::Slider(glm::vec2 pos, float width)
 	updateDivisionLabels();
 }
 
-void Slider::setRange(float min, float max, unsigned steps) {
+void Slider::setRange(float min, float max, float stepSize) {
 	assertDbg(max > min && "invalid interval");
+	assertDbg(stepSize <= (max - min) && "invalid step size");
 	rangeMin_ = min;
 	rangeMax_ = max;
-	if (steps) {
-		step_ = (rangeMax_ - rangeMin_) / steps;
-		displayDivisions_ = steps + 1;
+	if (stepSize > 0) {
+		step_ = stepSize;
+		displayDivisions_ = (max - min) / stepSize + 1;
 		displayPrecision_ = clamp((int)(4 - log10(rangeMax_ - rangeMin_)), 0, 7);
 	} else
 		step_ = 0.f;
+	value_ = clamp(value_, rangeMin_, rangeMax_);
 	updateDivisionLabels();
 }
 
@@ -40,12 +42,13 @@ void Slider::setDisplayStyle(unsigned divisions, unsigned divisionLabelStep, uns
 }
 
 void Slider::updateDivisionLabels() {
+	float divisionStep = (rangeMax_ - rangeMin_) / (displayDivisions_ - 1);
 	divisionLabels_.clear();
 	std::stringstream ss;
 	for (unsigned i=0; i<displayDivisions_; i++) {
 		if (i == 0 || i == displayDivisions_-1 || (i % divisionLabelStep_) == 0) {
 			std::stringstream().swap(ss);
-			ss << std::fixed << std::setprecision(displayPrecision_) << rangeMin_ + i * step_;
+			ss << std::fixed << std::setprecision(displayPrecision_) << rangeMin_ + i * divisionStep;
 			divisionLabels_.push_back(ss.str());
 		} else {
 			divisionLabels_.push_back("");
@@ -129,7 +132,7 @@ void Slider::mouseMoved(glm::vec2 delta, glm::vec2 position) {
 
 void Slider::setValue(float val) {
 	value_ = clamp(val, rangeMin_, rangeMax_);
-	if (step_ > 0) {
+	if (step_ > 0 && value_ < rangeMax_) {
 		value_ = step_ * (int)(value_ / step_);
 	}
 	onValueChanged.trigger(value_);
