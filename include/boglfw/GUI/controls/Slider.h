@@ -8,7 +8,7 @@
 
 class Slider : public GuiBasicElement {
 public:
-	Slider(glm::vec2 pos, glm::vec2 size);
+	Slider(glm::vec2 pos, float width);
 
 	void setLabel(std::string label) { label_ = label; }
 	// sets the value range of the slider.
