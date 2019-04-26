@@ -1,7 +1,8 @@
 #include <boglfw/GUI/controls/Slider.h>
+#include <boglfw/GUI/GuiTheme.h>
+#include <boglfw/GUI/ICaptureManager.h>
 #include <boglfw/utils/assert.h>
 #include <boglfw/math/math3D.h>
-#include <boglfw/GUI/GuiTheme.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/GLText.h>
 
@@ -73,21 +74,63 @@ void Slider::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec
 				GuiTheme::getContainerFrameColor());
 		}
 	}
-	// draw the tick marker
-	// ...
+	// draw the position marker
+	glm::vec3 markerFillColor = isMousePressed(MouseButtons::Left)
+		? GuiTheme::getButtonColorPressed()
+		: isMouseIn() ? GuiTheme::getButtonColorHover() : GuiTheme::getButtonColor();
+	glm::vec3 markerBorderColor = GuiTheme::getButtonFrameColor();
+	float markerX = lowX + getSize().x * (value_ - rangeMin_) / (rangeMax_ - rangeMin_);
+	float markerPointY = highY + 3;
+	float markerShoulderY = markerPointY + 5;
+	float markerBaseY = lowY + 5;
+	float markerHalfWidth = 5;
+	glm::vec2 markerVerts[] {
+		{markerX, markerPointY},
+		{markerX + markerHalfWidth, markerShoulderY},
+		{markerX + markerHalfWidth, markerBaseY},
+		{markerX - markerHalfWidth, markerBaseY},
+		{markerX - markerHalfWidth, markerShoulderY}
+	};
+	Shape2D::get()->drawPolygonFilled(markerVerts, 5, markerFillColor);
+	Shape2D::get()->flush();
+	Shape2D::get()->drawPolygon(markerVerts, 5, markerBorderColor);
 
 	// draw the label
 	if (!label_.empty()) {
 		auto labelSize = GLText::get()->getTextRect(label_, labelFontSize);
-		GLText::get()->print(label_, {lowX - labelSize.x - 10, lowY - (getSize().y - labelSize.y)*0.5}, labelFontSize,
+		GLText::get()->print(label_, {lowX - labelSize.x - 15, lowY}, labelFontSize,
 			GuiTheme::getContainerFrameColor());
 	}
 }
 
 void Slider::mouseDown(MouseButtons button) {
+	GuiBasicElement::mouseDown(button);
+	if (button == MouseButtons::Left) {
+		getCaptureManager()->setMouseCapture(this);
+		float where = getLastMousePosition().x;
+		setValue(rangeMin_ + (rangeMax_ - rangeMin_) * where / getSize().x);
+	}
+}
 
+void Slider::mouseUp(MouseButtons button) {
+	GuiBasicElement::mouseUp(button);
+	if (button == MouseButtons::Left) {
+		getCaptureManager()->setMouseCapture(nullptr);
+	}
 }
 
 void Slider::mouseMoved(glm::vec2 delta, glm::vec2 position) {
+	GuiBasicElement::mouseMoved(delta, position);
+	if (isMousePressed(MouseButtons::Left)) {
+		float where = position.x;
+		setValue(rangeMin_ + (rangeMax_ - rangeMin_) * where / getSize().x);
+	}
+}
 
+void Slider::setValue(float val) {
+	value_ = clamp(val, rangeMin_, rangeMax_);
+	if (step_ > 0) {
+		value_ = step_ * (int)(value_ / step_);
+	}
+	onValueChanged.trigger(value_);
 }

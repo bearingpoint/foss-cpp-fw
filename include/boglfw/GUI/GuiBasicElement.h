@@ -54,7 +54,7 @@ protected:
 	GuiContainerElement* parent_ = nullptr;
 	
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
-	ICaptureManager* getCaptureManager() const { return captureManager_; }
+	ICaptureManager* getCaptureManager() const;
 	
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
 	
@@ -77,7 +77,7 @@ private:
 
 	static constexpr float MAX_CLICK_TRAVEL = 5.f;
 
-	ICaptureManager *captureManager_ = nullptr;
+	mutable ICaptureManager *captureManager_ = nullptr;
 	glm::vec2 position_{0};
 	glm::vec2 size_{0};
 	glm::vec2 bboxMin_{0};

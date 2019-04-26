@@ -27,11 +27,15 @@ public:
 	// [displayPrecision] dictates how many decimals are used for labels.
 	void setDisplayStyle(unsigned divisions, unsigned divisionLabelStep, unsigned displayPrecision);
 
+	// sets the value of the slider; the value provided will be clamped between [rangeMin, rangeMax]
+	void setValue(float val);
+
 	Event<void(float value)> onValueChanged;
 
 protected:
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 	virtual void mouseDown(MouseButtons button) override;
+	virtual void mouseUp(MouseButtons button) override;
 	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position) override;
 
 	void updateDivisionLabels();

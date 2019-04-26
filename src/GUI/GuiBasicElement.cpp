@@ -67,3 +67,10 @@ void GuiBasicElement::updateBBox() {
 	bboxMin_ = position_;
 	bboxMax_ = bboxMin_ + size_;
 }
+
+ICaptureManager* GuiBasicElement::getCaptureManager() const {
+	if (!captureManager_ && parent_) {
+		captureManager_ = parent_->getCaptureManager();
+	}
+	return captureManager_;
+}
