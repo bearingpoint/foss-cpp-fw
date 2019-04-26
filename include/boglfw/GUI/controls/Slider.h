@@ -31,6 +31,9 @@ public:
 	// sets the value of the slider; the value provided will be clamped between [rangeMin, rangeMax]
 	void setValue(float val);
 
+	// returns the [min, max] range values
+	std::pair<float, float> getRange() const { return {rangeMin_, rangeMax_}; }
+
 	Event<void(float value)> onValueChanged;
 
 protected:

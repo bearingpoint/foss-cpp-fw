@@ -48,6 +48,15 @@ bool TextField::keyChar(char c) {
 		bufSize_++;
 		textBuffer_[bufSize_] = 0;
 		textBuffer_[bufPos_++] = c;
+		onTextChanged.trigger();
 	}
 	return true;
+}
+
+std::string TextField::getText() const {
+	return std::string(textBuffer_);
+}
+
+void TextField::setText(std::string const& text) {
+	strncpy(textBuffer_, text.c_str(), maxTextbufferSize - 1);
 }

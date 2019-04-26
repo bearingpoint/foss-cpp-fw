@@ -12,18 +12,20 @@
 #include <boglfw/utils/Event.h>
 #include <string>
 
-class TextField: public GuiBasicElement {
+class TextField : public GuiBasicElement {
 public:
 	TextField(glm::vec2 pos, glm::vec2 size, std::string initialText);
 	virtual ~TextField();
 
-	std::string getText();
+	std::string getText() const;
+	void setText(std::string const& text);
 
 	virtual bool keyDown(int keyCode) override;
 	virtual bool keyChar(char c) override;
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 
-	Event<void(TextField*)> onTrigger;
+	Event<void()> onTextChanged;
+	Event<void()> onTrigger;
 
 protected:
 	static constexpr int maxTextbufferSize = 512;
