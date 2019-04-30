@@ -17,6 +17,8 @@ CameraController::~CameraController() {
 }
 
 void CameraController::update(float dt) {
+	if (!camera_)
+		return;
 	auto attachedSP = attachedEntity_.lock();
 	if (attachedSP) {
 		Transform const& tr = attachedSP->getTransform();

@@ -22,8 +22,10 @@ class Camera;
 
 class CameraController: public Entity {
 public:
-	CameraController(Camera* target);
+	explicit CameraController(Camera* target);
 	virtual ~CameraController();
+
+	void setTargetCamera(Camera* target) { camera_ = target; update(0); }
 
 	unsigned getEntityType() const override { return EntityTypes::CAMERA_CTRL; }
 	// these flags MUST NOT change during the life time of the object, or else UNDEFINED BEHAVIOUR
