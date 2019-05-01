@@ -19,6 +19,7 @@ public:
 	// loads a cube texture from 6 files.
 	// the order of the filenames must be:
 	// X+, X-, Y+, Y-, Z+, Z-
+	// if one or more of the cube faces are not required, specify empty strings for their respective filenames
 	static unsigned loadCubeFromPNG(const std::string filenames[], bool linearizeValues);
 };
 

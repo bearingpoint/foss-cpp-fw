@@ -231,6 +231,11 @@ unsigned TextureLoader::loadCubeFromPNG(const std::string filenames[], bool line
 	};
 
 	for (int i=0; i<6; i++) {
+		if (filenames[i].empty()) {
+			unsigned dummy = 0xFF00FF;
+			glTexImage2D(faceIds[i], 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, &dummy);
+			continue;
+		}
 		internalLoadPNG(filenames[i], linearizeValues, [i, &faceIds, &callback]
 			(unsigned format, unsigned width, unsigned height, unsigned dataType, void* dataPtr)
 		{
