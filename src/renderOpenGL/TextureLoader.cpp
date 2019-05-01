@@ -230,17 +230,28 @@ unsigned TextureLoader::loadCubeFromPNG(const std::string filenames[], bool line
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 	};
 
+	int skippedFaces[6], nSkippedFaces = 0;
+	unsigned faceWidth, faceHeight, faceFormat;
 	for (int i=0; i<6; i++) {
 		if (filenames[i].empty()) {
-			unsigned dummy = 0xFF00FF;
-			glTexImage2D(faceIds[i], 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, &dummy);
+			skippedFaces[nSkippedFaces++] = i;
 			continue;
 		}
-		internalLoadPNG(filenames[i], linearizeValues, [i, &faceIds, &callback]
+		internalLoadPNG(filenames[i], linearizeValues, [i, &faceIds, &callback, &faceWidth, &faceHeight, &faceFormat]
 			(unsigned format, unsigned width, unsigned height, unsigned dataType, void* dataPtr)
 		{
+			faceWidth = width;
+			faceHeight = height;
+			faceFormat = format;
 			callback(faceIds[i], format, width, height, dataType, dataPtr);
 		});
+	}
+	if (nSkippedFaces) {
+		char *dummyData = new char[faceWidth*faceHeight];
+		for (int i=0; i<nSkippedFaces; i++) {
+			glTexImage2D(faceIds[skippedFaces[i]], 0, faceFormat, faceWidth, faceHeight, 0, faceFormat, GL_UNSIGNED_BYTE, dummyData);
+		}
+		delete [] dummyData;
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
