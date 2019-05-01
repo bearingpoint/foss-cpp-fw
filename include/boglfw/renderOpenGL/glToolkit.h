@@ -58,7 +58,7 @@ enum class PostProcessStep {
 // initializes GLFW, openGL an' all
 // if multisampleCount is non-zero, multi-sampling antialiasing (MSAA) will be enabled
 bool gltInitGLFW(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled",
-					unsigned multiSampleCount=0, bool createDepthStencilBuffer=true);
+					unsigned multiSampleCount=0, bool createDepthStencilBuffer=true, bool vSyncOn=true);
 
 // initializes openGL and create a supersampled framebuffer (SSAA)
 bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor desc, const char windowTitle[]="Untitled");

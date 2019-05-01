@@ -210,7 +210,7 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
 bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowTitle[],
-					unsigned multiSampleCount, bool createDepthStencilBuffer) {
+					unsigned multiSampleCount, bool createDepthStencilBuffer, bool vSyncOn) {
 	// initialize GLFW and set-up window an' all:
 	if (!glfwInit()) {
 		cerr << "FAILED glfwInit" << endl;
@@ -238,8 +238,8 @@ bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowT
 	if (checkGLError("glfwMakeContextCurrent"))
 		return false;
 
-	// disable vsync, use 1 to enable it
-	glfwSwapInterval(1);
+	// 0 to disable vsync, 1 to enable it
+	glfwSwapInterval(vSyncOn ? 1 : 0);
 
 	windowW = windowWidth;
 	windowH = windowHeight;
