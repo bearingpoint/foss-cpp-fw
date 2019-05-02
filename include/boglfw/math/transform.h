@@ -31,10 +31,14 @@ public:
 	void setPosition(glm::vec3 pos);
 	// set a new world orientation for the transform
 	void setOrientation(glm::quat orient);
+	// set the orientation such that the transform will point toward the specified point in world space, given an up vector
+	void lookAt(glm::vec3 wPos/*, glm::vec3 up*/);
 	// move the transform by an amount expressed in *WORLD* coordinates
 	void moveWorld(glm::vec3 const& delta);
 	// move the transform by an amount expressed in *LOCAL* coordinates
 	void moveLocal(glm::vec3 const& delta);
+	// move to a position in *WORLD* space
+	void moveTo(glm::vec3 wPos);
 	// rotate the transform by a quaternion expressed in *WORLD* coordinates
 	void rotateWorld(glm::quat const& rot);
 	// rotate the transform by a quaternion expressed in *LOCAL* coordinates

@@ -14,6 +14,24 @@ void Transform::setOrientation(glm::quat orient) {
 	matDirty_ = true;
 }
 
+void Transform::lookAt(glm::vec3 wPos/*, glm::vec3 up*/) {
+	glm::vec3 direction = glm::normalize(wPos - pos_);
+	glm::vec3 z {0, 0, 1};
+	if (direction == z) {
+		orient_ = glm::quat{1,0,0,0};
+	} else {
+		glm::vec3 rotAxis = glm::normalize(glm::cross(z, direction));
+		float angle = acosf(glm::dot(direction, z));
+		orient_ = glm::angleAxis(angle, rotAxis);
+	}
+	matDirty_ = true;
+}
+
+void Transform::moveTo(glm::vec3 wPos) {
+	pos_ = wPos;
+	matDirty_ = true;
+}
+
 // move the transform by an amount expressed in *WORLD* coordinates
 void Transform::moveWorld(glm::vec3 const& delta) {
 	pos_ += delta;
