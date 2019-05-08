@@ -133,6 +133,7 @@ void Slider::mouseMoved(glm::vec2 delta, glm::vec2 position) {
 void Slider::setValue(float val) {
 	value_ = clamp(val, rangeMin_, rangeMax_);
 	if (step_ > 0 && value_ < rangeMax_) {
+		value_ += step_ * 0.5;
 		value_ = step_ * (int)(value_ / step_);
 	}
 	onValueChanged.trigger(value_);
