@@ -10,6 +10,7 @@
 
 #include <boglfw/GUI/ICaptureManager.h>
 #include <boglfw/GUI/GuiContainerElement.h>
+#include <boglfw/utils/Event.h>
 #include <memory>
 
 class GuiBasicElement;
@@ -23,7 +24,12 @@ public:
 	GuiSystem(const Viewport* viewport, glm::vec2 position, glm::vec2 size);
 	virtual ~GuiSystem() = default;
 
+	// sets a GUI element as capture target - all mouse events will be sent to it regardless of the mouse position;
+	// pass nullptr to disable capturing.
 	void setMouseCapture(GuiBasicElement* elementOrNull) override;
+	// triggers the mouse show/hide event and relies on the owner of this class to handle it.
+	// this method has no effect if no show/hide mouse pointer event handler has been set by the GuiSystem owner prior to the call.
+	void showMousePointer(bool show) { onMousePointerDisplayRequest.trigger(show); }
 
 	void addElement(std::shared_ptr<GuiBasicElement> e);
 	void addElement(...) = delete;
@@ -34,6 +40,10 @@ public:
 	void handleInput(InputEvent &ev);
 
 	glm::vec2 getViewportSize() const;
+
+	// subscribe to this event to handle mouse pointer show/hide requests;
+	// the bool parameter is true when pointer show is requested and false when hide is requested.
+	Event<void(bool)> onMousePointerDisplayRequest;
 
 private:
 	const Viewport* viewport_;

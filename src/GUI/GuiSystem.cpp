@@ -133,8 +133,10 @@ void GuiSystem::handleInput(InputEvent &ev) {
 					crt->mouseEnter();
 				}
 			}
-			if (crt)
+			if (crt) {
 				crt->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::viewportToLocal(*crt.get(), mousePos));
+				ev.consume();
+			}
 		}
 		break;
 	case InputEvent::EV_MOUSE_SCROLL:
