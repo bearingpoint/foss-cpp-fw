@@ -34,8 +34,8 @@ void Slider::setRange(float min, float max, float stepSize) {
 	updateDivisionLabels();
 }
 
-void Slider::setDisplayStyle(unsigned divisions, unsigned divisionLabelStep, unsigned displayPrecision) {
-	displayDivisions_ = max(2u, divisions);
+void Slider::setDisplayStyle(float divisionStep, unsigned divisionLabelStep, unsigned displayPrecision) {
+	displayDivisions_ = max(2u, (unsigned)((rangeMax_ - rangeMin_) / divisionStep) + 1);
 	displayPrecision_ = displayPrecision;
 	divisionLabelStep_ = divisionLabelStep;
 	updateDivisionLabels();

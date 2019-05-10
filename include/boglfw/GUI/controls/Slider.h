@@ -21,12 +21,13 @@ public:
 	// 		the slider will jump from one position to the next.
 	//		if it's zero, then the slider can be freely moved to any intermediate position.
 	void setRange(float min, float max, float stepSize = 0);
-	// sets the number of divisions to be drawn;
+	// sets the divisions lines to be drawn;
+	// [divisionStep] specifies at what value interval to draw the division lines
 	// [divisionLabelStep] dictates which divisions get labels;
 	//		labels are always drawn for the endpoints;
 	//		other labels are drawn every [divisionLabelStep] divisions starting from the left endpoint
 	// [displayPrecision] dictates how many decimals are used for labels.
-	void setDisplayStyle(unsigned divisions, unsigned divisionLabelStep, unsigned displayPrecision);
+	void setDisplayStyle(float divisionStep, unsigned divisionLabelStep, unsigned displayPrecision);
 
 	// sets the value of the slider; the value provided will be clamped between [rangeMin, rangeMax]
 	void setValue(float val);
