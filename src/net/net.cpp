@@ -1,5 +1,6 @@
 #include <boglfw/net/connection.h>
 #include <boglfw/net/listener.h>
+#include <boglfw/net/udp.h>
 
 #include <boglfw/utils/semaphore.h>
 
@@ -13,12 +14,14 @@
 namespace net {
 
 using asio::ip::tcp;
+using asio::ip::udp;
 
 static asio::io_context theIoContext;
 static std::vector<tcp::socket*> connections;
 static std::vector<tcp::socket*> connectionsToDelete;
 static std::vector<tcp::acceptor*> listeners;
 static std::vector<tcp::acceptor*> listenersToDelete;
+static std::vector<udp::socket*> udpSockets;
 static semaphore workAvail;
 static std::mutex asyncOpMutex;		// used to synchronize the changes to io_context run thread's state with operations that create or destroy
 												// async objects such as connections and listeners
@@ -258,6 +261,32 @@ static result translateError(const asio::error_code &err) {
 		}
 		return {code, err.message()};
 	}
+}
+
+// create a new UDP socket and configure it for the requested usage
+udpSocket createSocket(UDPSocketType) {
+	udp::socket* newSocket = new udp::socket(theIoContext);
+	todo...
+}
+
+// closes a UDP socket
+void closeSocket(udpSocket socket) {
+
+}
+
+// write data to a socket.
+// returns ok on success, error code on failure.
+// the call is blocking.
+// if the provided socket is a multicast socket, the write operation will be treated as a multicast, otherwise as unicas
+result writeUDP(udpSocket socket, const void* buffer, size_t count) {
+
+}
+
+// read "count" bytes from the socket into buffer.
+// returns ok on success, error code on failure.
+// the call is blocking.
+result readUDP(udpSocket socket, void* buffer, size_t bufSize, size_t count) {
+
 }
 
 } // namespace
