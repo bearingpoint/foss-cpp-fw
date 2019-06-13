@@ -10,6 +10,10 @@ namespace net {
 
 using udpSocket = unsigned;
 
+struct endpointInfo {
+	std::string address;
+};
+
 // create a new UDP socket and configure it for multicast sending on the given multicast address and port
 udpSocket createMulticastSendSocket(std::string multicastAddress, unsigned short port);
 
@@ -29,10 +33,13 @@ void closeSocket(udpSocket socket);
 // if the provided socket is a multicast socket, the write operation will be treated as a multicast, otherwise as unicast
 result writeUDP(udpSocket socket, const void* buffer, size_t count);
 
-// read "count" bytes from the socket into buffer.
+// read from the socket into buffer and populate [out_count] with the number of bytes read
+// and [out_sender] with the endpoint of the sender.
 // returns ok on success, error code on failure.
 // the call is blocking.
-result readUDP(udpSocket socket, void* buffer, size_t bufSize, size_t count);
+result readUDP(udpSocket socket, void* buffer, size_t bufSize, size_t &out_count, endpointInfo& out_sender);
+
+result readUDPAsync(udpSocket socket, void* buffer, size_t bufSize, size_t );
 
 } // namespace
 

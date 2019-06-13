@@ -303,7 +303,7 @@ udpSocket createMulticastSendSocket(std::string multicastAddress, unsigned short
 udpSocket createMulticastReceiveSocket(std::string listenAddress, std::string multicastGroup, unsigned short port) {
 	UDPSocketWrapper* newSock = new UDPSocketWrapper(theIoContext, listenAddress, port);
 	newSock->isMulticast = true;
-	newSock->socket.open(newSock->endpoint.protocol());
+	//newSock->socket.open(newSock->endpoint.protocol());
 	newSock->socket.set_option(asio::ip::udp::socket::reuse_address(true));
 	newSock->socket.bind(newSock->endpoint);
 	newSock->socket.set_option(asio::ip::multicast::join_group(asio::ip::make_address(multicastGroup)));
@@ -346,10 +346,20 @@ result writeUDP(udpSocket socket, const void* buffer, size_t count) {
 	return result::ok;
 }
 
-// read "count" bytes from the socket into buffer.
+// read from the socket into buffer and populate [out_count] with the number of bytes read
+// and [out_sender] with the endpoint of the sender.
 // returns ok on success, error code on failure.
 // the call is blocking.
-result readUDP(udpSocket socket, void* buffer, size_t bufSize, size_t count) {
+result readUDP(udpSocket socket, void* buffer, size_t bufSize,  size_t &out_count, endpointInfo& out_sender) {
+	asio::ip::udp::socket* pSocket = nullptr;
+	{
+		std::lock_guard<std::mutex> lk(asyncOpMutex);
+		assertDbg(socket < udpSockets.size() && udpSockets[socket] != nullptr);
+		pSocket = &udpSockets[socket]->socket;
+	}
+	asio::ip::udp::endpoint senderEndpoint;
+	out_count = pSocket->receive_from(asio::buffer(buffer, bufSize), senderEndpoint);
+	out_sender.address = senderEndpoint.address().to_string();
 	return result::ok;
 }
 
