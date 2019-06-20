@@ -14,6 +14,8 @@ struct endpointInfo {
 	std::string address;
 };
 
+using udpReceiveCallback = std::function<void(result res, size_t bytesReceived, endpointInfo sender)>;
+
 // create a new UDP socket and configure it for multicast sending on the given multicast address and port
 udpSocket createMulticastSendSocket(std::string multicastAddress, unsigned short port);
 
@@ -39,7 +41,9 @@ result writeUDP(udpSocket socket, const void* buffer, size_t count);
 // the call is blocking.
 result readUDP(udpSocket socket, void* buffer, size_t bufSize, size_t &out_count, endpointInfo& out_sender);
 
-result readUDPAsync(udpSocket socket, void* buffer, size_t bufSize, size_t );
+// read from the socket into buffer and call [cb] when the receive is complete or fails
+// the call is non-blocking, the callback is called asynchronously.
+void readUDPAsync(udpSocket socket, void* buffer, size_t bufSize, udpReceiveCallback cb);
 
 } // namespace
 

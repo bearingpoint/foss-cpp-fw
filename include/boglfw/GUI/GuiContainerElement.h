@@ -54,6 +54,9 @@ protected:
 	//virtual bool keyUp(int keyCode) override;
 	//virtual bool keyChar(char c) override;
 
+	void setClipping();
+	void resetClipping();
+
 private:
 	glm::vec2 clientAreaOffset_{0};	// (positive) offset from top left corner of container to top-left corner of client area
 	glm::vec2 clientAreaCounterOffset_{0}; // (positive) offset from bottom-right corner of client area to corner of container

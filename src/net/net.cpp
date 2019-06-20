@@ -363,4 +363,22 @@ result readUDP(udpSocket socket, void* buffer, size_t bufSize,  size_t &out_coun
 	return result::ok;
 }
 
+void readUDPAsync(udpSocket socket, void* buffer, size_t bufSize, udpReceiveCallback cb) {
+	asio::ip::udp::socket* pSocket = nullptr;
+	{
+		std::lock_guard<std::mutex> lk(asyncOpMutex);
+		assertDbg(socket < udpSockets.size() && udpSockets[socket] != nullptr);
+		pSocket = &udpSockets[socket]->socket;
+	}
+	asio::ip::udp::endpoint *senderEndpoint = new asio::ip::udp::endpoint();
+	pSocket->async_receive_from(asio::buffer(buffer, bufSize), *senderEndpoint,
+		[cb, senderEndpoint](const asio::error_code& error, size_t bytes_transferred) {
+			cb(translateError(error), bytes_transferred, endpointInfo{senderEndpoint->address().to_string()});
+			delete senderEndpoint;
+		});
+	std::lock_guard<std::mutex> lk(asyncOpMutex);
+	checkStart();
+	workAvail.notify();
+}
+
 } // namespace

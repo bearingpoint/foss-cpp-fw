@@ -43,6 +43,8 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 		Shape2D::get()->drawRectangleFilled(frameTranslation + glm::vec2{1, 1}, getSize() - glm::vec2{2, 2}, GuiTheme::getContainerBackgroundColor());
 	}
 
+	// set clipping to visible client portion
+	setClipping();
 	// draw all children relative to the client area
 	frameTranslation += clientAreaOffset_;
 	for (auto &e : children_) {
@@ -52,6 +54,15 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 		e->draw(ctx, frameTranslation + e->getPosition(), frameScale);
 	}
 	// TODO draw frame around focused element:
+	resetClipping();
+}
+
+void GuiContainerElement::setClipping() {
+	// TODO
+}
+
+void GuiContainerElement::resetClipping() {
+	// TODO
 }
 
 void GuiContainerElement::setSize(glm::vec2 size) {
