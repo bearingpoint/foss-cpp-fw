@@ -45,6 +45,7 @@ static std::vector<tcp::socket*> connectionsToDelete;
 static std::vector<tcp::acceptor*> listeners;
 static std::vector<tcp::acceptor*> listenersToDelete;
 static std::vector<UDPSocketWrapper*> udpSockets;
+static std::atomic_int asyncOperations {0};
 static semaphore workAvail;
 static std::mutex asyncOpMutex;		// used to synchronize the changes to io_context run thread's state with operations that create or destroy
 												// async objects such as connections and listeners
@@ -203,11 +204,13 @@ static void ioContextThread() {
 static void checkStart() {
 	// we are currently under asyncOpMutex lock by the caller
 	if (!isContextThreadRunning.load(std::memory_order_acquire)) {
-		unsigned nObjects = 0;
-		for (auto &c : connections)
-			nObjects += c != nullptr ? 1 : 0;
-		for (auto &c : listeners)
-			nObjects += c != nullptr ? 1 : 0;
+		unsigned nObjects = asyncOperations.load(std::memory_order::memory_order_acquire);
+		if (nObjects == 0)
+			for (auto &c : connections)
+				nObjects += c != nullptr ? 1 : 0;
+		if (nObjects == 0)
+			for (auto &c : listeners)
+				nObjects += c != nullptr ? 1 : 0;
 		// we only start the context thread if active objects were found
 		if (nObjects > 0) {
 			isContextThreadRunning.store(true, std::memory_order_release);
@@ -219,11 +222,13 @@ static void checkStart() {
 static void checkFinish(std::unique_lock<std::mutex> &lk) {
 	// we are currently under asyncOpMutex lock by the caller
 	// count how many live connections/listeners we have:
-	unsigned nObjects = 0;
-	for (auto &c : connections)
-		nObjects += c != nullptr ? 1 : 0;
-	for (auto &c : listeners)
-		nObjects += c != nullptr ? 1 : 0;
+	unsigned nObjects = asyncOperations.load(std::memory_order::memory_order_acquire);
+	if (nObjects == 0)
+		for (auto &c : connections)
+			nObjects += c != nullptr ? 1 : 0;
+	if (nObjects == 0)
+		for (auto &c : listeners)
+			nObjects += c != nullptr ? 1 : 0;
 	// if no more objects, we stop the context thread:
 	if (nObjects == 0)
 	{
@@ -375,8 +380,12 @@ void readUDPAsync(udpSocket socket, void* buffer, size_t bufSize, udpReceiveCall
 		[cb, senderEndpoint](const asio::error_code& error, size_t bytes_transferred) {
 			cb(translateError(error), bytes_transferred, endpointInfo{senderEndpoint->address().to_string()});
 			delete senderEndpoint;
+			std::unique_lock<std::mutex> lk(asyncOpMutex);
+			asyncOperations--;
+			checkFinish(lk);
 		});
 	std::lock_guard<std::mutex> lk(asyncOpMutex);
+	asyncOperations++;
 	checkStart();
 	workAvail.notify();
 }
