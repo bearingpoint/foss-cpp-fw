@@ -8,12 +8,16 @@
 
 class GuiBasicElement;
 class GuiContainerElement;
+class Viewport;
 
 class Layout {
 public:
 	virtual ~Layout() {}
 
-	virtual void update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize) = 0;
+	// requests the layout to recompute all elements sizes and positions.
+	// [clientSize] is the computed (in pixels) size of the client area of the layout
+	// [viewport] is the viewport to use for resolving gvec2 coordinates
+	virtual void update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize, Viewport* viewport) = 0;
 
 protected:
 	Layout() {}

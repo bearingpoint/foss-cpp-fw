@@ -24,15 +24,13 @@ bool GuiBasicElement::containsPoint(glm::vec2 const& p) const {
 	return true; // default to rectangular shape which contains all points within the bounding box
 }
 
-void GuiBasicElement::setPosition(glm::vec2 position) {
+void GuiBasicElement::setPosition(gvec2 position) {
 	userPosition_ = position;
 	if (parent_)
 		parent_->refreshLayout();
-	else
-		updateBBox();
 }
 
-void GuiBasicElement::setSize(glm::vec2 size) {
+void GuiBasicElement::setSize(gvec2 size) {
 	userSize_ = size;
 	if (parent_)
 		parent_->refreshLayout();
@@ -40,32 +38,16 @@ void GuiBasicElement::setSize(glm::vec2 size) {
 		updateBBox();
 }
 
-void GuiBasicElement::setMinSize(glm::vec2 minSize) {
+void GuiBasicElement::setMinSize(gvec2 minSize) {
 	minSize_ = minSize;
 	if (parent_)
 		parent_->refreshLayout();
-	else {
-		size_ = userSize_;
-		if (minSize_.x != 0 && size_.x < minSize_.x)
-			size_.x = minSize_.x;
-		if (minSize_.y != 0 && size_.y < minSize_.y)
-			size_.y = minSize_.y;
-		updateBBox();
-	}
 }
 
 void GuiBasicElement::setMaxSize(glm::vec2 maxSize) {
 	maxSize_ = maxSize;
 	if (parent_)
 		parent_->refreshLayout();
-	else {
-		size_ = userSize_;
-		if (maxSize_.x != 0 && size_.x > maxSize_.x)
-			size_.x = maxSize_.x;
-		if (maxSize_.y != 0 && size_.y > maxSize_.y)
-			size_.y = maxSize_.y;
-		updateBBox();
-	}
 }
 
 void GuiBasicElement::mouseEnter() {
@@ -96,8 +78,8 @@ void GuiBasicElement::mouseMoved(glm::vec2 delta, glm::vec2 position) {
 }
 
 void GuiBasicElement::updateBBox() {
-	bboxMin_ = position_;
-	bboxMax_ = bboxMin_ + size_;
+	bboxMin_ = computedPosition_;
+	bboxMax_ = bboxMin_ + computedSize_;
 }
 
 ICaptureManager* GuiBasicElement::getCaptureManager() const {

@@ -9,8 +9,12 @@
 #define GUI_GUIBASICELEMENT_H_
 
 #include <boglfw/GUI/constants.h>
+#include <boglfw/renderOpenGL/ViewportCoord.h>
 
 #include <glm/vec2.hpp>
+
+// GUI Vec2 for coordinates and sizes
+using gvec2 = ViewportCoord;
 
 class GuiSystem;
 class GuiContainerElement;
@@ -24,19 +28,34 @@ public:
 
 	GuiContainerElement* parent() const { return parent_; }
 
-	void setAnchors(Anchors anch) { anchors_ = anch; }
-	glm::vec2 getPosition() const { return position_; }
-	virtual void setPosition(glm::vec2 position);
-	glm::vec2 getSize() const { return size_; }
-	virtual void setSize(glm::vec2 size);
-	virtual void setMinSize(glm::vec2 minSize);
-	virtual void setMaxSize(glm::vec2 maxSize);
+	// returns the user-set position - the actual position may differ depending on the layout of the container
+	gvec2 position() const { return userPosition_; }
+	// sets the position - this will only have effect if the element is hosted in a FreeLayout
+	virtual void setPosition(gvec2 position);
+	// returns the user-set size - the actual size may differ depending on the layout of the container
+	gvec2 size() const { return userSize_; }
+	// sets the size - this will only have effect if the element is hosted in a FreeLayout
+	virtual void setSize(gvec2 size);
+	// sets the minimum size of the element - layouts are required to honour this
+	virtual void setMinSize(gvec2 minSize);
+	// sets the maximum size of the element - layouts are required to honour this
+	virtual void setMaxSize(gvec2 maxSize);
+
+	// gets the computed position (in pixels, relative to the parent's client area) of the element;
+	// this is the real position computed by the layout
+	glm::vec2 computedPosition() const { return computedPosition_; }
+	// gets the computed size (in pixels) of the element;
+	// this is the real size computed by the layout
+	glm::vec2 computedSize() const { return computedSize_; }
+
 	//void setZIndex(int z) override { zIndex_ = z; }
 	bool isVisible() const { return visible_; }
 	void show() { visible_ = true; }
 	void hide() { visible_ = false; }
 
 	//int zIndex() const override { return zIndex_; }
+
+	// returns the computed bounding box, in pixels, in parent's client space
 	void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const { outMin = bboxMin_; outMax = bboxMax_; }
 
 	// return true if the point IN LOCAL COORDINATES is contained within the element's shape;
@@ -82,19 +101,20 @@ private:
 	static constexpr float MAX_CLICK_TRAVEL = 5.f;
 
 	mutable ICaptureManager *captureManager_ = nullptr;
-	glm::vec2 position_{0};
-	glm::vec2 size_{0};
+	glm::vec2 computedPosition_{0};
+	glm::vec2 computedSize_{0};
 	glm::vec2 bboxMin_{0};
 	glm::vec2 bboxMax_{0};
 
-	glm::vec2 minSize_{0};
-	glm::vec2 maxSize_{0};
-	// if user called setPosition this will be set:
-	glm::vec2 userPosition_{0};
-	// is user called setSize this will be set:
-	glm::vec2 userSize_{50, 50};
+	gvec2 minSize_{0};
+	gvec2 maxSize_{0};
+	// user defined position for free-layout
+	gvec2 userPosition_{0};
+	// user defined size for free-layout
+	gvec2 userSize_{50, 50};
 	//int zIndex_ = 0;
-	Anchors anchors_ = Anchors::Top | Anchors::Left;
+
+	//Anchors anchors_ = Anchors::Top | Anchors::Left;
 	bool isMouseIn_ = false;
 	bool isMousePressed_[3] {false};
 	glm::vec2 lastMousePosition_ {0};
