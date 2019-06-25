@@ -14,7 +14,7 @@
 
 class TextField : public GuiBasicElement {
 public:
-	TextField(glm::vec2 pos, glm::vec2 size, std::string initialText);
+	TextField(std::string initialText);
 	virtual ~TextField();
 
 	std::string getText() const;

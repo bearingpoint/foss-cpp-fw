@@ -15,7 +15,7 @@
 
 class Label: public GuiBasicElement {
 public:
-	Label(glm::vec2 pos, int fontSize, std::string text);
+	Label(int fontSize, std::string text);
 	virtual ~Label();
 
 	std::string text() const { return text_; };

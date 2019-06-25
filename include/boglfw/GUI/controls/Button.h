@@ -14,7 +14,7 @@
 
 class Button: public GuiBasicElement {
 public:
-	Button(glm::vec2 pos, glm::vec2 size, std::string text);
+	Button(std::string text);
 
 	Event<void()> onClick;
 

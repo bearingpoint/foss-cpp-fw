@@ -12,9 +12,8 @@
 #include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/math/math3D.h>
 
-RoundButton::RoundButton(glm::vec2 centerPos, float radius, std::string text)
-	: Button(centerPos - glm::vec2{radius, radius}, glm::vec2{2*radius, 2*radius}, text)
-	, centerPos_(centerPos)
+RoundButton::RoundButton(float radius, std::string text)
+	: Button(text)
 	, radius_(radius)
 {
 }

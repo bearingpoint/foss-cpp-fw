@@ -2,8 +2,7 @@
 #include <boglfw/renderOpenGL/PictureDraw.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 
-Picture::Picture(glm::vec2 pos, glm::vec2 size)
-	: GuiBasicElement(pos, size) {
+Picture::Picture() {
 }
 
 Picture::~Picture() {

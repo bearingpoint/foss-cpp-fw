@@ -14,12 +14,12 @@
 
 #include <cstring>
 
-Label::Label(glm::vec2 pos, int fontSize, std::string text)
-	: GuiBasicElement(pos, GLText::get()->getTextRect(text, fontSize))
-	, text_(text)
+Label::Label(int fontSize, std::string text)
+	: text_(text)
 	, fontSize_(fontSize)
 	, color_(GuiTheme::getButtonTextColor())
 {
+	setSize(GLText::get()->getTextRect(text, fontSize));
 }
 
 Label::~Label() {

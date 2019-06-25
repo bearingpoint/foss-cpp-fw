@@ -8,6 +8,7 @@
 #include <boglfw/GUI/GuiContainerElement.h>
 #include <boglfw/GUI/GuiHelper.h>
 #include <boglfw/GUI/GuiTheme.h>
+#include <boglfw/GUI/GridLayout.h>
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
@@ -17,9 +18,9 @@
 
 #include <algorithm>
 
-GuiContainerElement::GuiContainerElement(glm::vec2 position, glm::vec2 size)
-	: GuiBasicElement(position, size)
-{
+GuiContainerElement::GuiContainerElement()
+	: layout_(new GridLayout()) {
+	layout_->setOwner(this);
 }
 
 GuiContainerElement::~GuiContainerElement() {
@@ -69,9 +70,7 @@ void GuiContainerElement::setSize(glm::vec2 size) {
 	glm::vec2 oldSize = getSize();
 	GuiBasicElement::setSize(size);
 	updateClientArea();
-	for (auto e : children_) {
-		//TODO: adjust e position and size based on anchors
-	}
+	refreshLayout();
 }
 
 void GuiContainerElement::updateClientArea() {
@@ -82,12 +81,14 @@ void GuiContainerElement::addElement(std::shared_ptr<GuiBasicElement> e) {
 	children_.push_back(e);
 	e->parent_ = this;
 	e->setCaptureManager(getCaptureManager());
+	refreshLayout();
 }
 
 void GuiContainerElement::removeElement(std::shared_ptr<GuiBasicElement> e) {
 	assertDbg(e && e->parent_ == this && findElement(e.get()));
 	e->parent_ = nullptr;
 	children_.erase(std::find(children_.begin(), children_.end(), e));
+	refreshLayout();
 }
 
 std::shared_ptr<GuiBasicElement> GuiContainerElement::findElement(GuiBasicElement* target) const {
@@ -162,6 +163,7 @@ void GuiContainerElement::setClientArea(glm::vec2 offset, glm::vec2 counterOffse
 	clientAreaOffset_ = offset;
 	clientAreaCounterOffset_ = counterOffset;
 	updateClientArea();
+	refreshLayout();
 }
 
 void GuiContainerElement::getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const {
@@ -173,4 +175,16 @@ void GuiContainerElement::clear() {
 	for (auto &c : children_)
 		c->parent_ = nullptr;
 	children_.clear();
+}
+
+void GuiContainerElement::useLayout(std::shared_ptr<Layout> layout) {
+	layout_->setOwner(nullptr);
+	assertDbg(layout != nullptr);
+	layout_ = layout;
+	layout_->setOwner(this);
+	refreshLayout();
+}
+
+void GuiContainerElement::refreshLayout() {
+	layout_->update(children_, clientAreaSize_);
 }

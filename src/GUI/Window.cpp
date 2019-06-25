@@ -11,9 +11,11 @@
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/math/math3D.h>
 
-Window::Window(glm::vec2 position, glm::vec2 size)
-	: GuiContainerElement(position, size)
+Window::Window()
+	: GuiContainerElement()
 {
+	setPosition({50.f, 50.f});
+	setSize({320.f, 200.f});
 	setClientArea(glm::vec2(3, 20), glm::vec2(3, 3));
 }
 

@@ -11,10 +11,8 @@
 
 #include <glm/geometric.hpp>
 
-GuiBasicElement::GuiBasicElement(glm::vec2 position, glm::vec2 size)
-	: position_(position)
-	, size_(size)
-{
+GuiBasicElement::GuiBasicElement() {
+	size_ = userSize_;
 	updateBBox();
 }
 
@@ -27,13 +25,47 @@ bool GuiBasicElement::containsPoint(glm::vec2 const& p) const {
 }
 
 void GuiBasicElement::setPosition(glm::vec2 position) {
-	position_ = position;
-	updateBBox();
+	userPosition_ = position;
+	if (parent_)
+		parent_->refreshLayout();
+	else
+		updateBBox();
 }
 
 void GuiBasicElement::setSize(glm::vec2 size) {
-	size_ = size;
-	updateBBox();
+	userSize_ = size;
+	if (parent_)
+		parent_->refreshLayout();
+	else
+		updateBBox();
+}
+
+void GuiBasicElement::setMinSize(glm::vec2 minSize) {
+	minSize_ = minSize;
+	if (parent_)
+		parent_->refreshLayout();
+	else {
+		size_ = userSize_;
+		if (minSize_.x != 0 && size_.x < minSize_.x)
+			size_.x = minSize_.x;
+		if (minSize_.y != 0 && size_.y < minSize_.y)
+			size_.y = minSize_.y;
+		updateBBox();
+	}
+}
+
+void GuiBasicElement::setMaxSize(glm::vec2 maxSize) {
+	maxSize_ = maxSize;
+	if (parent_)
+		parent_->refreshLayout();
+	else {
+		size_ = userSize_;
+		if (maxSize_.x != 0 && size_.x > maxSize_.x)
+			size_.x = maxSize_.x;
+		if (maxSize_.y != 0 && size_.y > maxSize_.y)
+			size_.y = maxSize_.y;
+		updateBBox();
+	}
 }
 
 void GuiBasicElement::mouseEnter() {

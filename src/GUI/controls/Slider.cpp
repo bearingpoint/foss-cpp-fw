@@ -14,8 +14,7 @@ static constexpr int divisionLabelFontSize = 16;
 static constexpr float labelsHeight = ceil(divisionLabelFontSize * 1.3);
 static constexpr float sliderHeight = 10 + labelsHeight;
 
-Slider::Slider(glm::vec2 pos, float width)
-	: GuiBasicElement(pos, glm::vec2{width, sliderHeight}) {
+Slider::Slider() {
 	updateDivisionLabels();
 }
 

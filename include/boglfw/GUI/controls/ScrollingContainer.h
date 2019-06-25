@@ -4,7 +4,7 @@
 
 class ScrollingContainer : public GuiContainerElement {
 public:
-	ScrollingContainer(glm::vec2 position, glm::vec2 size);
+	ScrollingContainer();
 	virtual ~ScrollingContainer() override;
 
 protected:

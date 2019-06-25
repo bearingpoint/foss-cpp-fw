@@ -12,14 +12,14 @@
 
 class RoundButton: public Button {
 public:
-	RoundButton(glm::vec2 centerPos, float radius, std::string text);
+	RoundButton(float radius, std::string text);
 	virtual ~RoundButton() override;
 
 protected:
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 
 private:
-	glm::vec2 centerPos_;
+	glm::vec2 centerPos_ {0.f, 0.f};
 	float radius_;
 };
 

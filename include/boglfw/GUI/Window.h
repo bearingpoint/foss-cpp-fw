@@ -12,7 +12,7 @@
 
 class Window: public GuiContainerElement {
 public:
-	Window(glm::vec2 position, glm::vec2 size);
+	Window();
 	virtual ~Window();
 
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;

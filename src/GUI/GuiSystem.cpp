@@ -7,6 +7,7 @@
 
 #include <boglfw/GUI/GuiSystem.h>
 #include <boglfw/GUI/GuiHelper.h>
+#include <boglfw/GUI/FreeLayout.h>
 #include <boglfw/input/InputEvent.h>
 #include <boglfw/utils/log.h>
 #include <boglfw/renderOpenGL/Viewport.h>
@@ -21,8 +22,11 @@
 
 GuiSystem::GuiSystem(const Viewport* viewport, glm::vec2 position, glm::vec2 size)
 	: viewport_(viewport)
-	, rootElement_(position, size) {
+	, rootElement_() {
+	rootElement_.setPosition(position);
+	rootElement_.setSize(size);
 	rootElement_.setTransparentBackground(true);
+	rootElement_.useLayout(std::make_shared<FreeLayout>());
 }
 
 void GuiSystem::addElement(std::shared_ptr<GuiBasicElement> e) {

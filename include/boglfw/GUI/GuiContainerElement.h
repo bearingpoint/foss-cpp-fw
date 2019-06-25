@@ -12,10 +12,15 @@
 #include <vector>
 #include <memory>
 
+class Layout;
+
 class GuiContainerElement: public GuiBasicElement {
 public:
-	GuiContainerElement(glm::vec2 position, glm::vec2 size);
+	GuiContainerElement();
 	virtual ~GuiContainerElement();
+
+	void useLayout(std::shared_ptr<Layout> layout);
+	void refreshLayout();
 
 	// hit-test a point IN LOCAL COORDINATES
 	virtual bool containsPoint(glm::vec2 const& p) const override;
@@ -63,6 +68,7 @@ private:
 	glm::vec2 clientAreaSize_{0};
 	bool transparentBackground_ = false;
 	std::vector<std::shared_ptr<GuiBasicElement>> children_;
+	std::shared_ptr<Layout> layout_;
 	//std::shared_ptr<GuiBasicElement> elementUnderMouse_ = nullptr;
 	//std::shared_ptr<GuiBasicElement> focusedElement_ = nullptr;
 

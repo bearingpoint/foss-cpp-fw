@@ -17,7 +17,7 @@
 
 class Picture: public GuiBasicElement {
 public:
-	Picture(glm::vec2 pos, glm::vec2 size);
+	Picture();
 	virtual ~Picture();
 
 	void setBackgroundColor(glm::vec3 color) { bkColor_ = color; }

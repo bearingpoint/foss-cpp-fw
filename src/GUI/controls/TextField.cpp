@@ -14,9 +14,7 @@
 
 #include <cstring>
 
-TextField::TextField(glm::vec2 pos, glm::vec2 size, std::string initialText)
-	: GuiBasicElement(pos, size)
-{
+TextField::TextField(std::string initialText) {
 	strncpy(textBuffer_, initialText.c_str(), maxTextbufferSize);
 }
 

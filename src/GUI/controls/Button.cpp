@@ -12,9 +12,8 @@
 #include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/math/math3D.h>
 
-Button::Button(glm::vec2 pos, glm::vec2 size, std::string text)
-	: GuiBasicElement(pos, size)
-	, text_(text) {
+Button::Button(std::string text)
+	: text_(text) {
 }
 
 void Button::clicked(glm::vec2 clickPosition, MouseButtons button) {

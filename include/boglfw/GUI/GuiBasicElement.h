@@ -19,9 +19,9 @@ class RenderContext;
 
 class GuiBasicElement {
 public:
-	GuiBasicElement(glm::vec2 position, glm::vec2 size);
+	GuiBasicElement();
 	virtual ~GuiBasicElement();
-	
+
 	GuiContainerElement* parent() const { return parent_; }
 
 	void setAnchors(Anchors anch) { anchors_ = anch; }
@@ -29,6 +29,8 @@ public:
 	virtual void setPosition(glm::vec2 position);
 	glm::vec2 getSize() const { return size_; }
 	virtual void setSize(glm::vec2 size);
+	virtual void setMinSize(glm::vec2 minSize);
+	virtual void setMaxSize(glm::vec2 maxSize);
 	//void setZIndex(int z) override { zIndex_ = z; }
 	bool isVisible() const { return visible_; }
 	void show() { visible_ = true; }
@@ -36,7 +38,7 @@ public:
 
 	//int zIndex() const override { return zIndex_; }
 	void getBoundingBox(glm::vec2 &outMin, glm::vec2 &outMax) const { outMin = bboxMin_; outMax = bboxMax_; }
-	
+
 	// return true if the point IN LOCAL COORDINATES is contained within the element's shape;
 	// this allows hit-testing on arbitrary shapes, even with holes in them;
 	// it is assumed that the bounding box test has been performed prior to this call, the callee is not required to recheck that.
@@ -45,19 +47,19 @@ public:
 	bool isMouseIn() const { return isMouseIn_; }
 	bool isMousePressed(MouseButtons button) const { return isMousePressed_[(int)button]; }
 	glm::vec2 getLastMousePosition() const { return lastMousePosition_; }
-	
+
 	virtual bool isContainer() const { return false; }
 
 protected:
 	friend class GuiContainerElement;
 	friend class GuiSystem;
 	GuiContainerElement* parent_ = nullptr;
-	
+
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
 	ICaptureManager* getCaptureManager() const;
-	
+
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
-	
+
 	virtual void mouseEnter();
 	virtual void mouseLeave();
 	virtual void mouseDown(MouseButtons button);
@@ -75,6 +77,8 @@ protected:
 
 private:
 
+	friend class Layout;
+
 	static constexpr float MAX_CLICK_TRAVEL = 5.f;
 
 	mutable ICaptureManager *captureManager_ = nullptr;
@@ -82,6 +86,13 @@ private:
 	glm::vec2 size_{0};
 	glm::vec2 bboxMin_{0};
 	glm::vec2 bboxMax_{0};
+
+	glm::vec2 minSize_{0};
+	glm::vec2 maxSize_{0};
+	// if user called setPosition this will be set:
+	glm::vec2 userPosition_{0};
+	// is user called setSize this will be set:
+	glm::vec2 userSize_{50, 50};
 	//int zIndex_ = 0;
 	Anchors anchors_ = Anchors::Top | Anchors::Left;
 	bool isMouseIn_ = false;
