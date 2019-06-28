@@ -14,12 +14,16 @@ FlexibleCoordinate::FlexibleCoordinate(DIRECTION dir, float value, UNIT unit)
 {}
 
 float FlexibleCoordinate::get(glm::vec2 ctxSz) {
-	if (unit_ == PIXELS)
-		return value_;
-	else {
-		float sz = dir_ == X ? ctxSz.x : ctxSz.y;
-		return value_ * sz * 0.01f;
-	}
+	bool isDescreasing = dir_ == X_RIGHT || dir_ == Y_BOTTOM;
+	bool isX = dir_ == X_LEFT || dir_ == X_RIGHT;
+	float sz = isX ? ctxSz.x : ctxSz.y;
+	float val = value_;
+	if (unit_ == PERCENT)
+		val *= sz * 0.01f;
+	if (isDescreasing)
+		val = sz - val;
+	return val;
+
 }
 
 float FlexibleCoordinate::get(FlexibleCoordinateContext const& ctx) {

@@ -51,10 +51,9 @@ glm::vec2 parentToLocal(GuiBasicElement const& el, glm::vec2 pcoord) {
 
 glm::vec2 viewportToLocal(GuiBasicElement const& el, glm::vec2 vcoord) {
 	if (!el.parent())
-		return vcoord;	// this is the root element
+		return vcoord - el.computedPosition();	// this is the root element
 	else {
-		GuiContainerElement& parent = dynamic_cast<GuiContainerElement&>(*el.parent());
-		return viewportToLocal(parent, vcoord) - parent.getClientOffset() - el.computedPosition();
+		return viewportToLocal(*el.parent(), vcoord) - el.parent()->getClientOffset() - el.computedPosition();
 	}
 }
 

@@ -25,6 +25,7 @@ GuiSystem::GuiSystem(const Viewport* viewport, glm::vec2 position, glm::vec2 siz
 	, rootElement_() {
 
 	rootElement_.setPosition(position);
+	rootElement_.setComputedPosition(position);
 	rootElement_.setSize(size);
 	rootElement_.setComputedSize(size);
 	rootElement_.setTransparentBackground(true);
@@ -54,7 +55,7 @@ void GuiSystem::setMouseCapture(GuiBasicElement* elementOrNull) {
 
 void GuiSystem::draw(RenderContext const& ctx) {
 	if (&ctx.viewport() == viewport_)
-		rootElement_.draw(ctx, {0.f, 0.f}, {1.f, 1.f});
+		rootElement_.draw(ctx, rootElement_.computedPosition(), {1.f, 1.f});
 }
 
 glm::vec2 GuiSystem::screenToViewport(glm::vec2 sp) const {
@@ -129,7 +130,8 @@ void GuiSystem::handleInput(InputEvent &ev) {
 			pc->mouseMoved(glm::vec2{ev.dx, ev.dy}, GuiHelper::viewportToLocal(*pc.get(), mousePos));
 			ev.consume();
 		} else {
-			auto crt = GuiHelper::getTopElementAtPosition(rootElement_, mousePos.x, mousePos.y);
+			auto rootPos = GuiHelper::viewportToLocal(rootElement_, mousePos);
+			auto crt = GuiHelper::getTopElementAtPosition(rootElement_, rootPos.x, rootPos.y);
 			auto last = lastUnderMouse_.lock();
 			if (crt != last) {
 				if (last)

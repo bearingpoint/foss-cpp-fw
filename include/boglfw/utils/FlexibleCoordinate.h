@@ -22,8 +22,10 @@ public:
 		PERCENT
 	};
 	enum DIRECTION {
-		X,
-		Y
+		X_LEFT,
+		X_RIGHT,
+		Y_TOP,
+		Y_BOTTOM
 	};
 
 	FlexibleCoordinate(DIRECTION dir, float value, UNIT unit=PIXELS);
@@ -52,9 +54,18 @@ public:
 	FlexCoord x;
 	FlexCoord y;
 
-	FlexCoordPair(float x, float y, FlexCoord::UNIT unit = FlexCoord::PIXELS)
-		: x(FlexCoord::X, x, unit)
-		, y(FlexCoord::Y, y, unit)
+	enum ANCHOR_X {
+		LEFT,
+		RIGHT
+	};
+	enum ANCHOR_Y {
+		TOP,
+		BOTTOM
+	};
+
+	FlexCoordPair(float x, float y, FlexCoord::UNIT unit = FlexCoord::PIXELS, ANCHOR_X ancX = LEFT, ANCHOR_Y ancY = TOP)
+		: x(ancX == LEFT ? FlexCoord::X_LEFT : FlexCoord::X_RIGHT, x, unit)
+		, y(ancY == TOP ? FlexCoord::Y_TOP : FlexCoord::Y_BOTTOM, y, unit)
 	{}
 
 	FlexCoordPair(glm::vec2 v) : FlexCoordPair(v.x, v.y) {}
