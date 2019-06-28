@@ -10,6 +10,7 @@
 
 #include <boglfw/GUI/constants.h>
 #include <boglfw/renderOpenGL/ViewportCoord.h>
+#include <boglfw/utils/Event.h>
 
 #include <glm/vec2.hpp>
 
@@ -50,8 +51,8 @@ public:
 
 	//void setZIndex(int z) override { zIndex_ = z; }
 	bool isVisible() const { return visible_; }
-	void show() { visible_ = true; }
-	void hide() { visible_ = false; }
+	void show() { visible_ = true; onVisibilityChanged.trigger(true); }
+	void hide() { visible_ = false; onVisibilityChanged.trigger(false); }
 
 	//int zIndex() const override { return zIndex_; }
 
@@ -69,6 +70,26 @@ public:
 
 	virtual bool isContainer() const { return false; }
 
+	// triggered when the element has been added/removed to/from a parent
+	Event<void(GuiContainerElement* parent)> onParentChanged;
+	// triggered when the COMPUTED position of the element has changed
+	Event<void(glm::vec2)> onPositionChanged;
+	// triggered when the COMPUTED size of the element has changed
+	Event<void(glm::vec2)> onSizeChanged;
+	Event<void()> onMouseEnter;
+	Event<void()> onMouseLeave;
+	Event<void(MouseButtons)> onMouseDown;
+	Event<void(MouseButtons)> onMouseUp;
+	Event<void(glm::vec2 relPos, MouseButtons)> onClicked;
+	Event<void(glm::vec2 relPos, glm::vec2 dist)> onMouseMoved;
+	Event<void(float)> onMouseScroll;
+	Event<void(int)> onKeyDown;
+	Event<void(int)> onKeyUp;
+	Event<void(char)> onKeyChar;
+	Event<void()> onFocusGot;
+	Event<void()> onFocusLost;
+	Event<void(bool)> onVisibilityChanged;
+
 protected:
 	friend class GuiContainerElement;
 	friend class GuiSystem;
@@ -77,6 +98,8 @@ protected:
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
 	ICaptureManager* getCaptureManager() const;
 
+	void setParent(GuiContainerElement* parent) { parent_ = parent; onParentChanged.trigger(parent_); }
+
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
 
 	virtual void mouseEnter();
@@ -84,32 +107,37 @@ protected:
 	virtual void mouseDown(MouseButtons button);
 	virtual void mouseUp(MouseButtons button);
 	// override this to be informed when a valid click has occurred inside the area of the element
-	virtual void clicked(glm::vec2 clickPosition, MouseButtons button) {}
+	virtual void clicked(glm::vec2 clickPosition, MouseButtons button) { onClicked.trigger(clickPosition, button); }
 	virtual void mouseMoved(glm::vec2 delta, glm::vec2 position);
-	virtual void mouseScroll(float delta) {}
-	virtual bool keyDown(int keyCode) {return false;}	// return true if the key was consumed
-	virtual bool keyUp(int keyCode) {return false;}		// return true if the key was consumed
-	virtual bool keyChar(char c) {return false;}		// return true if the key was consumed
+	virtual void mouseScroll(float delta) { onMouseScroll.trigger(delta); }
+	virtual bool keyDown(int keyCode) { onKeyDown.trigger(keyCode); return false; }	// return true if the key was consumed
+	virtual bool keyUp(int keyCode) { onKeyUp.trigger(keyCode); return false;}		// return true if the key was consumed
+	virtual bool keyChar(char c) { onKeyChar.trigger(c); return false;}		// return true if the key was consumed
 
-	virtual void focusGot() {}
-	virtual void focusLost() {}
+	virtual void focusGot() { onFocusGot.trigger(); }
+	virtual void focusLost() { onFocusLost.trigger(); }
+
+	static const Viewport* GUI_Viewport;
 
 private:
 
 	friend class Layout;
 
+	virtual void setComputedPosition(glm::vec2 pos);
+	virtual void setComputedSize(glm::vec2 sz);
+
 	static constexpr float MAX_CLICK_TRAVEL = 5.f;
 
 	mutable ICaptureManager *captureManager_ = nullptr;
 	glm::vec2 computedPosition_{0};
-	glm::vec2 computedSize_{0};
+	glm::vec2 computedSize_{50, 50};
 	glm::vec2 bboxMin_{0};
-	glm::vec2 bboxMax_{0};
+	glm::vec2 bboxMax_{50, 50};
 
-	gvec2 minSize_{0};
-	gvec2 maxSize_{0};
+	gvec2 minSize_{0, 0};
+	gvec2 maxSize_{0, 0};
 	// user defined position for free-layout
-	gvec2 userPosition_{0};
+	gvec2 userPosition_{0, 0};
 	// user defined size for free-layout
 	gvec2 userSize_{50, 50};
 	//int zIndex_ = 0;

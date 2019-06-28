@@ -3,34 +3,34 @@
 
 // sets the element's position
 void Layout::setElementPosition(std::shared_ptr<GuiBasicElement> el, glm::vec2 pos) {
-	el->position_ = pos;
-	el->updateBBox();
+	el->setComputedPosition(pos);
 }
 
 // sets the element's size, resolving it according to the element's min/max size rules;
 // returns the actual size of the element after the operation
-glm::vec2 Layout::setElementSize(std::shared_ptr<GuiBasicElement> el, glm::vec2 size) {
-	el->size_ = size;
-	if (el->minSize_.x != 0 && el->size_.x < el->minSize_.x)
-		el->size_.x = el->minSize_.x;
-	if (el->minSize_.y != 0 && el->size_.y < el->minSize_.y)
-		el->size_.y = el->minSize_.y;
-	if (el->maxSize_.x != 0 && el->size_.x > el->maxSize_.x)
-		el->size_.x = el->maxSize_.x;
-	if (el->maxSize_.y != 0 && el->size_.y > el->maxSize_.y)
-		el->size_.y = el->maxSize_.y;
-	el->updateBBox();
+glm::vec2 Layout::setElementSize(std::shared_ptr<GuiBasicElement> el, glm::vec2 size, const Viewport* vp) {
+	glm::vec2 minSize = el->minSize_.xy(*vp);
+	glm::vec2 maxSize = el->maxSize_.xy(*vp);
+	if (minSize.x != 0 && size.x < minSize.x)
+		size.x = minSize.x;
+	if (minSize.y != 0 && size.y < minSize.y)
+		size.y = minSize.y;
+	if (maxSize.x != 0 && size.x > maxSize.x)
+		size.x = maxSize.x;
+	if (maxSize.y != 0 && size.y > maxSize.y)
+		size.y = maxSize.y;
 
-	return el->size_;
+	el->setComputedSize(size);
+	return size;
 }
 
 // returns the user-set position of the element
-glm::vec2 Layout::getElementUserPos(std::shared_ptr<GuiBasicElement> el) {
+gvec2 Layout::getElementUserPos(std::shared_ptr<GuiBasicElement> el) {
 	return el->userPosition_;
 }
 
 // returns the user-set size of the element
-glm::vec2 Layout::getElementUserSize(std::shared_ptr<GuiBasicElement> el) {
+gvec2 Layout::getElementUserSize(std::shared_ptr<GuiBasicElement> el) {
 	return el->userSize_;
 }
 

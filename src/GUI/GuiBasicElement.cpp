@@ -11,9 +11,9 @@
 
 #include <glm/geometric.hpp>
 
+const Viewport* GuiBasicElement::GUI_Viewport = nullptr;
+
 GuiBasicElement::GuiBasicElement() {
-	size_ = userSize_;
-	updateBBox();
 }
 
 GuiBasicElement::~GuiBasicElement() {
@@ -34,8 +34,6 @@ void GuiBasicElement::setSize(gvec2 size) {
 	userSize_ = size;
 	if (parent_)
 		parent_->refreshLayout();
-	else
-		updateBBox();
 }
 
 void GuiBasicElement::setMinSize(gvec2 minSize) {
@@ -44,10 +42,22 @@ void GuiBasicElement::setMinSize(gvec2 minSize) {
 		parent_->refreshLayout();
 }
 
-void GuiBasicElement::setMaxSize(glm::vec2 maxSize) {
+void GuiBasicElement::setMaxSize(gvec2 maxSize) {
 	maxSize_ = maxSize;
 	if (parent_)
 		parent_->refreshLayout();
+}
+
+void GuiBasicElement::setComputedPosition(glm::vec2 pos) {
+	computedPosition_ = pos;
+	updateBBox();
+	onPositionChanged.trigger(pos);
+}
+
+void GuiBasicElement::setComputedSize(glm::vec2 sz) {
+	computedSize_ = sz;
+	updateBBox();
+	onSizeChanged.trigger(sz);
 }
 
 void GuiBasicElement::mouseEnter() {
@@ -62,19 +72,24 @@ void GuiBasicElement::mouseDown(MouseButtons button) {
 	if (isMouseIn_) {
 		isMousePressed_[(int)button] = true;
 		mouseTravel_[(int)button] = glm::vec2(0);
+		onMouseDown.trigger(button);
 	}
 }
 
 void GuiBasicElement::mouseUp(MouseButtons button) {
 	isMousePressed_[(int)button] = false;
-	if (isMouseIn_ && glm::length(mouseTravel_[(int)button]) <= MAX_CLICK_TRAVEL)
-		clicked(lastMousePosition_, button);
+	if (isMouseIn_) {
+		onMouseUp.trigger(button);
+		if (glm::length(mouseTravel_[(int)button]) <= MAX_CLICK_TRAVEL)
+			clicked(lastMousePosition_, button);
+	}
 }
 
 void GuiBasicElement::mouseMoved(glm::vec2 delta, glm::vec2 position) {
 	for (int i=0; i<3; i++)
 		mouseTravel_[i] += delta;
 	lastMousePosition_ = position;
+	onMouseMoved.trigger(position, delta);
 }
 
 void GuiBasicElement::updateBBox() {

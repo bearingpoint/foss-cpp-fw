@@ -28,11 +28,11 @@ bool TextField::keyDown(int keyCode) {
 void TextField::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	Shape2D::get()->drawRectangleFilled(
 			vec3xy(frameTranslation)+glm::vec2(2,2),
-			(getSize()-glm::vec2(4,4)) * frameScale,
+			(computedSize()-glm::vec2(4,4)) * frameScale,
 			GuiTheme::getTextFieldColor());
 	Shape2D::get()->drawRectangle(
 			vec3xy(frameTranslation),
-			getSize() * frameScale,
+			computedSize() * frameScale,
 			GuiTheme::getButtonFrameColor());
 	float tx = frameTranslation.x + 10;
 	float ty = frameTranslation.y + 20;

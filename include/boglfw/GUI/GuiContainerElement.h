@@ -30,7 +30,6 @@ public:
 	std::shared_ptr<GuiBasicElement> findElement(GuiBasicElement* e) const;
 	// removes all UI elements from the GUI system
 	void clear();
-	void setSize(glm::vec2 size) override;
 	//std::shared_ptr<GuiBasicElement> getPointedElement() { return elementUnderMouse_; }
 
 	// transparent background will be invisible and will not consume mouse events - they will fall through to the underlying elements
@@ -72,6 +71,7 @@ private:
 	//std::shared_ptr<GuiBasicElement> elementUnderMouse_ = nullptr;
 	//std::shared_ptr<GuiBasicElement> focusedElement_ = nullptr;
 
+	void onSizeChangedHandler(glm::vec2 size);
 	void updateClientArea();
 };
 

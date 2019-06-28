@@ -25,7 +25,7 @@ Window::~Window() {
 void Window::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	glm::ivec2 trans(frameTranslation);
 	// draw frame
-	glm::vec2 scaledSize = getSize();
+	glm::vec2 scaledSize = computedSize();
 	scaledSize.x *= frameScale.x;
 	scaledSize.y *= frameScale.y;
 	Shape2D::get()->drawRectangleFilled(vec3xy(trans), scaledSize, GuiTheme::getWindowColor());

@@ -21,6 +21,7 @@
 GuiContainerElement::GuiContainerElement()
 	: layout_(new GridLayout()) {
 	layout_->setOwner(this);
+	onSizeChanged.add(std::bind(&GuiContainerElement::onSizeChangedHandler, this, std::placeholders::_1));
 }
 
 GuiContainerElement::~GuiContainerElement() {
@@ -40,8 +41,8 @@ bool GuiContainerElement::containsPoint(glm::vec2 const& p) const {
 void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	// draw background:
 	if (!transparentBackground_) {
-		Shape2D::get()->drawRectangle(frameTranslation, getSize(), GuiTheme::getContainerFrameColor());
-		Shape2D::get()->drawRectangleFilled(frameTranslation + glm::vec2{1, 1}, getSize() - glm::vec2{2, 2}, GuiTheme::getContainerBackgroundColor());
+		Shape2D::get()->drawRectangle(frameTranslation, computedSize(), GuiTheme::getContainerFrameColor());
+		Shape2D::get()->drawRectangleFilled(frameTranslation + glm::vec2{1, 1}, computedSize() - glm::vec2{2, 2}, GuiTheme::getContainerBackgroundColor());
 	}
 
 	// set clipping to visible client portion
@@ -52,7 +53,7 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 		if (!e->isVisible())
 			continue;
 		RenderHelpers::flushAll();
-		e->draw(ctx, frameTranslation + e->getPosition(), frameScale);
+		e->draw(ctx, frameTranslation + e->computedPosition(), frameScale);
 	}
 	// TODO draw frame around focused element:
 	resetClipping();
@@ -66,27 +67,25 @@ void GuiContainerElement::resetClipping() {
 	// TODO
 }
 
-void GuiContainerElement::setSize(glm::vec2 size) {
-	glm::vec2 oldSize = getSize();
-	GuiBasicElement::setSize(size);
+void GuiContainerElement::onSizeChangedHandler(glm::vec2 size) {
 	updateClientArea();
 	refreshLayout();
 }
 
 void GuiContainerElement::updateClientArea() {
-	clientAreaSize_ = getSize() - clientAreaOffset_ - clientAreaCounterOffset_;
+	clientAreaSize_ = computedSize() - clientAreaOffset_ - clientAreaCounterOffset_;
 }
 
 void GuiContainerElement::addElement(std::shared_ptr<GuiBasicElement> e) {
 	children_.push_back(e);
-	e->parent_ = this;
+	e->setParent(this);
 	e->setCaptureManager(getCaptureManager());
 	refreshLayout();
 }
 
 void GuiContainerElement::removeElement(std::shared_ptr<GuiBasicElement> e) {
 	assertDbg(e && e->parent_ == this && findElement(e.get()));
-	e->parent_ = nullptr;
+	e->setParent(nullptr);
 	children_.erase(std::find(children_.begin(), children_.end(), e));
 	refreshLayout();
 }
@@ -173,7 +172,7 @@ void GuiContainerElement::getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize
 
 void GuiContainerElement::clear() {
 	for (auto &c : children_)
-		c->parent_ = nullptr;
+		c->setParent(nullptr);
 	children_.clear();
 }
 
@@ -186,5 +185,5 @@ void GuiContainerElement::useLayout(std::shared_ptr<Layout> layout) {
 }
 
 void GuiContainerElement::refreshLayout() {
-	layout_->update(children_, clientAreaSize_);
+	layout_->update(children_, clientAreaSize_, GUI_Viewport);
 }

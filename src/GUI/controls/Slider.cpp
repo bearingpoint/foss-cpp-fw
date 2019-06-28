@@ -57,10 +57,10 @@ void Slider::updateDivisionLabels() {
 
 void Slider::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	glm::vec2 pos = frameTranslation;
-	float lowY = pos.y + getSize().y;
+	float lowY = pos.y + computedSize().y;
 	float highY = pos.y + labelsHeight;
 	float lowX = pos.x;
-	float highX = pos.x + getSize().x;
+	float highX = pos.x + computedSize().x;
 
 	// draw base line
 	Shape2D::get()->drawLine({lowX, lowY}, {highX, lowY}, GuiTheme::getContainerFrameColor());
@@ -81,7 +81,7 @@ void Slider::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec
 		? GuiTheme::getButtonColorPressed()
 		: isMouseIn() ? GuiTheme::getButtonColorHover() : GuiTheme::getButtonColor();
 	glm::vec3 markerBorderColor = GuiTheme::getButtonFrameColor();
-	float markerX = lowX + getSize().x * (value_ - rangeMin_) / (rangeMax_ - rangeMin_);
+	float markerX = lowX + computedSize().x * (value_ - rangeMin_) / (rangeMax_ - rangeMin_);
 	float markerPointY = highY + 3;
 	float markerShoulderY = markerPointY + 5;
 	float markerBaseY = lowY + 5;
@@ -110,7 +110,7 @@ void Slider::mouseDown(MouseButtons button) {
 	if (button == MouseButtons::Left) {
 		getCaptureManager()->setMouseCapture(this);
 		float where = getLastMousePosition().x;
-		setValue(rangeMin_ + (rangeMax_ - rangeMin_) * where / getSize().x);
+		setValue(rangeMin_ + (rangeMax_ - rangeMin_) * where / computedSize().x);
 	}
 }
 
@@ -125,7 +125,7 @@ void Slider::mouseMoved(glm::vec2 delta, glm::vec2 position) {
 	GuiBasicElement::mouseMoved(delta, position);
 	if (isMousePressed(MouseButtons::Left)) {
 		float where = position.x;
-		setValue(rangeMin_ + (rangeMax_ - rangeMin_) * where / getSize().x);
+		setValue(rangeMin_ + (rangeMax_ - rangeMin_) * where / computedSize().x);
 	}
 }
 
