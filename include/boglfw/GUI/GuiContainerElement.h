@@ -14,7 +14,7 @@
 
 class Layout;
 
-class GuiContainerElement: public GuiBasicElement {
+class GuiContainerElement: public GuiBasicElement, public FlexibleCoordinateContext {
 public:
 	GuiContainerElement();
 	virtual ~GuiContainerElement();
@@ -43,6 +43,8 @@ public:
 	virtual bool isContainer() const override { return true; }
 	virtual size_t childrenCount() const { return children_.size(); }
 	virtual std::shared_ptr<GuiBasicElement> nthChild(size_t n) const { return children_[n]; }
+
+	virtual glm::vec2 getFlexCoordContextSize() const override { return computedSize(); }
 
 protected:
 	friend class GuiSystem;

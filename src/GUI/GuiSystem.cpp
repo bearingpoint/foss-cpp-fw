@@ -23,10 +23,10 @@
 GuiSystem::GuiSystem(const Viewport* viewport, glm::vec2 position, glm::vec2 size)
 	: viewport_(viewport)
 	, rootElement_() {
-	GuiBasicElement::GUI_Viewport = viewport;
 
 	rootElement_.setPosition(position);
 	rootElement_.setSize(size);
+	rootElement_.setComputedSize(size);
 	rootElement_.setTransparentBackground(true);
 	rootElement_.useLayout(std::make_shared<FreeLayout>());
 }

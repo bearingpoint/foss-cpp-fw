@@ -9,13 +9,13 @@
 #define GUI_GUIBASICELEMENT_H_
 
 #include <boglfw/GUI/constants.h>
-#include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/utils/Event.h>
+#include <boglfw/utils/FlexibleCoordinate.h>
 
 #include <glm/vec2.hpp>
 
-// GUI Vec2 for coordinates and sizes
-using gvec2 = ViewportCoord;
+// GUI flexible coordinate pair
+using gfcoord = FlexCoordPair;
 
 class GuiSystem;
 class GuiContainerElement;
@@ -30,17 +30,17 @@ public:
 	GuiContainerElement* parent() const { return parent_; }
 
 	// returns the user-set position - the actual position may differ depending on the layout of the container
-	gvec2 position() const { return userPosition_; }
+	gfcoord position() const { return userPosition_; }
 	// sets the position - this will only have effect if the element is hosted in a FreeLayout
-	virtual void setPosition(gvec2 position);
+	virtual void setPosition(gfcoord position);
 	// returns the user-set size - the actual size may differ depending on the layout of the container
-	gvec2 size() const { return userSize_; }
+	gfcoord size() const { return userSize_; }
 	// sets the size - this will only have effect if the element is hosted in a FreeLayout
-	virtual void setSize(gvec2 size);
+	virtual void setSize(gfcoord size);
 	// sets the minimum size of the element - layouts are required to honour this
-	virtual void setMinSize(gvec2 minSize);
+	virtual void setMinSize(gfcoord minSize);
 	// sets the maximum size of the element - layouts are required to honour this
-	virtual void setMaxSize(gvec2 maxSize);
+	virtual void setMaxSize(gfcoord maxSize);
 
 	// gets the computed position (in pixels, relative to the parent's client area) of the element;
 	// this is the real position computed by the layout
@@ -117,8 +117,6 @@ protected:
 	virtual void focusGot() { onFocusGot.trigger(); }
 	virtual void focusLost() { onFocusLost.trigger(); }
 
-	static const Viewport* GUI_Viewport;
-
 private:
 
 	friend class Layout;
@@ -134,12 +132,12 @@ private:
 	glm::vec2 bboxMin_{0};
 	glm::vec2 bboxMax_{50, 50};
 
-	gvec2 minSize_{0, 0};
-	gvec2 maxSize_{0, 0};
+	gfcoord minSize_{0, 0};
+	gfcoord maxSize_{0, 0};
 	// user defined position for free-layout
-	gvec2 userPosition_{0, 0};
+	gfcoord userPosition_{0, 0};
 	// user defined size for free-layout
-	gvec2 userSize_{50, 50};
+	gfcoord userSize_{50, 50};
 	//int zIndex_ = 0;
 
 	//Anchors anchors_ = Anchors::Top | Anchors::Left;

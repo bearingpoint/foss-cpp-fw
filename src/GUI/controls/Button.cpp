@@ -9,7 +9,6 @@
 #include <boglfw/GUI/GuiTheme.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/GLText.h>
-#include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/math/math3D.h>
 
 Button::Button(std::string text)
@@ -28,7 +27,7 @@ void Button::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec
 							: GuiTheme::getButtonColorHover()
 						) : GuiTheme::getButtonColor();
 	Shape2D::get()->drawRectangleFilled(
-			vec3xy(frameTranslation) + glm::vec2(2,2),	// TODO switch all GUI controls from absolute coordinates to ViewportCoords
+			vec3xy(frameTranslation) + glm::vec2(2,2),
 			(computedSize()-glm::vec2(4,4)) * frameScale,
 			fillColor);
 	Shape2D::get()->drawRectangle(

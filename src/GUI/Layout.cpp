@@ -8,9 +8,9 @@ void Layout::setElementPosition(std::shared_ptr<GuiBasicElement> el, glm::vec2 p
 
 // sets the element's size, resolving it according to the element's min/max size rules;
 // returns the actual size of the element after the operation
-glm::vec2 Layout::setElementSize(std::shared_ptr<GuiBasicElement> el, glm::vec2 size, const Viewport* vp) {
-	glm::vec2 minSize = el->minSize_.xy(*vp);
-	glm::vec2 maxSize = el->maxSize_.xy(*vp);
+glm::vec2 Layout::setElementSize(std::shared_ptr<GuiBasicElement> el, glm::vec2 size, glm::vec2 const& layoutClientSize) {
+	glm::vec2 minSize = el->minSize_.get(layoutClientSize);
+	glm::vec2 maxSize = el->maxSize_.get(layoutClientSize);
 	if (minSize.x != 0 && size.x < minSize.x)
 		size.x = minSize.x;
 	if (minSize.y != 0 && size.y < minSize.y)
@@ -25,12 +25,12 @@ glm::vec2 Layout::setElementSize(std::shared_ptr<GuiBasicElement> el, glm::vec2 
 }
 
 // returns the user-set position of the element
-gvec2 Layout::getElementUserPos(std::shared_ptr<GuiBasicElement> el) {
+gfcoord Layout::getElementUserPos(std::shared_ptr<GuiBasicElement> el) {
 	return el->userPosition_;
 }
 
 // returns the user-set size of the element
-gvec2 Layout::getElementUserSize(std::shared_ptr<GuiBasicElement> el) {
+gfcoord Layout::getElementUserSize(std::shared_ptr<GuiBasicElement> el) {
 	return el->userSize_;
 }
 

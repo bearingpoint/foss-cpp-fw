@@ -8,7 +8,7 @@
 #ifndef OSD_SIGNALVIEWER_H_
 #define OSD_SIGNALVIEWER_H_
 
-#include "../renderOpenGL/ViewportCoord.h"
+#include <boglfw/utils/FlexibleCoordinate.h>
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
@@ -42,7 +42,7 @@ public:
 		}
 	};
 
-	SignalViewer(ViewportCoord pos, ViewportCoord size);
+	SignalViewer(FlexCoordPair pos, FlexCoordPair size);
 	virtual ~SignalViewer();
 
 	// displayPrecision < 0 means auto. n>=0 means max n decimal places
@@ -61,8 +61,8 @@ public:
 
 private:
 	std::vector<DataInfo> sourceInfo_;
-	ViewportCoord pos_;
-	ViewportCoord size_;
+	FlexCoordPair pos_;
+	FlexCoordPair size_;
 };
 
 class SignalDataSource {

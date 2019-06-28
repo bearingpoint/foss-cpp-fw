@@ -25,7 +25,7 @@ public:
 	void setAlignment(Alignment a);
 	void setVerticalAlignment(VerticalAlignment a);
 
-	virtual void update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize, const Viewport* viewport) override;
+	virtual void update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize) override;
 
 private:
 	Alignment alignment_ = LEFT;

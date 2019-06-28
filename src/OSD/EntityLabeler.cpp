@@ -95,7 +95,8 @@ void EntityLabeler::setEntityLabel(const Entity* ent, std::string const& name, s
 		auto yc = [ent] (Viewport const& vp) -> float {
 			return vp.project(ent->getTransform().position()).y;
 		};
-		el.label_ = std::unique_ptr<Label>(new Label(el.value_, {xc, yc}, LABEL_TEXT_SIZE, el.rgb_));
+		//el.label_ = std::unique_ptr<Label>(new Label(el.value_, FlexCoordPair(xc, yc), LABEL_TEXT_SIZE, el.rgb_));
+		NOT_IMPLEMENTED;
 	} else {
 		el.label_->setText("[" + name + "] " + el.value_);
 		el.label_->setColor(el.rgb_);

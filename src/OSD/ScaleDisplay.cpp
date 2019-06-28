@@ -13,7 +13,7 @@
 static const glm::vec3 LINE_COLOR(0.8f, 0.8f, 0.8f);
 static const glm::vec3 TEXT_COLOR(1.f, 1.f, 1.f);
 
-ScaleDisplay::ScaleDisplay(ViewportCoord pos, int maxPixelsPerUnit)
+ScaleDisplay::ScaleDisplay(FlexCoordPair pos, int maxPixelsPerUnit)
 	: pos_(pos)
 	, segmentsXOffset(50)
 	, segmentHeight(10)
@@ -53,8 +53,8 @@ void ScaleDisplay::draw(RenderContext const& ctx) {
 		segIncrement = 0.5f;
 	}
 	int nVertex = 1 + segments * 3;
-	float cx = (float)pos_.x(ctx.viewport()) + segmentsXOffset;
-	float cy = (float)pos_.y(ctx.viewport()) - 1;
+	float cx = (float)pos_.x.get(ctx.viewport()) + segmentsXOffset;
+	float cy = (float)pos_.y.get(ctx.viewport()) - 1;
 	glm::vec2 vList[31]; // 31 is max vertex for max_seg=10
 	for (int i=0; i<segments; i++) {
 		int localSegHeight = (int)(i*segIncrement) == (i*segIncrement) ? segmentHeight : segmentHeight / 2;
@@ -70,12 +70,12 @@ void ScaleDisplay::draw(RenderContext const& ctx) {
 	char scaleLabel[100];
 
 	snprintf(scaleLabel, 100, "(10^%d)", exponent);
-	GLText::get()->print(scaleLabel, pos_, 14, TEXT_COLOR);
+	GLText::get()->print(scaleLabel, pos_.get(ctx.viewport()), 14, TEXT_COLOR);
 	for (int i=0; i<segments+1; i++) {
 		snprintf(scaleLabel, 100, "%g", i*segIncrement);
 		int localSegHeight = (int)(i*segIncrement) == (i*segIncrement) ? 0 : segmentHeight / 2;
 		GLText::get()->print(scaleLabel,
-				pos_ + ViewportCoord{ -localSegHeight + segmentsXOffset+i*(int)(pixelsPerUnit*segIncrement),
+				pos_.get(ctx.viewport()) + glm::vec2{ -localSegHeight + segmentsXOffset+i*(int)(pixelsPerUnit*segIncrement),
 					 	 -10 + localSegHeight },
 				12, TEXT_COLOR);
 	}

@@ -8,8 +8,6 @@
 #ifndef RENDEROPENGL_GLTEXT_H_
 #define RENDEROPENGL_GLTEXT_H_
 
-#include <boglfw/renderOpenGL/ViewportCoord.h>
-
 #include <string>
 #include <vector>
 #include <glm/vec2.hpp>
@@ -27,8 +25,8 @@ public:
 	// This is useful when interleaving draw calls with other 2D drawing code to achieve layering (such as with Shape2D)
 	void flush();
 
-	void print(const std::string &text, ViewportCoord pos, int size, glm::vec3 const& color);
-	void print(const std::string &text, ViewportCoord pos, int size, glm::vec4 const& color);
+	void print(const std::string &text, glm::vec2 pos, int size, glm::vec3 const& color);
+	void print(const std::string &text, glm::vec2 pos, int size, glm::vec4 const& color);
 
 	glm::vec2 getTextRect(std::string const& text, int fontSize);
 
@@ -54,7 +52,7 @@ private:
 	std::vector<glm::vec2> vertices_;	// these are relative to item's position (below)
 	std::vector<glm::vec2> UVs_;
 	std::vector<glm::vec4> colors_;
-	std::vector<ViewportCoord> itemPositions_;
+	std::vector<glm::vec2> itemPositions_;
 	std::vector<int> verticesPerItem_;
 
 	static bool disableMipMaps_;

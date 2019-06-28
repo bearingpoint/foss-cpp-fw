@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boglfw/renderOpenGL/ViewportCoord.h>
+#include <boglfw/utils/FlexibleCoordinate.h>
 #include <glm/vec3.hpp>
 
 class RenderContext;
@@ -8,12 +8,12 @@ class RenderContext;
 class ScaleDisplay
 {
 public:
-	ScaleDisplay(ViewportCoord pos, int maxPixelsPerUnit);
+	ScaleDisplay(FlexCoordPair pos, int maxPixelsPerUnit);
 
 	void draw(RenderContext const& ctx);
 
 protected:
-	ViewportCoord pos_;
+	FlexCoordPair pos_;
 	int segmentsXOffset;
 	int segmentHeight;
 	int labelYOffset;

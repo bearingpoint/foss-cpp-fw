@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../renderOpenGL/ViewportCoord.h"
+#include <boglfw/utils/FlexibleCoordinate.h>
 
 #include <glm/vec3.hpp>
 
@@ -10,12 +10,12 @@ class RenderContext;
 
 class Label {
 public:
-	Label(std::string value, ViewportCoord pos, float textSize, glm::vec3 color);
+	Label(std::string value, FlexCoordPair pos, float textSize, glm::vec3 color);
 
 	void setText(std::string text) { value_ = text; }
 	void setColor(glm::vec3 rgb) { color_ = rgb; }
 	void setTextSize(float size) { textSize_ = size; }
-	void setPos(ViewportCoord pos) { pos_ = pos; }
+	void setPos(FlexCoordPair pos) { pos_ = pos; }
 
 	glm::vec2 boxSize() const;
 
@@ -24,7 +24,7 @@ public:
 	bool drawFrame = true;
 
 protected:
-	ViewportCoord pos_;
+	FlexCoordPair pos_;
 	glm::vec3 color_;
 	float textSize_;
 	std::string value_;

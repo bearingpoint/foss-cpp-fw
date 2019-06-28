@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boglfw/renderOpenGL/drawable.h>
+#include <boglfw/utils/FlexibleCoordinate.h>
 
 #include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
@@ -12,8 +13,7 @@
 
 class Camera;
 
-class Viewport
-{
+class Viewport : public FlexibleCoordinateContext {
 public:
 	Viewport(int x, int y, int w, int h);
 	virtual ~Viewport();
@@ -46,6 +46,8 @@ public:
 	void clear();
 	void render(drawable element, RenderContext const& ctx);
 	void render(std::vector<drawable> const& list, RenderContext const& ctx);
+
+	virtual glm::vec2 getFlexCoordContextSize() const override { return {width(), height()}; }
 
 protected:
 	friend class RenderContext;

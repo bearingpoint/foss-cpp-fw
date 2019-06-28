@@ -185,5 +185,5 @@ void GuiContainerElement::useLayout(std::shared_ptr<Layout> layout) {
 }
 
 void GuiContainerElement::refreshLayout() {
-	layout_->update(children_, clientAreaSize_, GUI_Viewport);
+	layout_->update(children_, clientAreaSize_);
 }

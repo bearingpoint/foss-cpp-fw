@@ -11,8 +11,6 @@
 
 #include <glm/geometric.hpp>
 
-const Viewport* GuiBasicElement::GUI_Viewport = nullptr;
-
 GuiBasicElement::GuiBasicElement() {
 }
 
@@ -24,25 +22,25 @@ bool GuiBasicElement::containsPoint(glm::vec2 const& p) const {
 	return true; // default to rectangular shape which contains all points within the bounding box
 }
 
-void GuiBasicElement::setPosition(gvec2 position) {
+void GuiBasicElement::setPosition(gfcoord position) {
 	userPosition_ = position;
 	if (parent_)
 		parent_->refreshLayout();
 }
 
-void GuiBasicElement::setSize(gvec2 size) {
+void GuiBasicElement::setSize(gfcoord size) {
 	userSize_ = size;
 	if (parent_)
 		parent_->refreshLayout();
 }
 
-void GuiBasicElement::setMinSize(gvec2 minSize) {
+void GuiBasicElement::setMinSize(gfcoord minSize) {
 	minSize_ = minSize;
 	if (parent_)
 		parent_->refreshLayout();
 }
 
-void GuiBasicElement::setMaxSize(gvec2 maxSize) {
+void GuiBasicElement::setMaxSize(gfcoord maxSize) {
 	maxSize_ = maxSize;
 	if (parent_)
 		parent_->refreshLayout();

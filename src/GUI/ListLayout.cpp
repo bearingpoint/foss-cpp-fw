@@ -15,12 +15,12 @@ void ListLayout::setVerticalAlignment(VerticalAlignment a) {
 	refresh();
 }
 
-void ListLayout::update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize, const Viewport* viewport) {
+void ListLayout::update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize) {
 	float crtY = 0;
 	for (auto &el : elements) {
-		glm::vec2 elUserPos = getElementUserPos(el).xy(*viewport);
-		glm::vec2 elUserSize = getElementUserSize(el).xy(*viewport);
-		glm::vec2 elSize = setElementSize(el, {clientSize.x, elUserSize.y}, viewport);
+		glm::vec2 elUserPos = getElementUserPos(el).get(clientSize);
+		glm::vec2 elUserSize = getElementUserSize(el).get(clientSize);
+		glm::vec2 elSize = setElementSize(el, {clientSize.x, elUserSize.y}, clientSize);
 		float x = 0;
 		if (alignment_ == RIGHT || alignment_ == CENTER) {
 			x = clientSize.x - elSize.x;

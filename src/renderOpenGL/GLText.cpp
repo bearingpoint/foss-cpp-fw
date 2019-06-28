@@ -9,7 +9,6 @@
 #include <boglfw/renderOpenGL/Viewport.h>
 #include <boglfw/renderOpenGL/TextureLoader.h>
 #include <boglfw/renderOpenGL/shader.h>
-#include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
 #include <boglfw/utils/configFile.h>
 #include <boglfw/utils/filesystem.h>
@@ -175,11 +174,11 @@ glm::vec2 GLText::getTextRect(const std::string& text, int fontSize) {
 	return glm::vec2(x, y+lineH);
 }
 
-void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::vec3 const& color) {
+void GLText::print(const std::string &text, glm::vec2 pos, int size, glm::vec3 const& color) {
 	print(text, pos, size, glm::vec4(color, 1));
 }
 
-void GLText::print(const std::string &text, ViewportCoord pos, int size, glm::vec4 const& color) {
+void GLText::print(const std::string &text, glm::vec2 pos, int size, glm::vec4 const& color) {
 	unsigned int length = text.length();
 	float xSize = size*cellRatio_;
 	glm::vec4 altColor = color;
@@ -286,8 +285,7 @@ void GLText::flush() {
 	// do the drawing:
 	unsigned offset = 0;
 	for (unsigned i=0; i<nItems; i++) {
-		glm::vec2 translate(itemPositions_[i].x(vp), itemPositions_[i].y(vp));
-		glUniform2fv(indexTranslation_, 1, &translate[0]);
+		glUniform2fv(indexTranslation_, 1, &itemPositions_[i][0]);
 		glDrawArrays(GL_TRIANGLES, offset, verticesPerItem_[i]);
 		offset += verticesPerItem_[i];
 	}

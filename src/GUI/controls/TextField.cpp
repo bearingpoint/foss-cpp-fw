@@ -8,7 +8,6 @@
 #include <boglfw/GUI/controls/TextField.h>
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/GLText.h>
-#include <boglfw/renderOpenGL/ViewportCoord.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/GUI/GuiTheme.h>
 
