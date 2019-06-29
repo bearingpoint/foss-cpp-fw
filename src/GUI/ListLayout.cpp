@@ -30,4 +30,15 @@ void ListLayout::update(std::vector<std::shared_ptr<GuiBasicElement>> &elements,
 		setElementPosition(el, {x, crtY});
 		crtY += elSize.y + spacing_;
 	}
+	// take care of vertical alignment:
+	float vertOffs = 0.f;
+	if (vertAlignment_ != TOP) {
+		vertOffs = clientSize.y - (crtY - spacing_);
+		if (vertAlignment_ == MIDDLE)
+			vertOffs *= 0.5f;
+		for (auto &el : elements) {
+			auto elPos = el->computedPosition();
+			setElementPosition(el, {elPos.x, elPos.y + vertOffs});
+		}
+	}
 }

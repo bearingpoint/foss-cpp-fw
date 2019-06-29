@@ -45,6 +45,11 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 		Shape2D::get()->drawRectangleFilled(frameTranslation + glm::vec2{1, 1}, computedSize() - glm::vec2{2, 2}, GuiTheme::getContainerBackgroundColor());
 	}
 
+#ifdef DEBUG
+	// draw client area frame
+	Shape2D::get()->drawRectangle(frameTranslation + clientAreaOffset_, clientAreaSize_, {1.f, 0.f, 1.f});
+#endif
+
 	// set clipping to visible client portion
 	setClipping();
 	// draw all children relative to the client area
