@@ -209,27 +209,27 @@ static void setupSSFramebuffer(SSDescriptor descriptor) {
 
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
-bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowTitle[],
-					unsigned multiSampleCount, bool createDepthStencilBuffer, bool vSyncOn) {
+bool gltInitGLFW(GLFW_Init_Config cfg) {
 	// initialize GLFW and set-up window an' all:
 	if (!glfwInit()) {
 		cerr << "FAILED glfwInit" << endl;
 		return false;
 	}
-	defaultMultisamples = multiSampleCount;
+	defaultMultisamples = cfg.multiSampleCount;
 
 	glfwWindowHint(GLFW_SAMPLES, defaultMultisamples);
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	if (createDepthStencilBuffer) {
-		glfwWindowHint(GLFW_DEPTH_BITS, 24);
-		glfwWindowHint(GLFW_STENCIL_BITS, 8);
+	if (cfg.GL_Context_Core_Profile)
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, cfg.GL_Context_Major);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, cfg.GL_Context_Minor);
+	if (cfg.createDepthStencilBuffer) {
+		glfwWindowHint(GLFW_DEPTH_BITS, cfg.depthBufferBits);
+		glfwWindowHint(GLFW_STENCIL_BITS, cfg.stencilBufferBits);
 	}
 
-	window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
+	window = glfwCreateWindow(cfg.windowWidth, cfg.windowHeight, cfg.windowTitle, NULL, NULL);
 	if (!window) {
 		cerr << "FAILED creating window" << endl;
 		return false;
@@ -239,18 +239,18 @@ bool gltInitGLFW(unsigned windowWidth, unsigned windowHeight, const char windowT
 		return false;
 
 	// 0 to disable vsync, 1 to enable it
-	glfwSwapInterval(vSyncOn ? 1 : 0);
+	glfwSwapInterval(cfg.enableVSync ? 1 : 0);
 
-	windowW = windowWidth;
-	windowH = windowHeight;
+	windowW = cfg.windowWidth;
+	windowH = cfg.windowHeight;
 
-	return initGLEW();
-}
-
-bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor descriptor, const char windowTitle[]) {
-	if (!gltInitGLFW(windowWidth, windowHeight, windowTitle))
+	if (!initGLEW())
 		return false;
-	setupSSFramebuffer(descriptor);
+		
+	if (cfg.enableSuperSampling) {
+		setupSSFramebuffer(cfg.superSamplingConfig);
+	}
+	
 	return true;
 }
 #endif // WITH_GLFW

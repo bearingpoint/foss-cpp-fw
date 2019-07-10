@@ -18,6 +18,11 @@ class RenderHelpers {
 public:
 	struct Config {
 		std::string fontPath { "data/fonts/DejaVuSans.desc" }; // path to font *.desc file
+		bool disableShape2D = false;
+		bool disableShape3D = false;
+		bool disableMeshRenderer = false;
+		bool disableGLText = false;
+		bool disablePictureDraw = false;
 	};
 
 	static Config defaultConfig() { return Config{}; }
@@ -37,6 +42,7 @@ public:
 private:
 	friend class Viewport;
 	static Viewport* pActiveViewport;
+	static Config config_;
 };
 
 #endif // __RENDER_HELPERS_H__

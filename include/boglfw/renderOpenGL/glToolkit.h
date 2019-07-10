@@ -49,6 +49,30 @@ struct SSDescriptor {
 	}
 };
 
+struct GLFW_Init_Config {
+	// the properties passed to the constructor are mandatory, while
+	// all others are optional and have default values that fit general purpose use
+	GLFW_Init_Config(unsigned winW, unsigned winH, const char* winTitle)
+		: windowWidth(winW), windowHeight(winH), windowTitle(winTitle) {
+	}
+	
+	unsigned windowWidth;
+	unsigned windowHeight;
+	const char* windowTitle;
+	
+	unsigned GL_Context_Major = 3;
+	unsigned GL_Context_Minor = 0;
+	bool GL_Context_Core_Profile = false;
+	
+	unsigned multiSampleCount = 0;
+	bool createDepthStencilBuffer = false;
+	unsigned depthBufferBits = 24;
+	unsigned stencilBufferBits = 8;
+	bool enableVSync = false;
+	bool enableSuperSampling = false;
+	SSDescriptor superSamplingConfig;
+};
+
 enum class PostProcessStep {
 	PRE_DOWNSAMPLING,
 	POST_DOWNSAMPLING
@@ -56,12 +80,7 @@ enum class PostProcessStep {
 
 #ifdef WITH_GLFW
 // initializes GLFW, openGL an' all
-// if multisampleCount is non-zero, multi-sampling antialiasing (MSAA) will be enabled
-bool gltInitGLFW(unsigned windowWidth=512, unsigned windowHeight=512, const char windowTitle[]="Untitled",
-					unsigned multiSampleCount=0, bool createDepthStencilBuffer=true, bool vSyncOn=true);
-
-// initializes openGL and create a supersampled framebuffer (SSAA)
-bool gltInitGLFWSupersampled(unsigned windowWidth, unsigned windowHeight, SSDescriptor desc, const char windowTitle[]="Untitled");
+bool gltInitGLFW(GLFW_Init_Config cfg);
 
 GLFWwindow* gltGetWindow();
 #endif
