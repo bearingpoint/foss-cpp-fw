@@ -27,6 +27,8 @@ public:
 		Y_TOP,
 		Y_BOTTOM
 	};
+	
+	FlexibleCoordinate() = default;
 
 	FlexibleCoordinate(DIRECTION dir, float value, UNIT unit=PIXELS);
 	FlexibleCoordinate(FlexibleCoordinate const&) = default;
@@ -42,9 +44,9 @@ public:
 	float get(glm::vec2 ctxSize);
 
 private:
-	DIRECTION dir_;
-	float value_;
-	UNIT unit_;
+	DIRECTION dir_ = X_LEFT;
+	float value_ = 0;
+	UNIT unit_ = PIXELS;
 };
 
 using FlexCoord = FlexibleCoordinate;
@@ -62,6 +64,8 @@ public:
 		TOP,
 		BOTTOM
 	};
+	
+	FlexCoordPair() = default;
 
 	FlexCoordPair(float x, float y, FlexCoord::UNIT unit = FlexCoord::PIXELS, ANCHOR_X ancX = LEFT, ANCHOR_Y ancY = TOP)
 		: x(ancX == LEFT ? FlexCoord::X_LEFT : FlexCoord::X_RIGHT, x, unit)
