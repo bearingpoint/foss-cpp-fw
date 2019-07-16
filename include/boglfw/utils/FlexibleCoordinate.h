@@ -30,21 +30,20 @@ public:
 	
 	FlexibleCoordinate() = default;
 
-	FlexibleCoordinate(DIRECTION dir, float value, UNIT unit=PIXELS);
+	FlexibleCoordinate(float value, UNIT unit=PIXELS);
 	FlexibleCoordinate(FlexibleCoordinate const&) = default;
 	FlexibleCoordinate(FlexibleCoordinate &&) = default;
 
 	FlexibleCoordinate& operator = (FlexibleCoordinate const&) = default;
 	FlexibleCoordinate& operator = (FlexibleCoordinate &&) = default;
 
-	// return the value in pixels depending on context
-	float get(FlexibleCoordinateContext const& ctx);
+	// return the value in pixels depending on direction and context
+	float get(DIRECTION dir, FlexibleCoordinateContext const& ctx);
 
 	// return the value in pixels given the context size
-	float get(glm::vec2 ctxSize);
+	float get(DIRECTION dir, glm::vec2 ctxSize);
 
 private:
-	DIRECTION dir_ = X_LEFT;
 	float value_ = 0;
 	UNIT unit_ = PIXELS;
 };
@@ -68,18 +67,20 @@ public:
 	FlexCoordPair() = default;
 
 	FlexCoordPair(float x, float y, FlexCoord::UNIT unit = FlexCoord::PIXELS, ANCHOR_X ancX = LEFT, ANCHOR_Y ancY = TOP)
-		: x(ancX == LEFT ? FlexCoord::X_LEFT : FlexCoord::X_RIGHT, x, unit)
-		, y(ancY == TOP ? FlexCoord::Y_TOP : FlexCoord::Y_BOTTOM, y, unit)
+		: x(x, unit)
+		, y(y, unit)
+		, dirX_(ancX == LEFT ? FlexCoord::X_LEFT : FlexCoord::X_RIGHT)
+		, dirY_(ancY == TOP ? FlexCoord::Y_TOP : FlexCoord::Y_BOTTOM)
 	{}
 
 	FlexCoordPair(glm::vec2 v) : FlexCoordPair(v.x, v.y) {}
 
 	glm::vec2 get(FlexibleCoordinateContext const& ctx) {
-		return glm::vec2{x.get(ctx), y.get(ctx)};
+		return glm::vec2{x.get(dirX_, ctx), y.get(dirY_, ctx)};
 	}
 
 	glm::vec2 get(glm::vec2 const& ctxSize) {
-		return glm::vec2{x.get(ctxSize), y.get(ctxSize)};
+		return glm::vec2{x.get(dirX_, ctxSize), y.get(dirY_, ctxSize)};
 	}
 
 	FlexCoordPair(FlexCoordPair const&) = default;
@@ -87,4 +88,8 @@ public:
 
 	FlexCoordPair& operator = (FlexCoordPair const&) = default;
 	FlexCoordPair& operator = (FlexCoordPair &&) = default;
+	
+private:
+	FlexCoord::DIRECTION dirX_;
+	FlexCoord::DIRECTION dirY_;
 };

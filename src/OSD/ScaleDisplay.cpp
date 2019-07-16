@@ -53,8 +53,8 @@ void ScaleDisplay::draw(RenderContext const& ctx) {
 		segIncrement = 0.5f;
 	}
 	int nVertex = 1 + segments * 3;
-	float cx = (float)pos_.x.get(ctx.viewport()) + segmentsXOffset;
-	float cy = (float)pos_.y.get(ctx.viewport()) - 1;
+	float cx = (float)pos_.x.get(FlexCoord::X_LEFT, ctx.viewport()) + segmentsXOffset;
+	float cy = (float)pos_.y.get(FlexCoord::Y_TOP, ctx.viewport()) - 1;
 	glm::vec2 vList[31]; // 31 is max vertex for max_seg=10
 	for (int i=0; i<segments; i++) {
 		int localSegHeight = (int)(i*segIncrement) == (i*segIncrement) ? segmentHeight : segmentHeight / 2;
