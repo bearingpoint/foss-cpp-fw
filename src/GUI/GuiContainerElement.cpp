@@ -32,7 +32,7 @@ bool GuiContainerElement::containsPoint(glm::vec2 const& p) const {
 	if (!transparentBackground_)
 		return true;
 	else {
-		glm::vec2 clientPos = p - clientAreaOffset_;
+		glm::vec2 clientPos = p - computedClientAreaOffset_;
 		std::shared_ptr<GuiBasicElement> crt = GuiHelper::getTopElementAtPosition(*this, clientPos.x, clientPos.y);
 		return crt != nullptr;
 	}
@@ -47,13 +47,13 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 
 #ifdef DEBUG
 	// draw client area frame
-	Shape2D::get()->drawRectangle(frameTranslation + clientAreaOffset_, clientAreaSize_, {1.f, 0.f, 1.f});
+	Shape2D::get()->drawRectangle(frameTranslation + computedClientAreaOffset_, computedClientAreaSize_, {1.f, 0.f, 1.f});
 #endif
 
 	// set clipping to visible client portion
 	setClipping();
 	// draw all children relative to the client area
-	frameTranslation += clientAreaOffset_;
+	frameTranslation += computedClientAreaOffset_;
 	for (auto &e : children_) {
 		if (!e->isVisible())
 			continue;
@@ -78,7 +78,9 @@ void GuiContainerElement::onSizeChangedHandler(glm::vec2 size) {
 }
 
 void GuiContainerElement::updateClientArea() {
-	clientAreaSize_ = computedSize() - clientAreaOffset_ - clientAreaCounterOffset_;
+	computedClientAreaOffset_ = clientAreaOffset_.get(computedSize());
+	computedClientAreaCounterOffset_ = clientAreaCounterOffset_.get(computedSize());
+	computedClientAreaSize_ = computedSize() - computedClientAreaOffset_ - computedClientAreaCounterOffset_;
 }
 
 void GuiContainerElement::addElement(std::shared_ptr<GuiBasicElement> e) {
@@ -163,16 +165,17 @@ bool GuiContainerElement::keyChar(char c) {
 		return false;
 }*/
 
-void GuiContainerElement::setClientArea(glm::vec2 offset, glm::vec2 counterOffset) {
-	clientAreaOffset_ = offset;
-	clientAreaCounterOffset_ = counterOffset;
+void GuiContainerElement::setClientArea(gfcoord offset, gfcoord counterOffset) {
+	clientAreaOffset_.assignValue(offset);
+	clientAreaCounterOffset_.assignValue(counterOffset);
+
 	updateClientArea();
 	refreshLayout();
 }
 
-void GuiContainerElement::getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const {
-	outOffset = clientAreaOffset_;
-	outSize = clientAreaSize_;
+void GuiContainerElement::getComputedClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const {
+	outOffset = computedClientAreaOffset_;
+	outSize = computedClientAreaSize_;
 }
 
 void GuiContainerElement::clear() {
@@ -190,5 +193,5 @@ void GuiContainerElement::useLayout(std::shared_ptr<Layout> layout) {
 }
 
 void GuiContainerElement::refreshLayout() {
-	layout_->update(children_, clientAreaSize_);
+	layout_->update(children_, computedClientAreaSize_);
 }

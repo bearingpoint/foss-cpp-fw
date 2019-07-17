@@ -27,7 +27,7 @@ public:
 		Y_TOP,
 		Y_BOTTOM
 	};
-	
+
 	FlexibleCoordinate() = default;
 
 	FlexibleCoordinate(float value, UNIT unit=PIXELS);
@@ -63,7 +63,7 @@ public:
 		TOP,
 		BOTTOM
 	};
-	
+
 	FlexCoordPair() = default;
 
 	FlexCoordPair(float x, float y, FlexCoord::UNIT unit = FlexCoord::PIXELS, ANCHOR_X ancX = LEFT, ANCHOR_Y ancY = TOP)
@@ -88,7 +88,13 @@ public:
 
 	FlexCoordPair& operator = (FlexCoordPair const&) = default;
 	FlexCoordPair& operator = (FlexCoordPair &&) = default;
-	
+
+	// assigns the values from the source, keeping the original anchors
+	void assignValue(FlexCoordPair const& source) {
+		x = source.x;
+		y = source.y;
+	}
+
 private:
 	FlexCoord::DIRECTION dirX_;
 	FlexCoord::DIRECTION dirY_;

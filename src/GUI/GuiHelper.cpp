@@ -14,8 +14,7 @@ namespace GuiHelper {
 std::shared_ptr<GuiBasicElement> getTopElementAtPosition(GuiContainerElement const& container, float x, float y) {
 	// this assumes the elements are sorted from lowest z-index to highest (last element is top-most)
 	// transform the coordinates into client coordinates:
-	glm::vec2 clientOffs, clientSize;
-	container.getClientArea(clientOffs, clientSize);
+	glm::vec2 clientOffs = container.getComputedClientOffset();
 	x -= clientOffs.x;
 	y -= clientOffs.y;
 	size_t i=container.childrenCount();
@@ -53,7 +52,7 @@ glm::vec2 viewportToLocal(GuiBasicElement const& el, glm::vec2 vcoord) {
 	if (!el.parent())
 		return vcoord - el.computedPosition();	// this is the root element
 	else {
-		return viewportToLocal(*el.parent(), vcoord) - el.parent()->getClientOffset() - el.computedPosition();
+		return viewportToLocal(*el.parent(), vcoord) - el.parent()->getComputedClientOffset() - el.computedPosition();
 	}
 }
 

@@ -33,7 +33,7 @@ void Window::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec
 
 	// draw client area frame:
 	glm::vec2 clientOffset, clientSize;
-	getClientArea(clientOffset, clientSize);
+	getComputedClientArea(clientOffset, clientSize);
 	clientSize.x *= frameScale.x;
 	clientSize.y *= frameScale.y;
 	Shape2D::get()->drawRectangleFilled(vec3xy(trans)+clientOffset,

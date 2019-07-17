@@ -36,9 +36,9 @@ public:
 	// by default the background is not transparent.
 	void setTransparentBackground(bool transp) { transparentBackground_ = transp; }
 
-	void setClientArea(glm::vec2 offset, glm::vec2 counterOffset);
-	void getClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const;
-	glm::vec2 getClientOffset() const { return clientAreaOffset_; }
+	void setClientArea(gfcoord offset, gfcoord counterOffset);
+	void getComputedClientArea(glm::vec2 &outOffset, glm::vec2 &outSize) const;
+	glm::vec2 getComputedClientOffset() const { return computedClientAreaOffset_; }
 
 	virtual bool isContainer() const override { return true; }
 	virtual size_t childrenCount() const { return children_.size(); }
@@ -64,9 +64,11 @@ protected:
 	void resetClipping();
 
 private:
-	glm::vec2 clientAreaOffset_{0};	// (positive) offset from top left corner of container to top-left corner of client area
-	glm::vec2 clientAreaCounterOffset_{0}; // (positive) offset from bottom-right corner of client area to corner of container
-	glm::vec2 clientAreaSize_{0};
+	gfcoord clientAreaOffset_{0, 0};
+	gfcoord clientAreaCounterOffset_{0, 0};
+	glm::vec2 computedClientAreaOffset_{0};	// (positive) offset from top left corner of container to top-left corner of client area
+	glm::vec2 computedClientAreaCounterOffset_{0}; // (positive) offset from bottom-right corner of client area to corner of container
+	glm::vec2 computedClientAreaSize_{0};
 	bool transparentBackground_ = false;
 	std::vector<std::shared_ptr<GuiBasicElement>> children_;
 	std::shared_ptr<Layout> layout_;
