@@ -96,6 +96,6 @@ public:
 	}
 
 private:
-	FlexCoord::DIRECTION dirX_;
-	FlexCoord::DIRECTION dirY_;
+	FlexCoord::DIRECTION dirX_ = FlexCoord::X_LEFT;
+	FlexCoord::DIRECTION dirY_ = FlexCoord::Y_TOP;
 };
