@@ -37,8 +37,11 @@ public:
 	Event() = default;
 
 	Event(Event &&e)
-		: callbackList_(std::move(e.callbackList_)) {
-	}
+		: callbackList_(std::move(e.callbackList_))
+		, pForwarded_(e.pForwarded_) {}
+	Event(Event const&) = default;
+	Event& operator=(Event const&) = default;
+	Event& operator=(Event &&) = default;
 
 	int add(handler_type fn) {
 		callbackList_.push_back(fn);
