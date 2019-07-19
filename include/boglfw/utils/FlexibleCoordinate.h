@@ -43,6 +43,8 @@ public:
 	// return the value in pixels given the context size
 	float get(DIRECTION dir, glm::vec2 ctxSize);
 
+	UNIT unit() const { return unit_; }
+
 private:
 	float value_ = 0;
 	UNIT unit_ = PIXELS;
