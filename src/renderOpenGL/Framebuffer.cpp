@@ -68,6 +68,9 @@ GLuint FrameBufferDescriptor::textureChannels() const {
 		case GL_RG16F:
 		case GL_RG32F:
 			return GL_RG;
+		default:
+			assertDbg(false);
+			return 0;
 	}
 }
 
@@ -98,6 +101,9 @@ GLuint FrameBufferDescriptor::textureDataType() const {
 		case GL_R32F:
 		case GL_RG32F:
 			return GL_FLOAT;
+		default:
+			assertDbg(false);
+			return 0;
 	}
 }
 

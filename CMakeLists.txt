@@ -44,7 +44,7 @@ if (WITH_BOX2D)
 endif()
 
 set_property(TARGET boglfw PROPERTY CXX_STANDARD 14)
-target_compile_options(boglfw PUBLIC -Wall -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14 ${API_DEFS})
+target_compile_options(boglfw PUBLIC -Wall -Werror=return-type -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14 ${API_DEFS})
 
 # add this flag to enable profiling with perfMarkers
 # target_compile_options(${PROJECT_NAME} PUBLIC -DENABLE_PERF_MARKERS)

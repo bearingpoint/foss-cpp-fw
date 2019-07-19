@@ -14,17 +14,28 @@
 
 class TextField : public GuiBasicElement {
 public:
-	TextField(std::string initialText);
+	enum Type {
+		TEXT,
+		NUMBER
+	};
+
+	TextField(Type type=TEXT, std::string initialText="");
 	virtual ~TextField();
 
 	std::string getText() const;
 	void setText(std::string const& text);
 
+	// these two are valid only for NUMBER type textField:
+	float getValue() const;
+	void setValue(float val);
+
 	virtual bool keyDown(int keyCode) override;
 	virtual bool keyChar(char c) override;
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) override;
 
-	Event<void()> onTextChanged;
+	// triggered whenever a character is added or removed from the field (even for NUMBER types)
+	Event<void()> onChanged;
+	// triggered when user presses RETURN key within the field
 	Event<void()> onTrigger;
 
 protected:
@@ -32,6 +43,7 @@ protected:
 	char textBuffer_[maxTextbufferSize];
 	int bufPos_=0;
 	int bufSize_=0;
+	Type type_;
 };
 
 #endif /* GUI_CONTROLS_TEXTFIELD_H_ */

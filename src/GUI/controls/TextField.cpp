@@ -13,7 +13,8 @@
 
 #include <cstring>
 
-TextField::TextField(std::string initialText) {
+TextField::TextField(Type type, std::string initialText)
+	: type_(type) {
 	strncpy(textBuffer_, initialText.c_str(), maxTextbufferSize);
 }
 
@@ -45,7 +46,7 @@ bool TextField::keyChar(char c) {
 		bufSize_++;
 		textBuffer_[bufSize_] = 0;
 		textBuffer_[bufPos_++] = c;
-		onTextChanged.trigger();
+		onChanged.trigger();
 	}
 	return true;
 }
@@ -56,4 +57,13 @@ std::string TextField::getText() const {
 
 void TextField::setText(std::string const& text) {
 	strncpy(textBuffer_, text.c_str(), maxTextbufferSize - 1);
+}
+
+float TextField::getValue() const {
+	// TODO implement
+	return 0;
+}
+
+void TextField::setValue(float val) {
+	// TODO implement
 }
