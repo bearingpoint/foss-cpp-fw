@@ -51,7 +51,7 @@ bool TextField::keyChar(char c) {
 	return true;
 }
 
-std::string TextField::getText() const {
+std::string TextField::text() const {
 	return std::string(textBuffer_);
 }
 
@@ -59,7 +59,7 @@ void TextField::setText(std::string const& text) {
 	strncpy(textBuffer_, text.c_str(), maxTextbufferSize - 1);
 }
 
-float TextField::getValue() const {
+float TextField::value() const {
 	// TODO implement
 	return 0;
 }

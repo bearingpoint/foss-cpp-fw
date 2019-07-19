@@ -22,11 +22,14 @@ public:
 	TextField(Type type=TEXT, std::string initialText="");
 	virtual ~TextField();
 
-	std::string getText() const;
+	Type type() const { return type_; }
+	void setType(Type type);
+
+	std::string text() const;
 	void setText(std::string const& text);
 
 	// these two are valid only for NUMBER type textField:
-	float getValue() const;
+	float value() const;
 	void setValue(float val);
 
 	virtual bool keyDown(int keyCode) override;
