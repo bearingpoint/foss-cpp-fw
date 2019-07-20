@@ -67,6 +67,11 @@ public:
 	template<class C>
 	static C* getGlobal() {
 		auto it = getInstance().userGlobals_.find(typeid(C));
+#ifdef DEBUG
+		if (it == getInstance().userGlobals_.end()) {
+			ERROR("World::getGlobal() on uninitialized object, returning nullptr!!!");
+		}
+#endif
 		return it == getInstance().userGlobals_.end() ? nullptr : (C*)(it->second);
 	}
 
