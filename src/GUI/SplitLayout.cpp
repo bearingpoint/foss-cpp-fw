@@ -31,11 +31,10 @@ void SplitLayout::update(elementIterator first, elementIterator end, glm::vec2 c
 	}
 	unsigned nFirst = min(splitPoint_, (unsigned)(end - first));
 	first_->update(first, first + nFirst, firstSize);
-	unsigned nSecond = end - first - nFirst;
-	if (nSecond > 0) {
-		second_->update(first + nSecond, end, secondSize);
+	if (end - first > nFirst) {
+		second_->update(first + nFirst, end, secondSize);
 		// must apply position offset to all elements from second
-		for (auto it = first + nSecond; it != end; ++it)
+		for (auto it = first + nFirst; it != end; ++it)
 			setElementPosition(*it, (*it)->computedPosition() + secondOffset);
 	}
 }
@@ -57,9 +56,17 @@ void SplitLayout::setDirection(SplitDirection dir) {
 
 void SplitLayout::setFirstSub(std::shared_ptr<Layout> first) {
 	first_.swap(first);
+	first_->setOwner(pOwner_);
 	refresh();
 }
 void SplitLayout::setSecondSub(std::shared_ptr<Layout> second) {
 	second_.swap(second);
+	second_->setOwner(pOwner_);
 	refresh();
+}
+
+void SplitLayout::setOwner(GuiContainerElement *pOwner) {
+	Layout::setOwner(pOwner);
+	first_->setOwner(pOwner);
+	second_->setOwner(pOwner);
 }

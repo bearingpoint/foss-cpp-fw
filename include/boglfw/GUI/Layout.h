@@ -24,7 +24,8 @@ protected:
 	Layout() {}
 
 	friend class GuiContainerElement;
-	void setOwner(GuiContainerElement *pOwner) { pOwner_ = pOwner; }
+	friend class SplitLayout;
+	virtual void setOwner(GuiContainerElement *pOwner) { pOwner_ = pOwner; }
 
 	// sets the element's position
 	static void setElementPosition(std::shared_ptr<GuiBasicElement> el, glm::vec2 pos);

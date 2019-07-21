@@ -32,6 +32,9 @@ public:
 
 	virtual void update(elementIterator first, elementIterator end, glm::vec2 clientSize) override;
 
+protected:
+	void setOwner(GuiContainerElement *pOwner) override;
+
 private:
 	SplitDirection direction_ = HORIZONTAL;
 	FlexCoord splitOffset_ = {50, FlexCoord::PERCENT}; // the size of the first sub-space relative to the full size of the layout
