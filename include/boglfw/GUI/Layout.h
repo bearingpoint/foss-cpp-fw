@@ -14,9 +14,11 @@ class Layout {
 public:
 	virtual ~Layout() {}
 
-	// requests the layout to recompute all elements sizes and positions.
+	using elementIterator = std::vector<std::shared_ptr<GuiBasicElement>>::iterator;
+
+	// requests the layout to recompute sizes and positions for each element in the given range.
 	// [clientSize] is the computed (in pixels) size of the client area of the layout
-	virtual void update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize) = 0;
+	virtual void update(elementIterator first, elementIterator end, glm::vec2 clientSize) = 0;
 
 protected:
 	Layout() {}

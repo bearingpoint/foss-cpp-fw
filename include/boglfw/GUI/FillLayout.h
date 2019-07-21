@@ -8,7 +8,7 @@ public:
 	FillLayout() {}
 	~FillLayout() {}
 
-	virtual void update(std::vector<std::shared_ptr<GuiBasicElement>> &elements, glm::vec2 clientSize) override;
+	virtual void update(elementIterator first, elementIterator end, glm::vec2 clientSize) override;
 
 private:
 };
