@@ -67,3 +67,7 @@ float TextField::value() const {
 void TextField::setValue(float val) {
 	// TODO implement
 }
+
+void TextField::setType(Type type) {
+	// TODO implement
+}
