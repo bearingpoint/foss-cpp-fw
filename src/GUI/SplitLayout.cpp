@@ -6,7 +6,9 @@
 SplitLayout::SplitLayout()
 	: first_(new FillLayout())
 	, second_(new FillLayout())
-{}
+{
+	// TOOD when the owner of this is set, must propagate it to all children layouts
+}
 
 void SplitLayout::update(elementIterator first, elementIterator end, glm::vec2 clientSize) {
 	glm::vec2 secondOffset;
