@@ -27,7 +27,7 @@ public:
 
 	void setDirection(Direction dir);
 	// set spacing between consecutive items
-	void setItemSpacing(int pixels);
+	void setItemSpacing(FlexCoord spacing);
 	void setAlignment(Alignment a);
 	void setVerticalAlignment(VerticalAlignment a);
 
@@ -37,5 +37,5 @@ private:
 	Direction direction_ = VERTICAL;
 	Alignment alignment_ = LEFT;
 	VerticalAlignment vertAlignment_ = TOP;
-	int spacing_ = 0;
+	FlexCoord spacing_ = 0;
 };

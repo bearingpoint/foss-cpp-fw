@@ -5,8 +5,8 @@ void ListLayout::setDirection(Direction dir) {
 	refresh();
 }
 
-void ListLayout::setItemSpacing(int pixels) {
-	spacing_ = pixels;
+void ListLayout::setItemSpacing(FlexCoord spacing) {
+	spacing_ = spacing;
 	refresh();
 }
 
@@ -49,15 +49,15 @@ void ListLayout::update(elementIterator first, elementIterator end, glm::vec2 cl
 			setElementPosition(*el, {crtMain, secondary});
 
 		if (direction_ == VERTICAL)
-			crtMain += elSize.y + spacing_;
+			crtMain += elSize.y + spacing_.get(FlexCoord::Y_TOP, clientSize);
 		else
-			crtMain += elSize.x + spacing_;
+			crtMain += elSize.x + spacing_.get(FlexCoord::X_LEFT, clientSize);
 	}
 	// take care of alignment along the flow direction:
 	if (direction_ == VERTICAL) {
 		float vertOffs = 0.f;
 		if (vertAlignment_ != TOP) {
-			vertOffs = clientSize.y - (crtMain - spacing_);
+			vertOffs = clientSize.y - (crtMain - spacing_.get(FlexCoord::Y_TOP, clientSize));
 			if (vertAlignment_ == MIDDLE)
 				vertOffs *= 0.5f;
 			for (auto el=first; el!=end; ++el) {
@@ -68,7 +68,7 @@ void ListLayout::update(elementIterator first, elementIterator end, glm::vec2 cl
 	} else {
 		float horizOffs = 0.f;
 		if (alignment_ != LEFT) {
-			horizOffs = clientSize.x - (crtMain - spacing_);
+			horizOffs = clientSize.x - (crtMain - spacing_.get(FlexCoord::X_LEFT, clientSize));
 			if (alignment_ == CENTER)
 				horizOffs *= 0.5f;
 			for (auto el=first; el!=end; ++el) {
