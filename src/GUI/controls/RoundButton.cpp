@@ -23,12 +23,12 @@ RoundButton::~RoundButton() {
 void RoundButton::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
 	glm::vec4 fillColor = isMouseIn() ? isMousePressed(MouseButtons::Left) ? GuiTheme::getButtonColorPressed() : GuiTheme::getButtonColorHover() : GuiTheme::getButtonColor();
 	Shape2D::get()->drawCircleFilled(
-			vec3xy(frameTranslation) + glm::vec2{radius_, radius_ },
+			frameTranslation + glm::vec2{radius_, radius_ },
 			radius_ - 2,
 			32,		// nSides
 			fillColor);
 	Shape2D::get()->drawCircle(
-			vec3xy(frameTranslation) + glm::vec2{radius_, radius_ },
+			frameTranslation + glm::vec2{radius_, radius_ },
 			radius_,
 			32,		// nSides
 			GuiTheme::getButtonFrameColor());

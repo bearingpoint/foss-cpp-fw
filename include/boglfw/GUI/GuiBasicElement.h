@@ -35,7 +35,7 @@ public:
 	virtual void setPosition(gfcoord position);
 	// returns the user-set size - the actual size may differ depending on the layout of the container
 	gfcoord size() const { return userSize_; }
-	// sets the size - this will only have effect if the element is hosted in a FreeLayout
+	// sets the user-requested size - the effect of this may depend on the layout that hosts the element
 	virtual void setSize(gfcoord size);
 	// sets the minimum size of the element - layouts are required to honour this
 	virtual void setMinSize(gfcoord minSize);

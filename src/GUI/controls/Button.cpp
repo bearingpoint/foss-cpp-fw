@@ -27,11 +27,11 @@ void Button::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec
 							: GuiTheme::getButtonColorHover()
 						) : GuiTheme::getButtonColor();
 	Shape2D::get()->drawRectangleFilled(
-			vec3xy(frameTranslation) + glm::vec2(2,2),
+			frameTranslation + glm::vec2(2,2),
 			(computedSize()-glm::vec2(4,4)) * frameScale,
 			fillColor);
 	Shape2D::get()->drawRectangle(
-			vec3xy(frameTranslation),
+			frameTranslation,
 			computedSize() * frameScale,
 			GuiTheme::getButtonFrameColor());
 	auto textRc = GLText::get()->getTextRect(text_, 18);

@@ -49,7 +49,7 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 
 #ifdef DEBUG
 	// draw client area frame
-	Shape2D::get()->drawRectangle(frameTranslation + computedClientAreaOffset_, computedClientAreaSize_, {1.f, 0.f, 1.f});
+	//Shape2D::get()->drawRectangle(frameTranslation + computedClientAreaOffset_, computedClientAreaSize_, {1.f, 0.f, 1.f});
 #endif
 
 	// set clipping to visible client portion

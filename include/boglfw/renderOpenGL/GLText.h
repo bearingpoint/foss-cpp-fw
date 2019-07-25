@@ -25,6 +25,7 @@ public:
 	// This is useful when interleaving draw calls with other 2D drawing code to achieve layering (such as with Shape2D)
 	void flush();
 
+	// prints text - [pos] is the bottom-left corner of the text
 	void print(const std::string &text, glm::vec2 pos, int size, glm::vec3 const& color);
 	void print(const std::string &text, glm::vec2 pos, int size, glm::vec4 const& color);
 
