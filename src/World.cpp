@@ -10,6 +10,7 @@
 #include <boglfw/math/math3D.h>
 #include <boglfw/Infrastructure.h>
 #include <boglfw/renderOpenGL/Shape3D.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 
 #include <boglfw/utils/bitFlags.h>
 #include <boglfw/utils/parallel.h>
@@ -304,6 +305,7 @@ void World::queueDeferredAction(std::function<void()> &&fun, int delayFrames) {
 }
 
 void World::draw(RenderContext const& ctx) {
+	checkGLError("before World::draw");
 	PERF_MARKER_FUNC;
 	// draw extent lines:
 	if (config.drawBoundaries) {
@@ -335,11 +337,15 @@ void World::draw(RenderContext const& ctx) {
 			glm::vec3(extentXp_, extentYp_, extentZp_*overflow), lineColor);
 	}
 	// draw entities
+	checkGLError("World::draw() draw boundaries");
 
 	for (auto e : entsToDraw_) {
 		PERF_MARKER((std::string("Entity draw: ") + std::to_string((int)e->getEntityType())).c_str());
 		e->draw(ctx);
+		checkGLError((std::string("after World::draw()::drawEntity ") + std::to_string((int)e->getEntityType())).c_str());
 	}
+
+	checkGLError("World::draw() end");
 }
 
 bool World::testEntity(Entity &e, unsigned* filterTypes, unsigned filterTypesCount, Entity::FunctionalityFlags filterFlags) {

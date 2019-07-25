@@ -10,6 +10,7 @@
 #include <boglfw/renderOpenGL/Camera.h>
 #include <boglfw/renderOpenGL/shader.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 #include <boglfw/math/math3D.h>
 #include <boglfw/utils/log.h>
 
@@ -101,11 +102,15 @@ void Shape3D::flush() {
 
 	glUseProgram(lineShaderProgram_);
 	glBindVertexArray(VAO_);
-	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(pCrtViewport->camera().matProjView()));
+	auto mPV = pCrtViewport->camera().matProjView();
+	glUniformMatrix4fv(indexMatProjView_, 1, GL_FALSE, glm::value_ptr(mPV));
+	checkGLError("Shape3D::setupVAOandUnif");
 
 	glDrawElements(GL_LINES, nIndices, GL_UNSIGNED_INT, 0);
+	checkGLError("Shape3D::glDrawElements");
 
 	glDisable(GL_BLEND);
+	glBindVertexArray(0);
 
 	// purge cached data:
 	buffer_.clear();

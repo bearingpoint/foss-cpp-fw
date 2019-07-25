@@ -13,6 +13,7 @@
 #include <boglfw/renderOpenGL/Shape2D.h>
 #include <boglfw/renderOpenGL/RenderHelpers.h>
 #include <boglfw/utils/assert.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 
 #include <glm/vec3.hpp>
 
@@ -39,6 +40,7 @@ bool GuiContainerElement::containsPoint(glm::vec2 const& p) const {
 }
 
 void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) {
+	checkGLError("before GuiContainerElement::draw()");
 	// draw background:
 	if (!transparentBackground_) {
 		Shape2D::get()->drawRectangle(frameTranslation, computedSize(), GuiTheme::getContainerFrameColor());
@@ -59,6 +61,7 @@ void GuiContainerElement::draw(RenderContext const& ctx, glm::vec2 frameTranslat
 			continue;
 		RenderHelpers::flushAll();
 		e->draw(ctx, frameTranslation + e->computedPosition(), frameScale);
+		checkGLError("after GUI element draw");
 	}
 	// TODO draw frame around focused element:
 	resetClipping();

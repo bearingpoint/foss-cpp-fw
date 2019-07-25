@@ -4,13 +4,14 @@
 #include <boglfw/renderOpenGL/MeshRenderer.h>
 #include <boglfw/renderOpenGL/GLText.h>
 #include <boglfw/renderOpenGL/PictureDraw.h>
+#include <boglfw/renderOpenGL/glToolkit.h>
 
 Viewport* RenderHelpers::pActiveViewport = nullptr;
 RenderHelpers::Config RenderHelpers::config_;
 
 void RenderHelpers::load(Config config) {
 	config_ = config;
-	
+
 	if (!config.disableShape3D)
 		Shape3D::init();
 	if (!config.disableMeshRenderer)
@@ -37,14 +38,20 @@ void RenderHelpers::unload() {
 }
 
 void RenderHelpers::flushAll() {
+	checkGLError("before RenderHelpers::flushAll()");
 	if (!config_.disableShape2D)
 		Shape2D::get()->flush();
+	checkGLError("after Shape2D::flush()");
 	if (!config_.disableShape3D)
 		Shape3D::get()->flush();
+	checkGLError("after Shape3D::flush()");
 	if (!config_.disableMeshRenderer)
 		MeshRenderer::get()->flush();
+	checkGLError("after MeshRenderer::flush()");
 	if (!config_.disableGLText)
 		GLText::get()->flush();
+	checkGLError("after GLText::flush()");
 	if (!config_.disablePictureDraw)
 		PictureDraw::get()->flush();
+	checkGLError("after PictureDraw::flush()");
 }

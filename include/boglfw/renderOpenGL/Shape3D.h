@@ -74,7 +74,7 @@ private:
 	};
 	// line buffers
 	std::vector<s_vertex> buffer_;
-	std::vector<unsigned> indices_;
+	std::vector<uint32_t> indices_;
 	glm::mat4 transform_ {1};
 	bool transformActive_ = false;
 

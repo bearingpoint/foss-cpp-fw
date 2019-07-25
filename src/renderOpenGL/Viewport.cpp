@@ -117,27 +117,37 @@ void Viewport::render(drawable element, RenderContext const& ctx) {
 	if (!isEnabled())
 		return;
 
+	checkGLError("Viewport::render before prepare");
 	prepareRendering(ctx);
+	checkGLError("Viewport::render after prepare, before element.draw()");
 
 	element.draw(ctx);
+	checkGLError("Viewport::render after element.draw()");
 	// flush all render helpers' pending commands
 	RenderHelpers::flushAll();
+	checkGLError("Viewport::render after flushAll()");
 
 	resetRendering();
+	checkGLError("Viewport::render end.");
 }
 
 void Viewport::render(std::vector<drawable> const& list, RenderContext const& ctx) {
 	if (!isEnabled())
 		return;
 
+	checkGLError("Viewport::render before prepare");
 	prepareRendering(ctx);
+	checkGLError("Viewport::render after prepare, before element.draw()");
 
 	// render objects from list:
 	for (auto &x : list) {
 		x.draw(ctx);
+		checkGLError("Viewport::render after element.draw()");
 	}
 	// flush all render helpers' pending commands
 	RenderHelpers::flushAll();
+	checkGLError("Viewport::render after flushAll()");
 
 	resetRendering();
+	checkGLError("Viewport::render end.");
 }
