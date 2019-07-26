@@ -27,7 +27,6 @@ public:
 
 	void addElement(std::shared_ptr<GuiBasicElement> e);
 	void removeElement(std::shared_ptr<GuiBasicElement> e);
-	std::shared_ptr<GuiBasicElement> findElement(GuiBasicElement* e) const;
 	// removes all UI elements from the GUI system
 	void clear();
 	//std::shared_ptr<GuiBasicElement> getPointedElement() { return elementUnderMouse_; }

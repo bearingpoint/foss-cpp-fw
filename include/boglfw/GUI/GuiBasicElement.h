@@ -14,6 +14,8 @@
 
 #include <glm/vec2.hpp>
 
+#include <memory>
+
 // GUI flexible coordinate pair
 using gfcoord = FlexCoordPair;
 
@@ -22,7 +24,7 @@ class GuiContainerElement;
 class ICaptureManager;
 class RenderContext;
 
-class GuiBasicElement {
+class GuiBasicElement : public std::enable_shared_from_this<GuiBasicElement> {
 public:
 	GuiBasicElement();
 	virtual ~GuiBasicElement();
@@ -71,7 +73,7 @@ public:
 	virtual bool isContainer() const { return false; }
 
 	// triggered when the element has been added/removed to/from a parent
-	Event<void(GuiContainerElement* parent)> onParentChanged;
+	Event<void(GuiContainerElement*)> onParentChanged;
 	// triggered when the COMPUTED position of the element has changed
 	Event<void(glm::vec2)> onPositionChanged;
 	// triggered when the COMPUTED size of the element has changed
@@ -98,7 +100,7 @@ protected:
 	void setCaptureManager(ICaptureManager* mgr) { captureManager_ = mgr; }
 	ICaptureManager* getCaptureManager() const;
 
-	void setParent(GuiContainerElement* parent) { parent_ = parent; onParentChanged.trigger(parent_); }
+	void setParent(GuiContainerElement *parent) { parent_ = parent; onParentChanged.trigger(parent_); }
 
 	virtual void draw(RenderContext const& ctx, glm::vec2 frameTranslation, glm::vec2 frameScale) = 0;
 

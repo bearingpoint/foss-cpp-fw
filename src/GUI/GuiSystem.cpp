@@ -46,8 +46,8 @@ void GuiSystem::setMouseCapture(GuiBasicElement* elementOrNull) {
 	if (!elementOrNull)
 		pCaptured_ = {};
 	else {
-		assertDbg(elementOrNull->parent());
-		auto captured = elementOrNull->parent()->findElement(elementOrNull);
+		assertDbg(elementOrNull->parent() != nullptr);
+		auto captured = elementOrNull->shared_from_this();
 		assertDbg(captured != nullptr);
 		pCaptured_ = captured;
 	}

@@ -94,17 +94,12 @@ void GuiContainerElement::addElement(std::shared_ptr<GuiBasicElement> e) {
 }
 
 void GuiContainerElement::removeElement(std::shared_ptr<GuiBasicElement> e) {
-	assertDbg(e && e->parent_ == this && findElement(e.get()));
+	assertDbg(e && e->parent_ == this);
+	auto it = std::find(children_.begin(), children_.end(), e);
+	assertDbg(it != children_.end());
 	e->setParent(nullptr);
-	children_.erase(std::find(children_.begin(), children_.end(), e));
+	children_.erase(it);
 	refreshLayout();
-}
-
-std::shared_ptr<GuiBasicElement> GuiContainerElement::findElement(GuiBasicElement* target) const {
-	auto it = std::find_if(children_.begin(), children_.end(), [target] (auto &e) {
-		return e.get() == target;
-	});
-	return it == children_.end() ? nullptr : *it;
 }
 
 /*void GuiContainerElement::mouseDown(MouseButtons button) {

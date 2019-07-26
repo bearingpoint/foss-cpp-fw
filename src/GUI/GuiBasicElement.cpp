@@ -15,7 +15,7 @@ GuiBasicElement::GuiBasicElement() {
 }
 
 GuiBasicElement::~GuiBasicElement() {
-	assertDbg(!parent_ || !parent_->findElement(this));
+	assertDbg(parent_ == nullptr);
 }
 
 bool GuiBasicElement::containsPoint(glm::vec2 const& p) const {
