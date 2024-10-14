@@ -39,19 +39,10 @@ public:
 		std::string routingKey;
 		AMQPManager::MQHandler handler;
 
-		QueueConfig(std::string name, bool durable, bool autodelete, int messageTtl, std::string routingKey, AMQPManager::MQHandler handler):
+		QueueConfig(std::string name, bool durable, bool autodelete, int messageTtl, std::string routingKey = "", AMQPManager::MQHandler handler = nullptr):
 			BaseConfig(name, durable, autodelete, messageTtl),
 			routingKey(routingKey),
 			handler(handler)
-		{}
-
-		QueueConfig(std::string name, bool durable, bool autodelete, int messageTtl, std::string routingKey):
-			BaseConfig(name, durable, autodelete, messageTtl),
-			routingKey(routingKey)
-		{}
-
-		QueueConfig(std::string name, bool durable, bool autodelete, int messageTtl):
-			BaseConfig(name, durable, autodelete, messageTtl)
 		{}
 	};
 	struct ExchangeConfig: BaseConfig {
@@ -61,16 +52,10 @@ public:
 		std::vector<QueueConfig> queues = {};
 
 		ExchangeConfig(std::string name, bool durable, bool autodelete, int messageTtl,
-			std::string type, unsigned xRandomQueues, AMQPManager::MQHandler xRandomQueuesHandler, std::vector<QueueConfig> queues
+			std::string type, unsigned xRandomQueues, AMQPManager::MQHandler xRandomQueuesHandler = nullptr, std::vector<QueueConfig> queues = {}
 		):
 			BaseConfig(name, durable, autodelete, messageTtl), type(type), xRandomQueues(xRandomQueues), xRandomQueuesHandler(xRandomQueuesHandler),
 			queues(queues)
-		{}
-
-		ExchangeConfig(std::string name, bool durable, bool autodelete, int messageTtl,
-			std::string type, unsigned xRandomQueues
-		):
-			BaseConfig(name, durable, autodelete, messageTtl), type(type), xRandomQueues(xRandomQueues)
 		{}
 	};
 
