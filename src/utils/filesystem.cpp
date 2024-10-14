@@ -2,12 +2,19 @@
  * filesystem.cpp
  *
  *  Created on: Oct 15, 2015
- *      Author: bog
+ *	  Author: bog
  */
 
-#include <boglfw/utils/filesystem.h>
-#include <boglfw/utils/log.h>
-#include <boglfw/utils/strManip.h>
+#ifdef __WIN32__
+	#define UNICODE
+	#include <windows.h>
+#endif
+
+#include "filesystem.h"
+#include "log.h"
+#include "strManip.h"
+#include "strbld.h"
+#include "wstrconv.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -16,24 +23,27 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <utime.h>
+#include <filesystem>
 
-#ifndef __WIN32__
-#include <sys/sendfile.h>
+#if !defined(__WIN32__) && !defined(__MACOSX__)
+	#include <sys/sendfile.h>
 #endif
 
+#include <stdio.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <functional>
 #include <fstream>
 #include <algorithm>
+#include <stdexcept>
 
 namespace filesystem {
 
 bool isDir(std::string const& dir) {
-    struct stat fileInfo;
-    stat(dir.c_str(), &fileInfo);
-    return S_ISDIR(fileInfo.st_mode);
+	struct stat fileInfo;
+	stat(dir.c_str(), &fileInfo);
+	return S_ISDIR(fileInfo.st_mode);
 }
 
 bool pathExists(std::string const& path) {
@@ -56,7 +66,7 @@ bool mkDir(std::string const& path) {
 			, S_IRWXU
 #endif
 			)) {
-		ERROR(errno << ": Could not create directory \"" << path << "\"");
+		ERRORLOG(errno << ": Could not create directory \"" << path << "\"");
 		return false;
 	}
 	return true;
@@ -71,7 +81,7 @@ bool mkDirRecursive(std::string const& path) {
 		return s.empty() || s == ".";
 	}), dirs.end());
 	std::string builtPath = path[0] == '/' ? "/" : "./";	// start with absolute or relative path
-	for (auto d : dirs) {
+	for (auto &d : dirs) {
 		builtPath += d + "/";
 		if (!pathExists(builtPath))
 			if (!mkDir(builtPath))
@@ -83,6 +93,8 @@ bool mkDirRecursive(std::string const& path) {
 std::string getFileName(std::string const& path) {
 	if (path.find('/') != path.npos)
 		return path.c_str() + path.find_last_of('/') + 1;
+	else if (path.find("\\"))
+		return path.c_str() + path.find_last_of('\\') + 1;
 	else
 		return path;
 }
@@ -96,21 +108,25 @@ std::string stripExt(std::string const& path) {
 }
 
 std::string getFileExt(std::string const& path) {
-	auto ppos = path.find_last_of('.');
-	if (ppos != path.npos)
-		return path.substr(ppos);
-	else
+	auto dotPos = path.find_last_of('.');
+	// check if a slash or back-slash occur after the dot, in that case there's no extension
+	// ex: some/path.dir/file -> no extension instead of "dir/file"
+	auto spos = path.find_last_of('/');
+	auto bspos = path.find_last_of('\\');
+	if (dotPos == path.npos || (spos != path.npos && spos > dotPos)
+		|| (bspos != path.npos && bspos > dotPos))
 		return "";
+	return path.substr(dotPos + 1);
 }
 
 unsigned long getFileTimestamp(std::string const& path) {
 	LOGPREFIX("getFileTimestamp");
 	struct stat fileInfo;
 	if (stat(path.c_str(), &fileInfo) < 0) {
-		ERROR("Could not stat() file \"" << path << "\"");
+		ERRORLOG("Could not stat() file \"" << path << "\"");
 		return 0;
 	}
-#ifndef __WIN32__
+#if !defined(__WIN32__) && !defined(__MACOSX__)
 	return (unsigned long)fileInfo.st_mtim.tv_sec;
 #else
 	return (unsigned long)fileInfo.st_mtime;
@@ -122,22 +138,22 @@ bool copyFile(std::string const& source, std::string const& dest) {
 	bool ret = true;
 	int fs = open(source.c_str(), O_RDONLY, 0);
 	if (fs < 0) {
-		ERROR(errno << ": Could not open source file \"" << source <<"\"");
+		ERRORLOG(errno << ": Could not open source file \"" << source <<"\"");
 		ret = false;
 	}
 	int fd = open(dest.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
-		ERROR(errno << ": Could not open destination file \"" << dest <<"\"");
+		ERRORLOG(errno << ": Could not open destination file \"" << dest <<"\"");
 		ret = false;
 	}
 
 	if (ret) {
 		struct stat stat_source;
 		if (fstat(fs, &stat_source) < 0) {
-			ERROR(errno << ": Could not stat() source file \"" << source << "\"");
+			ERRORLOG(errno << ": Could not stat() source file \"" << source << "\"");
 			ret = false;
 		}
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__MACOSX__)
 		if (ret) {
 			char* data = new char[stat_source.st_size];
 			ret = (read(fs, data, stat_source.st_size) >= 0);
@@ -150,7 +166,7 @@ bool copyFile(std::string const& source, std::string const& dest) {
 		}
 #endif
 		if (!ret) {
-			ERROR(errno << ": Could not copy file \n" <<
+			ERRORLOG(errno << ": Could not copy file \n" <<
 				"\"" << source <<"\" -> \"" << dest << "\"");
 		}
 	}
@@ -164,7 +180,7 @@ bool copyFile(std::string const& source, std::string const& dest) {
 bool deleteFile(std::string const& path) {
 	LOGPREFIX("deleteFile");
 	if (unlink(path.c_str()) < 0) {
-		ERROR(errno << ": Could not delete file \"" << path << "\"");
+		ERRORLOG(errno << ": Could not delete file \"" << path << "\"");
 		return false;
 	}
 	return true;
@@ -172,44 +188,48 @@ bool deleteFile(std::string const& path) {
 
 uint64_t getFileSize(std::string const& path) {
 	LOGPREFIX("getFileSize");
-	int fs = open(path.c_str(), O_RDONLY, 0);
-	if (fs < 0) {
-		ERROR(errno << ": Could not open file \"" << path <<"\"");
-		return 0;
-	}
-	struct stat stat_source;
-	if (fstat(fs, &stat_source) < 0) {
-		ERROR(errno << ": Could not stat() file \"" << path << "\"");
-		return 0;
-	}
-	close(fs);
-	return stat_source.st_size;
+	UnicodeFileReader fr(path);
+	return fr.getSize();
 }
 
 std::vector<std::string> getFiles(std::string const& baseDir, bool includeSubDirs) {
 	LOGPREFIX("getFiles");
 	std::vector<std::string> files;
-    DIR *dp;
-    struct dirent *dirp;
-    std::string separator = (baseDir.back() != '/') ? "/" : "";
-    if ((dp = opendir(baseDir.c_str())) == NULL) {
-    	ERROR(errno << ": Could not open directory \"" << baseDir << "\"\n");
-    } else {
-        while ((dirp = readdir(dp)) != NULL) {
-            if (dirp->d_name != std::string(".") && dirp->d_name != std::string("..")) {
-            	auto path = baseDir + separator + dirp->d_name;
-            	if (!isDir(path) || includeSubDirs)
-            		files.push_back(path);
-            }
-        }
-        closedir(dp);
-    }
-    return files;
+	DIR *dp;
+	struct dirent *dirp;
+	std::string separator = (baseDir.back() != '\\') ? "\\" : "";
+	if ((dp = opendir(baseDir.c_str())) == NULL) {
+		ERRORLOG(errno << ": Could not open directory \"" << baseDir << "\"\n");
+	} else {
+		while ((dirp = readdir(dp)) != NULL) {
+			if (dirp->d_name != std::string(".") && dirp->d_name != std::string("..")) {
+				auto path = baseDir + separator + dirp->d_name;
+				if (!isDir(path) || includeSubDirs)
+					files.push_back(path);
+			}
+		}
+		closedir(dp);
+	}
+	return files;
+}
+
+std::vector<std::string> getAllFilesFromDir(std::string const& baseDir) {
+	std::vector<std::string> filesPath = {};
+	for (auto &path: getFiles(baseDir, true)) {
+		if (isDir(path)) {
+			std::vector<std::string> innerFilesPath = getAllFilesFromDir(path);
+			filesPath.reserve(filesPath.size() + innerFilesPath.size());
+			std::move(innerFilesPath.begin(), innerFilesPath.end(), std::back_inserter(filesPath));
+		} else {
+			filesPath.push_back(path);
+		}
+	}
+	return filesPath;
 }
 
 void applyRecursive(std::string const& baseDir, std::function<void(std::string const& filename)> func) {
 	std::vector<std::string> files = getFiles(baseDir, true);
-	for (auto f : files) {
+	for (auto &f : files) {
 		if (isDir(f))
 			applyRecursive(f, func);
 		else
@@ -220,6 +240,81 @@ void applyRecursive(std::string const& baseDir, std::function<void(std::string c
 std::string getFileDirectory(std::string const& filePath) {
 	auto fn = getFileName(filePath);
 	return filePath.substr(0, filePath.size() - fn.size());
+}
+
+std::string getHomeDirectory() {
+	std::string configFilePath;
+#ifdef __WIN32__
+	std::string homeDrive = getenv("HOMEDRIVE");
+	std::string homePath = getenv("HOMEPATH");
+	configFilePath = homeDrive + "/" + homePath;
+#else
+	configFilePath = getenv("HOME");
+#endif
+	return configFilePath;
+}
+
+bool deleteFolderContent(const std::string& folderPath) {
+	LOGPREFIX("deleteFolderContent");
+	try {
+		std::filesystem::path folder(folderPath);
+
+		if (!std::filesystem::exists(folder) || !std::filesystem::is_directory(folder)) {
+			ERRORLOG(errno << "Invalid folder path: " << folderPath << std::endl);
+			return false;
+		}
+
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(folder)) {
+			try {
+				if (std::filesystem::is_regular_file(entry.path())) {
+					std::filesystem::remove(entry.path()); // Delete regular files
+				} else if (std::filesystem::is_directory(entry.path())) {
+					std::filesystem::remove_all(entry.path()); // Recursively delete directories
+				}
+			} catch (const std::exception& ex) {
+				ERRORLOG(errno << "Error deleting " << entry.path() << ": " << ex.what() << std::endl);
+				return false;
+			}
+		}
+		LOGLN("Folder " << folder << " cleaned up successfully." << std::endl);
+	} catch (const std::exception& ex) {
+		ERRORLOG(errno << "Error: " << ex.what() << std::endl);
+		return false;
+	}
+	return true;
+}
+
+std::vector<std::string> readFileLines(std::string const& filePath) {
+	std::ifstream inputFile(filePath);
+	std::string line;
+	std::vector<std::string> lines;
+
+	if (inputFile.is_open()) {
+		while (std::getline(inputFile, line)) {
+			lines.push_back(line);
+		}
+		inputFile.close();
+	} else {
+		throw std::runtime_error("Unable to open file \n");
+	}
+	return lines;
+}
+
+std::string readFileContent(std::string const& path, unsigned startIndex, unsigned endIndex) {
+	std::ifstream file(path);
+	if(file.is_open()) {
+		std::string content;
+		content.resize(endIndex - startIndex);
+		file.read(&content[0], endIndex - startIndex);
+		return content;
+	} else {
+		throw std::runtime_error("Unable to open file " + path + "\n");
+	}
+}
+std::string normalizePath(std::string const& inPath) {
+	std::filesystem::path path(inPath);
+	std::filesystem::path canonicalPath = std::filesystem::weakly_canonical(path); // does not throw an exception if path does not exists
+	return canonicalPath.make_preferred().string();
 }
 
 } // namespace

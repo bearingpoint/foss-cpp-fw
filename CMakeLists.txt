@@ -1,73 +1,78 @@
-# Specify the minimum version for CMake
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.13)
+project(YourAppNameHere)
 
-set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	set(MACOSX TRUE)
+endif()
 
-OPTION(WITH_SDL "Build with SDL support" OFF)
-OPTION(WITH_GLFW "Build with GLFW support" ON)
-OPTION(WITH_BOX2D "Build with Box2D support" ON)
-
-# Project's name
-project(boglfw)
-
-# Set the output folder where your program will be created
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/dist/lib)
-
-# The following folder will be included
-include_directories("${PROJECT_SOURCE_DIR}/include")
-if (WIN32)
-	link_directories("C:/mingw64/lib")
-	include_directories("C:/mingw64/include")
+if(WIN32)
+	message("Detected platform: Windows")
+	set(CMAKE_CXX_GLAGS "${CMAKE_CXX_FLAGS} -D__WIN32__ -mthreads")
+elseif(MACOSX)
+	message("Detected platform: MacOSX (Darwin)")
+	link_directories("/usr/local/lib")
+	link_directories("/opt/homebrew/opt/libpq/lib")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__MACOSX__")
 else()
-	link_directories("/usr/lib")
-	include_directories("/usr/include")
+	message("Detected platform: Unix-like")
+	link_directories("/usr/local/pgsql/lib")
+	execute_process(COMMAND "pg_config" "--includedir" OUTPUT_VARIABLE PG_INCLUDE_DIR)
+	include_directories("${PG_INCLUDE_DIR}")
 endif()
 
-file(GLOB_RECURSE sources	include/*.h)
-file(GLOB_RECURSE sources 	src/*.cpp)
-file(GLOB_RECURSE data		data/*.*)
+# add src and deps include path
+include_directories(deps/include)
+include_directories(src)
 
-list(REMOVE_ITEM sources ${CMAKE_SOURCE_DIR}/src/main.cpp)
-
-add_library(boglfw ${sources} ${data})
-
-set(API_DEFS "")
-if (WITH_SDL)
-	set(API_DEFS ${API_DEFS} -DWITH_SDL)
-endif()
-if (WITH_GLFW)
-	set(API_DEFS ${API_DEFS} -DWITH_GLFW)
-endif()
-if (WITH_BOX2D)
-	set(API_LIBS ${API_DEFS} -DWITH_BOX2D)
-endif()
-
-set_property(TARGET boglfw PROPERTY CXX_STANDARD 14)
-target_compile_options(boglfw PUBLIC -Wall -Werror=return-type -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -std=c++14 ${API_DEFS})
-
-# add this flag to enable profiling with perfMarkers
-# target_compile_options(${PROJECT_NAME} PUBLIC -DENABLE_PERF_MARKERS)
-
-if (WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__WIN32__ -mthreads")
-endif()
+# deps library paths
+link_directories(deps/lib)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
-INSTALL (
-	DIRECTORY ${CMAKE_SOURCE_DIR}/include/
-	DESTINATION ${CMAKE_BINARY_DIR}/dist/include/
-	FILES_MATCHING PATTERN "*.h"
+if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+	# WARNING: BUILDING WITH THIS FLAG DISABLES MULTI-THREADING
+	# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDISABLE_THREAD_LOCAL")
+
+	# DISABLE_THREAD_LOCAL avoids a crash caused by MinGW64 at startup when thread_local storage is used on some types
+	# this crash can be mitigated by copying the libstdc++-6.dll from mingw/bin into the build directory
+endif()
+
+# add sources
+file(GLOB_RECURSE headers src/*.h)
+file(GLOB_RECURSE sources src/*.c src/*.cpp)
+
+add_executable(${PROJECT_NAME} ${headers} ${sources})
+
+# uncomment next line to enable perf profiling
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_PERF_PROFILING")
+
+# add required libraries here
+target_link_libraries(${PROJECT_NAME} PUBLIC amqpcpp pq pgcommon pgport)
+
+if(MACOSX)
+	target_compile_options(${PROJECT_NAME} PUBLIC -Duint=unsigned)
+endif()
+
+# add platform specific libraries here
+if(WIN32)
+	target_link_libraries(${PROJECT_NAME} PUBLIC ws2_32 wsock32)
+	target_compile_options(${PROJECT_NAME} PUBLIC -Duint=unsigned
+		-DWIN32_LEAN_AND_MEAN # Don't include all the unused junk from the windows headers
+		-D_WIN32_WINNT=0x0601 # Target windows 7 for ASIO
+		-DWIN32
+	)
+elseif(MACOSX)
+	target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl)
+else()
+	target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl stdc++fs)
+endif()
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+target_compile_options(${PROJECT_NAME} PUBLIC
+	-Wall -Werror=return-type -Wfatal-errors
+	-std=c++17
 )
-INSTALL (
-	DIRECTORY ${CMAKE_SOURCE_DIR}/data/
-	DESTINATION ${CMAKE_BINARY_DIR}/dist/data/
-	FILES_MATCHING PATTERN "*.*"
-)
-INSTALL (
-	FILES ${CMAKE_SOURCE_DIR}/src/main.cpp
-		  ${CMAKE_SOURCE_DIR}/fw-version
-		  ${CMAKE_SOURCE_DIR}/client.cmake.txt
-	DESTINATION ${CMAKE_BINARY_DIR}/dist/
-)
+
+if(NOT MACOSX)
+	target_compile_options(${PROJECT_NAME} PUBLIC -march=x86-64)
+endif()

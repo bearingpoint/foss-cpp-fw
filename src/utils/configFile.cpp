@@ -2,11 +2,11 @@
  * configFile.cpp
  *
  *  Created on: Oct 2, 2015
- *      Author: bog
+ *	  Author: bog
  */
 
-#include <boglfw/utils/configFile.h>
-#include <boglfw/utils/log.h>
+#include "configFile.h"
+#include "log.h"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -32,24 +32,22 @@ bool parseConfigFile(std::string const& filePath, std::map<std::string, std::str
 			std::getline(ss, value);
 
 			if (equalSign != "=") {
-				ERROR("Invalid line in config file:\n"<<line);
+				ERRORLOG("Invalid line in config file:\n"<<line);
 			}
 
 			opts[tokenName] = value;
 		}
 		LOGLN("Finished parsing config file.");
 	} catch (std::runtime_error &err) {
-		ERROR("FAILED parsing config file \"" << filePath <<"\"\n" << err.what());
+		ERRORLOG("FAILED parsing config file \"" << filePath <<"\"\n" << err.what());
 		return false;
 	}
 
-	for (auto o : requiredOpts) {
+	for (auto &o : requiredOpts) {
 		if (opts.find(o) == opts.end()) {
-			ERROR("Missing required key \"" << o << "\" from config file !!!");
+			ERRORLOG("Missing required key \"" << o << "\" from config file !!!");
 			return false;
 		}
 	}
 	return true;
 }
-
-

@@ -2,11 +2,13 @@
  * results.cpp
  *
  *  Created on: Jul 23, 2016
- *      Author: alexandra
+ *	  Author: bogdan
  */
 
-#include <boglfw/perf/results.h>
-#include <boglfw/perf/callGraph.h>
+#ifdef ENABLE_PERF_PROFILING
+
+#include "./results.h"
+#include "./callGraph.h"
 
 #include <algorithm>
 
@@ -53,3 +55,4 @@ std::vector<sectionData> Results::getFlatList(std::string const& threadName) {
 
 } // namespace perf
 
+#endif // ENABLE_PERF_PROFILING

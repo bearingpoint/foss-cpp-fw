@@ -2,11 +2,13 @@
  * callGraph.cpp
  *
  *  Created on: Aug 7, 2016
- *      Author: bog
+ *	  Author: bog
  */
 
-#include <boglfw/perf/callGraph.h>
-#include <boglfw/perf/results.h>
+#ifdef ENABLE_PERF_PROFILING
+
+#include "./callGraph.h"
+#include "./results.h"
 
 #include <cstring>
 #include <algorithm>
@@ -60,3 +62,5 @@ void CallGraph::popSection(uint64_t nanoseconds) {
 }
 
 } // namespace
+
+#endif // ENABLE_PERF_PROFILING

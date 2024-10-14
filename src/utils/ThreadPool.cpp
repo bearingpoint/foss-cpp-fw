@@ -2,14 +2,18 @@
  * ThreadPool.cpp
  *
  *  Created on: Jun 21, 2016
- *      Author: bog
+ *	  Author: bog
  */
 
-#include <boglfw/utils/ThreadPool.h>
-#include <boglfw/utils/assert.h>
-#include <boglfw/perf/marker.h>
+#include "ThreadPool.h"
+#include "../perf/marker.h"
 
-ThreadPool::ThreadPool(unsigned numberOfThreads)
+#include <cassert>
+#include <numeric>
+#include <stdexcept>
+
+ThreadPool::ThreadPool(unsigned numberOfThreads, unsigned maxQueueSize)
+	: maxQueueSize_(maxQueueSize)
 {
 #ifdef DEBUG_THREADPOOL
 	LOGLN(__FUNCTION__);
@@ -21,14 +25,14 @@ ThreadPool::ThreadPool(unsigned numberOfThreads)
 #endif
 }
 ThreadPool::~ThreadPool() {
-	assertDbg(stopped_ && "Thread pool has not been stopped before destruction!");
+	assert(stopped_ && "Thread pool has not been stopped before destruction!");
 }
 
 void ThreadPool::wait_impl(std::unique_lock<std::mutex> &poolLk) {
 	// wait for all tasks to be processed
 	checkValidState();
 	queueBlocked_.store(true);
-	while (!queuedTasks_.empty()) {
+	while (getTaskCount() > 0) {
 		poolLk.unlock();
 		std::this_thread::yield();
 		poolLk.lock();
@@ -76,11 +80,12 @@ void ThreadPool::workerFunc() {
 #endif
 		if (stopSignal_)
 			return;
-		assertDbg(!!!queuedTasks_.empty());
+		assert(!!!queuedTasks_.empty());
 		task = queuedTasks_.front();
 		queuedTasks_.pop();
 		lk.unlock();
 
+		runningTaskCount_.fetch_add(1, std::memory_order_release);
 		std::lock_guard<std::mutex> workLk(task->workMutex_);
 		task->started_.store(true);
 		// do work...
@@ -88,9 +93,20 @@ void ThreadPool::workerFunc() {
 			task->workFunc_();
 		} while (0);
 		task->finished_.store(true);
+		runningTaskCount_.fetch_sub(1, std::memory_order_release);
 #ifdef DEBUG_THREADPOOL
 	LOGLN(__FUNCTION__ << " finished work.");
 #endif
+	}
+}
+
+bool PoolTask::isFinished() const {
+	if (isCombined_) {
+		return std::accumulate(parts_.begin(), parts_.end(), true, [](bool finished, auto const& part) {
+			return finished && part->isFinished();
+		});
+	} else {
+		return finished_.load(std::memory_order::memory_order_acquire);
 	}
 }
 
@@ -105,14 +121,23 @@ void PoolTask::wait() {
 #ifdef DEBUG_THREADPOOL
 	LOGLN(__FUNCTION__ << " task is started.");
 #endif
-	std::lock_guard<std::mutex> lk(workMutex_);
-	assertDbg(finished_);
+	if (isCombined_) {
+		while (!isFinished())
+			std::this_thread::yield();
+	} else {
+		std::lock_guard<std::mutex> lk(workMutex_);
+		assert(finished_);
 #ifdef DEBUG_THREADPOOL
-	LOGLN(__FUNCTION__ << " task is finished.");
+		LOGLN(__FUNCTION__ << " task is finished.");
 #endif
+	}
 }
 
 void ThreadPool::checkValidState() {
 	if (stopRequested_)
 		throw std::runtime_error("Invalid operation on thread pool (pool is stopping)");
+}
+
+size_t ThreadPool::getTaskCount() const {
+	return queuedTasks_.size() + runningTaskCount_.load(std::memory_order_acquire);
 }

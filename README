@@ -1,7 +1,2 @@
-Bugs OpenGL FrameWork (boglfw) is a small and lightweight framework for quickly building 2D apps based on OpenGL/GLFW.
-It was started as part of the Bugs project, hence the name.
-
-To build, just use the provided build.sh (for debug) and build-r.sh (for release) scripts.
-
-Enjoy!
-
+This is a C++ collection of utilities used by FOSS analysis tools.
+It was originally forked from http://github.com/bog2k3/boglfw and adapted to the needs of the FOSS tools.
