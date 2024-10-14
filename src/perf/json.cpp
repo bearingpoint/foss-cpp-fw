@@ -1,6 +1,8 @@
 #include "json.h"
 #include <algorithm>
 
+#ifdef ENABLE_PERF_PROFILING
+
 namespace perf {
 namespace json {
 
@@ -115,3 +117,5 @@ nlohmann::json sequenceCapture(std::vector<perf::FrameCapture::frameData> frames
 
 } // namespace json
 } // namespace perf
+
+#endif // ENABLE_PERF_PROFILING

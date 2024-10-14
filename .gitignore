@@ -1,9 +1,9 @@
 build/
 workspace/
-.vscode 
-GPATH 
-GRTAGS 
-GTAGS 
+.vscode
+GPATH
+GRTAGS
+GTAGS
 .codelite
-boglfw.project
-boglfw.workspace
+
+deps/
