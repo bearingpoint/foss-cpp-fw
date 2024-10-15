@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "amqp.h"
 #include <amqpcpp.h>
 
 #include <functional>
@@ -20,81 +21,7 @@
 */
 class AMQPManager : private AMQP::ConnectionHandler {
 public:
-	using MQResultCallback = std::function<void(std::string)>;
-	using MQHandler = std::function<void(std::string payload, MQResultCallback resultCallback)>;
-
-	struct BaseConfig {
-		std::string name;
-		bool durable = true;
-		bool autodelete = false;
-		/** optionally specify a message TTL (in milliseconds). Ignored if <= 0 */
-		int messageTtl = 0;
-
-		BaseConfig(std::string name, bool durable, bool autodelete, int messageTtl):
-			name(name), durable(durable), autodelete(autodelete), messageTtl(messageTtl)
-		{}
-	};
-
-	struct QueueConfig: public BaseConfig {
-		std::string routingKey;
-		AMQPManager::MQHandler handler;
-
-		QueueConfig(std::string name, bool durable, bool autodelete, int messageTtl, std::string routingKey = "", AMQPManager::MQHandler handler = nullptr):
-			BaseConfig(name, durable, autodelete, messageTtl),
-			routingKey(routingKey),
-			handler(handler)
-		{}
-	};
-	struct ExchangeConfig: BaseConfig {
-		std::string type = "";
-		unsigned xRandomQueues = 1;
-		AMQPManager::MQHandler xRandomQueuesHandler;
-		std::vector<QueueConfig> queues = {};
-
-		ExchangeConfig(std::string name, bool durable, bool autodelete, int messageTtl,
-			std::string type, unsigned xRandomQueues, AMQPManager::MQHandler xRandomQueuesHandler = nullptr, std::vector<QueueConfig> queues = {}
-		):
-			BaseConfig(name, durable, autodelete, messageTtl), type(type), xRandomQueues(xRandomQueues), xRandomQueuesHandler(xRandomQueuesHandler),
-			queues(queues)
-		{}
-	};
-
-	struct ConnectionConfig {
-		std::string host = "localhost";
-		int port = 5672;
-		std::string username = "guest";
-		std::string password = "guest";
-		int heartbeatInterval = 60;
-
-		ConnectionConfig() {};
-		ConnectionConfig(std::string host):
-			host(host)
-		{};
-
-		ConnectionConfig(std::string host, int port, std::string username, std::string password, int heartbeatInterval):
-			host(host),
-			port(port),
-			username(username),
-			password(password),
-			heartbeatInterval(heartbeatInterval)
-		{};
-	};
-
-	/**
-	 * Sets the global channel prefetch count optimally given the number of threads that the application will use.
-	 * This must be called before any instances of AMQPManager are created, and will impact all queues.
-	 */
-	static void setGlobalPrefetchForThreads(unsigned numberOfThreads, int prefetchCount);
-
-	AMQPManager(std::vector<QueueConfig> mqQueues, ConnectionConfig connectionConfig = ConnectionConfig());
-	AMQPManager(std::vector<ExchangeConfig> mqExchanges, ConnectionConfig connectionConfig = ConnectionConfig());
-	AMQPManager(
-		std::vector<QueueConfig> mqQueues,
-		std::vector<ExchangeConfig> mqExchanges,
-		ConnectionConfig connectionConfig = ConnectionConfig()
-	);
-
-	AMQPManager();
+	AMQPManager(AMQP::ConnectionConfig connectionConfig, std::vector<AMQP::QueueConfig> mqQueues, std::vector<AMQP::ExchangeConfig> mqExchanges = {});
 	~AMQPManager();
 
 	void run(std::function<void()> idleCallback = nullptr);
@@ -115,24 +42,21 @@ public:
 	// bool step(bool block);
 
 private:
-	void setupQueues(std::vector<QueueConfig> const& queues);
-	void setupExchanges(std::vector<ExchangeConfig> &exchanges);
+	void setupQueues(std::vector<AMQP::QueueConfig> const& queues);
+	void setupExchanges(std::vector<AMQP::ExchangeConfig> &exchanges);
 	void initSocketConnection();
 	void reconnect();
 	void verifyTimeouts();
 
-	ConnectionConfig connectionConfig_;
+	AMQP::ConnectionConfig connectionConfig_;
 	unsigned sockConn_ = 0;
 	bool socketConnected_ = false;
 	AMQP::Connection *amqpConnection_ = nullptr;
 	AMQP::Channel* amqpChannel_ = nullptr;
-	std::vector<QueueConfig> queues_;
-	std::vector<ExchangeConfig> exchanges_;
-	// bool reconnectRequired_  = false;
+	std::vector<AMQP::QueueConfig> queues_;
+	std::vector<AMQP::ExchangeConfig> exchanges_;
 	std::chrono::system_clock::time_point timeLastHeartbeatSent_;
 	std::chrono::system_clock::time_point timeLastDataReceived_;
-	static unsigned globalPrefetch_;
-	static unsigned channelPrefetchCount_;
 
 	size_t bufferReadOffset_ = 0;
 	size_t bufferWriteOffset_ = 0;
@@ -140,7 +64,6 @@ private:
 	size_t bufferSize_ = 0;
 	char* buffer_ = nullptr;
 
-	void addXRandomQueuesToExchange(AMQPManager::ExchangeConfig &outExchange);
 	/**************** AMQP::ConnectionHandler methods *******************/
 
 	/**

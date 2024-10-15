@@ -31,9 +31,6 @@
 
 static const size_t MAX_SEND_FRAME_SIZE = 4096; // bytes
 
-unsigned AMQPManager::globalPrefetch_ = 0;
-unsigned AMQPManager::channelPrefetchCount_ = 1;
-
 void printConnectionStatus(AMQP::Connection *connection) {
 	DEBUGAMQPLOG("Connection status: +++++++++++++++++++++++++++++\n"
 		<< "vhost: " << connection->vhost() << "\n"
@@ -46,33 +43,16 @@ void printConnectionStatus(AMQP::Connection *connection) {
 	);
 }
 
-AMQPManager::AMQPManager(
-	std::vector<AMQPManager::QueueConfig> mqQueues,
-	AMQPManager::ConnectionConfig connectionConfig
-)
-	: connectionConfig_(connectionConfig)
-	, queues_(std::move(mqQueues))
-{}
 
 AMQPManager::AMQPManager(
-	std::vector<ExchangeConfig> mqExchanges,
-	AMQPManager::ConnectionConfig connectionConfig
-)
-	: connectionConfig_(connectionConfig)
-	, exchanges_(std::move(mqExchanges))
-{}
-
-AMQPManager::AMQPManager(
-	std::vector<QueueConfig> mqQueues,
-	std::vector<ExchangeConfig> mqExchanges,
-	AMQPManager::ConnectionConfig connectionConfig
+	AMQP::ConnectionConfig connectionConfig,
+	std::vector<AMQP::QueueConfig> mqQueues,
+	std::vector<AMQP::ExchangeConfig> mqExchanges
 )
 	: connectionConfig_(connectionConfig)
 	, queues_(std::move(mqQueues))
 	, exchanges_(std::move(mqExchanges))
 {}
-
-AMQPManager::AMQPManager() {}
 
 AMQPManager::~AMQPManager() {
 	if (amqpChannel_) {
@@ -187,18 +167,15 @@ void AMQPManager::reconnect() {
 	// set up AMQP protocol
 	amqpConnection_ = new AMQP::Connection(this, AMQP::Login(connectionConfig_.username, connectionConfig_.password));
 	amqpChannel_ = new AMQP::Channel(amqpConnection_);
-	// prefetch per connection -> 1 to avoid messages getting "reserved" by busy threads while other threads rub the peppermint.
-	amqpChannel_->setQos(channelPrefetchCount_, false);
-	// global prefetch shared between all consumers
-	amqpChannel_->setQos(globalPrefetch_, true);
 	amqpChannel_->onError([this] (const char* err) {
 		throw std::runtime_error(std::string("AMQP Channel error: ") + err);
 	});
 	amqpChannel_->onReady([]() {
 		DEBUGAMQPLOG("Channel is READY.");
 	});
-	setupQueues(queues_);
+	amqpChannel_->setQos(connectionConfig_.channelPrefetch, false);
 	setupExchanges(exchanges_);
+	setupQueues(queues_);
 	AMQPLOGLN("Queues and exchanges set up.");
 
 	timeLastHeartbeatSent_ = std::chrono::system_clock::now();
@@ -223,7 +200,7 @@ void AMQPManager::initSocketConnection() {
 	} while (!socketConnected_);
 }
 
-void AMQPManager::setupQueues(std::vector<QueueConfig> const& queues) {
+void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 	// declare queues and install queue handlers provided by caller
 	for (auto &qConfig : queues) {
 		int queueFlags = 0;
@@ -242,6 +219,10 @@ void AMQPManager::setupQueues(std::vector<QueueConfig> const& queues) {
 			.onSuccess([this, &qConfig] (std::string const& qName, uint32_t msgCount, uint32_t csmCount)
 		{
 			DEBUGAMQPLOG("Queue declared: " << qName);
+			if (qConfig.exchangeBinding.exchange != "") {
+				AMQPLOGLN("Bind Queue " << qConfig.name << " to exchange " << qConfig.exchangeBinding.exchange << " (" << qConfig.exchangeBinding.routingKey << ")");
+				amqpChannel_->bindQueue(qConfig.exchangeBinding.exchange, qConfig.name, qConfig.exchangeBinding.routingKey);
+			}
 			amqpChannel_->consume(qName).onReceived([this, qName, &qConfig](AMQP::Message const &msg, uint64_t deliveryTag, bool redelivered) {
 				// decode the message
 				auto payload = std::string(msg.body(), msg.body() + msg.bodySize());
@@ -267,38 +248,11 @@ void AMQPManager::setupQueues(std::vector<QueueConfig> const& queues) {
 	}
 }
 
-void AMQPManager::addXRandomQueuesToExchange(AMQPManager::ExchangeConfig &outExchange) {
-	outExchange.queues = {};
-	if (!outExchange.xRandomQueues) {
-		outExchange.xRandomQueues = 1;
-	}
-	for (int i = 0; i < outExchange.xRandomQueues; i++) {
-		outExchange.queues.push_back(
-			AMQPManager::QueueConfig {
-				outExchange.name + "-queue-" + std::to_string(i + 1),
-				true,
-				false,
-				0,
-				"",
-				outExchange.xRandomQueuesHandler
-			}
-		);
-	}
-}
-
-void AMQPManager::setupExchanges(std::vector<ExchangeConfig> &exchanges) {
+void AMQPManager::setupExchanges(std::vector<AMQP::ExchangeConfig> &exchanges) {
 	// declare queues and install queue handlers provided by caller
 	for (auto &exchange : exchanges) {
-		if (!exchange.name.empty()) {
-			if (exchange.type == "x-random") {
-				addXRandomQueuesToExchange(exchange);
-			}
-			setupQueues(exchange.queues);
-			for (auto& queue: exchange.queues) {
-				AMQPLOGLN("Bind Queue " << queue.name << " to exchange " << exchange.name << " on routing-key  " << queue.routingKey);
-				amqpChannel_->bindQueue(exchange.name, queue.name, queue.routingKey);
-			}
-		}
+		// TODO if needed, implement a translator from string exchange type into enum and use declareExchange as below:
+		// amqpChannel_->declareExchange(exchange.name, exchange.type, ...)
 	}
 }
 
@@ -371,9 +325,4 @@ uint16_t AMQPManager::onNegotiate(AMQP::Connection *connection, uint16_t interva
 void AMQPManager::onHeartbeat(AMQP::Connection *connection) {
 	timeLastDataReceived_ = std::chrono::system_clock::now();
 	DEBUGAMQPLOG("Heartbeat received");
-}
-
-void AMQPManager::setGlobalPrefetchForThreads(unsigned numberOfThreads, int prefetchCount) {
-	globalPrefetch_ = numberOfThreads * prefetchCount * 1.5;
-	channelPrefetchCount_ = prefetchCount > 0 ? prefetchCount : 1;
 }
