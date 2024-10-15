@@ -14,7 +14,7 @@
 
 namespace perf {
 
-MTVector<std::shared_ptr<CallGraph>> Results::threadGraphs_ { 16 };
+MTVector<std::shared_ptr<CallGraph>> Results::threadGraphs_ { 64 };
 
 std::string Results::getThreadName(unsigned id) {
 	if (id > threadGraphs_.size())
