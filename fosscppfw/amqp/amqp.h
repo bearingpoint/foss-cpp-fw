@@ -10,6 +10,7 @@ using MQResultCallback = std::function<void(std::string)>;
 using MQHandler = std::function<void(std::string payload, MQResultCallback resultCallback)>;
 
 namespace detail {
+	template <class SUBCLASS>
 	struct BaseConfig {
 		std::string name = "";
 		bool durable = true;
@@ -17,15 +18,23 @@ namespace detail {
 		/** optionally specify a message TTL (in milliseconds). Ignored if <= 0 */
 		int messageTtl = 0;
 
-		BaseConfig() = default;
+		virtual ~BaseConfig() = default;
 
-		BaseConfig(std::string name, bool durable, bool autodelete, int messageTtl):
-			name(name), durable(durable), autodelete(autodelete), messageTtl(messageTtl)
+		BaseConfig(std::string name)
+			: name(name)
 		{}
+
+		SUBCLASS& setName(std::string name) { this->name = name; return *dynamic_cast<SUBCLASS*>(this); }
+		SUBCLASS& setDurable(bool durable) { this->durable = durable; return *dynamic_cast<SUBCLASS*>(this); }
+		SUBCLASS& setAutodelete(bool autodelete) { this->autodelete = autodelete; return *dynamic_cast<SUBCLASS*>(this); }
+		SUBCLASS& setMessageTtl(int messageTtl) { this->messageTtl = messageTtl; return *dynamic_cast<SUBCLASS*>(this); }
+
+	protected:
+		BaseConfig() = default;
 	};
 } // namespace detail
 
-struct QueueConfig: public detail::BaseConfig {
+struct QueueConfig: public detail::BaseConfig<QueueConfig> {
 	struct Binding {
 		std::string exchange;
 		std::string routingKey;
@@ -34,54 +43,67 @@ struct QueueConfig: public detail::BaseConfig {
 
 	QueueConfig() = default;
 
-	QueueConfig(std::string name, bool durable, bool autodelete, int messageTtl, std::string bindToExchange = "", std::string routingKey = "", MQHandler handler = nullptr):
-		BaseConfig(name, durable, autodelete, messageTtl),
-		exchangeBinding { bindToExchange, routingKey },
-		handler(handler)
+	QueueConfig(std::string name)
+		: BaseConfig(name)
 	{}
-	// FIXME builder pattern
+
+	QueueConfig& setExchangeBinding(std::string exchange, std::string routingKey) {
+		exchangeBinding.exchange = exchange;
+		exchangeBinding.routingKey = routingKey;
+		return *this;
+	}
+
+	QueueConfig& setHandler(MQHandler handler) {
+		this->handler = handler;
+		return *this;
+	}
 };
-struct ExchangeConfig: detail::BaseConfig {
+
+struct ExchangeConfig: detail::BaseConfig<ExchangeConfig> {
 	std::string type = "";
-	// int xRandomQueues = 1;
-	// AMQPManager::MQHandler xRandomQueuesHandler;
-	// std::vector<QueueConfig> queues = {};
 
 	ExchangeConfig() = default;
 
-	ExchangeConfig(std::string name, bool durable, bool autodelete, int messageTtl,
-		std::string type, int xRandomQueues, MQHandler xRandomQueuesHandler = nullptr, std::vector<QueueConfig> queues = {}
-	)
-		: BaseConfig(name, durable, autodelete, messageTtl), type(type)
-		// , xRandomQueues(xRandomQueues)
-		// , xRandomQueuesHandler(xRandomQueuesHandler)
-		// , queues(queues)
+	ExchangeConfig(std::string name, std::string type)
+		: BaseConfig(name)
+		, type(type)
 	{}
 };
 
 struct ConnectionConfig {
-	int channelPrefetch;
-	std::string host;
-	int port;
-	std::string username;
-	std::string password;
-	int heartbeatInterval;
+	int channelPrefetch = 1;
+	std::string host = "localhost";
+	int port = 5672;
+	std::string username = "guest";
+	std::string password = "guest";
+	int heartbeatInterval = 60;
 
-	ConnectionConfig(
-		int channelPrefetch = 1,
-		std::string host = "localhost",
-		int port = 5672,
-		std::string username = "guest",
-		std::string password = "guest",
-		int heartbeatInterval = 60
-	):
-		channelPrefetch(channelPrefetch),
-		host(host),
-		port(port),
-		username(username),
-		password(password),
-		heartbeatInterval(heartbeatInterval)
-	{};
+	ConnectionConfig() = default;
+
+	ConnectionConfig& setChannelPrefetch(int channelPrefetch) {
+		this->channelPrefetch = channelPrefetch;
+		return *this;
+	}
+	ConnectionConfig& setHost(std::string host) {
+		this->host = host;
+		return *this;
+	}
+	ConnectionConfig& setPort(int port) {
+		this->port = port;
+		return *this;
+	}
+	ConnectionConfig& setUsername(std::string username) {
+		this->username = username;
+		return *this;
+	}
+	ConnectionConfig& setPassword(std::string password) {
+		this->password = password;
+		return *this;
+	}
+	ConnectionConfig& setHeartbeatInterval(int heartbeatInterval) {
+		this->heartbeatInterval = heartbeatInterval;
+		return *this;
+	}
 };
 
 /**
