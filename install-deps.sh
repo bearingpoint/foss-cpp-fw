@@ -125,3 +125,5 @@ printf  "\n=====================================================\nDependencies i
 
 # get out of ./deps/
 cd ../
+
+rm -rf deps/
