@@ -42,8 +42,8 @@ static result translateError(const asio::error_code &err);
 
 static tcp::socket* getSocket(connection con) {
 	LOCK_IF_NO_THREAD_LOCAL();
-	assert(con < connections.size() && connections[con] != nullptr);
-	return connections[con];
+	assert(con > 0 && con <= connections.size() && connections[con - 1] != nullptr);
+	return connections[con - 1];
 }
 
 result connect(std::string host, uint16_t port, connection& outCon) {
@@ -60,7 +60,7 @@ result connect(std::string host, uint16_t port, connection& outCon) {
 	if (!err) {
 		LOCK_IF_NO_THREAD_LOCAL();
 		connections.push_back(newSocket);
-		outCon = connections.size() - 1;
+		outCon = connections.size();
 		return result::ok;
 	} else {
 		outCon = -1;
@@ -70,14 +70,14 @@ result connect(std::string host, uint16_t port, connection& outCon) {
 
 void closeConnection(connection con) {
 	LOCK_IF_NO_THREAD_LOCAL();
-	assert(con < connections.size() && connections[con] != nullptr);
+	assert(con > 0 && con <= connections.size() && connections[con-1] != nullptr);
 	try {
-		connections[con]->shutdown(tcp::socket::shutdown_both);
-		connections[con]->close();
+		connections[con-1]->shutdown(tcp::socket::shutdown_both);
+		connections[con-1]->close();
 	} catch (std::exception const& e) {
 	}
-	delete connections[con];
-	connections[con] = nullptr;
+	delete connections[con-1];
+	connections[con-1] = nullptr;
 }
 
 size_t bytesAvailable(connection con) {

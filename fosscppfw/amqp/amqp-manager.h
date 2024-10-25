@@ -59,7 +59,7 @@ private:
 
 	std::string name_;
 	AMQP::ConnectionConfig connectionConfig_;
-	unsigned sockConn_ = 0;
+	int sockConn_ = 0;
 	bool socketConnected_ = false;
 	AMQP::Connection *amqpConnection_ = nullptr;
 	AMQP::Channel* amqpChannel_ = nullptr;

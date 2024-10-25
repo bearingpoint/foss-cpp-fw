@@ -8,7 +8,7 @@
 
 namespace net {
 
-using connection = unsigned;
+using connection = int;
 using newConnectionCallback = std::function<void(result, connection)>;
 
 // attempts to connect to a remote host, blocking.
