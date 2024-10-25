@@ -92,7 +92,7 @@ std::string strLower(std::string const& str) {
 }
 
 void makeLowercase(std::vector<std::string>& strings) {
-	std::transform(vec.begin(), vec.end(), vec.begin(),
+	std::transform(strings.begin(), strings.end(), strings.begin(),
 		[](std::string& str) {
 			std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
 			return str;
