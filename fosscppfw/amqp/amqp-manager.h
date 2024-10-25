@@ -21,8 +21,16 @@
 */
 class AMQPManager : private AMQP::ConnectionHandler {
 public:
-	AMQPManager(AMQP::ConnectionConfig connectionConfig, std::vector<AMQP::QueueConfig> mqQueues, std::vector<AMQP::ExchangeConfig> mqExchanges = {});
+	AMQPManager(
+		std::string const& name,
+		AMQP::ConnectionConfig connectionConfig,
+		std::vector<AMQP::QueueConfig> mqQueues,
+		std::vector<AMQP::ExchangeConfig> mqExchanges = {}
+	);
 	~AMQPManager();
+
+	AMQPManager(AMQPManager const& other) = delete;
+	AMQPManager(AMQPManager&& other) = delete;
 
 	/**
 	 * Process any pending data and performs network communication with the AMQP server.
@@ -49,6 +57,7 @@ private:
 	void reconnect();
 	void verifyTimeouts();
 
+	std::string name_;
 	AMQP::ConnectionConfig connectionConfig_;
 	unsigned sockConn_ = 0;
 	bool socketConnected_ = false;

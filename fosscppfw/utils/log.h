@@ -68,8 +68,7 @@
 		std::lock_guard<std::mutex> sinkLock(*sinkPtr->getMutex());\
 		if (&sinkPtr->getStream() == &std::cerr) \
 			sinkPtr->getStream() << ioModif::FG_RED;\
-		sinkPtr->getStream() << "!!!ERRORLOG!!!";\
-		logger::instance().writeprefix(sinkPtr->getStream());\
+		logger::instance().writeprefix(sinkPtr->getStream(), true);\
 		sinkPtr->getStream() << X << "\n";\
 		if (&sinkPtr->getStream() == &std::cerr) \
 			sinkPtr->getStream() << ioModif::RESET;\
@@ -113,7 +112,7 @@ public:
 
 class logger {
 public:
-	void writeprefix(std::ostream &stream);
+	void writeprefix(std::ostream &stream, bool error = false);
 
 	// returns old stream
 	static std::ostream* setAdditionalLogStream(std::ostream* newStream) {
