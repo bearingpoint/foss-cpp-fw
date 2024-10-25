@@ -41,6 +41,13 @@ std::vector<std::string> readFileLines(std::string const& filePath);
 std::string readFileContent(std::string const& filePath, unsigned startIndex, unsigned endIndex);
 std::string normalizePath(std::string const& inPath);
 
+struct FileAccessOptions {
+	/** if <= 0, the operation will fail at the first error. */
+	int numberOfRetries = 0;
+	/** if numberOfRetries is set, sleep this many seconds between attepmts. */
+	int sleepBetweenRetriesSec = 0;
+};
+
 /**
  * Use this class to access files (READ / GETSIZE) that have UNICODE characters in their paths or names.
  * This class DOESN'T DEAL with UNICODE contents within the file, it simply returns the binary data read from the file.
@@ -52,7 +59,7 @@ std::string normalizePath(std::string const& inPath);
 */
 class UnicodeFileReader {
 public:
-	UnicodeFileReader(std::string const& path);
+	UnicodeFileReader(std::string const& path, FileAccessOptions options = FileAccessOptions());
 	~UnicodeFileReader();
 
 	uint64_t getSize() const;

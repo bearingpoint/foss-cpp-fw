@@ -9,6 +9,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <thread>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -50,7 +51,10 @@ private:
 
 class WindowsFileReader : public BaseFileReader {
 public:
-	WindowsFileReader(std::string const& path): path_(path) {
+	WindowsFileReader(
+		std::string const& path,
+		filesystem::FileAccessOptions options = filesystem::FileAccessOptions()
+	): path_(path) {
 		char absolutePath[2048];
 		if (path.size() < MAX_PATH) {
 			DWORD res = GetFullPathNameA(path.c_str(), sizeof(absolutePath), absolutePath, NULL);
@@ -64,7 +68,15 @@ public:
 			strncpy(absolutePath, path.c_str(), sizeof(absolutePath));
 		}
 		auto wPath = str2Wstr(std::string("\\\\?\\") + absolutePath);
-		file_ = CreateFile(wPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		do {
+			file_ = CreateFile(wPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (file_ == INVALID_HANDLE_VALUE) {
+				if (options.numberOfRetries > 0) {
+					std::this_thread::sleep_for(std::chrono::seconds(options.sleepBetweenRetriesSec));
+				}
+				options.numberOfRetries--;
+			}
+		} while (file_ == INVALID_HANDLE_VALUE && options.numberOfRetries >= 0);
 		if (file_ == INVALID_HANDLE_VALUE) {
 			throw std::runtime_error(std::string("Unable to open file ") + path);
 		}
@@ -103,8 +115,19 @@ private:
 
 class LinuxFileReader : public BaseFileReader {
 public:
-	LinuxFileReader(std::string const& path): path_(path) {
-		file_ = fopen(path.c_str(), "rb");
+	LinuxFileReader(
+		std::string const& path,
+		filesystem::FileAccessOptions options = filesystem::FileAccessOptions()
+	): path_(path) {
+		do {
+			file_ = fopen(path.c_str(), "rb");
+			if (!file_) {
+				if (options.numberOfRetries > 0) {
+					std::this_thread::sleep_for(std::chrono::seconds(options.sleepBetweenRetriesSec));
+				}
+				options.numberOfRetries--;
+			}
+		} while (!file_ && options.numberOfRetries >= 0);
 		if (!file_) {
 			throw std::runtime_error(std::string("Unable to open file ") + path);
 		}
@@ -143,11 +166,14 @@ private:
 
 #endif
 
-filesystem::UnicodeFileReader::UnicodeFileReader(std::string const& path) {
+filesystem::UnicodeFileReader::UnicodeFileReader(
+	std::string const& path,
+	filesystem::FileAccessOptions options /* = filesystem::FileAccessOptions() */
+) {
 #ifdef __WIN32__
-	pImpl_ = new WindowsFileReader(path);
+	pImpl_ = new WindowsFileReader(path, options);
 #else
-	pImpl_ = new LinuxFileReader(path);
+	pImpl_ = new LinuxFileReader(path, options);
 #endif
 }
 

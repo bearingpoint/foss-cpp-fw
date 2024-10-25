@@ -31,5 +31,4 @@ result write(connection con, const void* buffer, size_t count);
 // returns ok on success, error code on failure.
 // the call is blocking.
 result read(connection con, void* buffer, size_t bufSize, size_t count);
-
 }

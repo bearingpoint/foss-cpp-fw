@@ -24,8 +24,6 @@ public:
 	AMQPManager(AMQP::ConnectionConfig connectionConfig, std::vector<AMQP::QueueConfig> mqQueues, std::vector<AMQP::ExchangeConfig> mqExchanges = {});
 	~AMQPManager();
 
-	void run(std::function<void()> idleCallback = nullptr);
-
 	/**
 	 * Process any pending data and performs network communication with the AMQP server.
 	 * All messages are being sent and received during this function.
@@ -33,13 +31,16 @@ public:
 	 *
 	 * !!! This function must be called in a loop at short intervals throughout the application's lifetime !!!
 	 *
-	 * @param block if true, this function will block until data can be read from the socket, otherwise it will
-	 * return immediately with "false" as the return value. Pass true when you have nothing else to do and want
-	 * to wait until there is data on the socket
-	 *
 	 * @returns true if any data was processed, false otherwise (if the queue is idle at the moment)
 	*/
-	// bool step(bool block);
+	bool step();
+
+	/**
+	 * Convenience function; runs step() in a loop and calls idleCallback each time the queue is idle
+	 * @param idleCallback a callback that is called when the queue is idle. Must return true if the processing should continue
+	 * or false if the loop should be terminated.
+	 */
+	void run(std::function<bool()> idleCallback);
 
 private:
 	void setupQueues(std::vector<AMQP::QueueConfig> const& queues);

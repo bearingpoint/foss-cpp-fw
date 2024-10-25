@@ -71,12 +71,33 @@ std::vector<std::string> strSplitByRegex(std::string str, std::regex r) {
 	return parts;
 }
 
+std::vector<std::string> strSplit2(std::string const& text, char sep) { // FIXME better name
+	std::vector<std::string> result;
+	std::istringstream iss(text);
+	std::string item;
+	while (std::getline(iss, item, sep)) {
+		if (!item.empty() || !iss.eof()) {
+			result.push_back(item);
+		}
+	}
+	return result;
+}
+
 std::string strLower(std::string const& str) {
 	std::string result;
 	std::transform(str.begin(), str.end(), std::back_inserter(result), [] (char c) {
 		return std::tolower(c);
 	});
 	return result;
+}
+
+void makeLowercase(std::vector<std::string>& strings) {
+	std::transform(vec.begin(), vec.end(), vec.begin(),
+		[](std::string& str) {
+			std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+			return str;
+		}
+	);
 }
 
 std::string strUpper(std::string const& str) {

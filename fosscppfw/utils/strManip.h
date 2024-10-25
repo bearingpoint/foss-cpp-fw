@@ -19,6 +19,9 @@ std::vector<std::string> strSplit(std::string const& text, char sep);
 /** splits a string at all positions where the given regex matches (the regex is used as separator). */
 std::vector<std::string> strSplitByRegex(std::string str, std::regex r);
 
+// FIXME comment and name
+std::vector<std::string> strSplit2(std::string const& text, char sep);
+
 /** Joins a list of strings adding the "delimiter" between them */
 template<typename T>
 std::string strJoin(std::vector<T> const& parts, std::string const& delimiter);
@@ -34,6 +37,9 @@ std::vector<std::string> strSplitPreserveQuotes(std::string const& text, std::ve
 std::string strLower(std::string const& str);
 /** Transforms a string into uppercase */
 std::string strUpper(std::string const& str);
+
+/** Converts all strings in the list to lowercase, in place */
+void makeLowercase(std::vector<std::string>& strings);
 
 /** Replaces all occurrences of [what] with [replacement] directly into the target string. */
 void replaceAllSubstr(std::string &str, std::string const& what, std::string const& replacement);
