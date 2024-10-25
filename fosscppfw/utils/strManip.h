@@ -19,9 +19,6 @@ std::vector<std::string> strSplit(std::string const& text, char sep);
 /** splits a string at all positions where the given regex matches (the regex is used as separator). */
 std::vector<std::string> strSplitByRegex(std::string str, std::regex r);
 
-// FIXME comment and name
-std::vector<std::string> strSplit2(std::string const& text, char sep);
-
 /** Joins a list of strings adding the "delimiter" between them */
 template<typename T>
 std::string strJoin(std::vector<T> const& parts, std::string const& delimiter);
