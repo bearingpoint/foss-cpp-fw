@@ -9,6 +9,8 @@
 #pragma once
 
 #include "amqp.h"
+#include "../net/connection.h"
+
 #include <amqpcpp.h>
 
 #include <functional>
@@ -59,7 +61,7 @@ private:
 
 	std::string name_;
 	AMQP::ConnectionConfig connectionConfig_;
-	int sockConn_ = 0;
+	net::connection sockConn_ = nullptr;
 	bool socketConnected_ = false;
 	AMQP::Connection *amqpConnection_ = nullptr;
 	AMQP::Channel* amqpChannel_ = nullptr;

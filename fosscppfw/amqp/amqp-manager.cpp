@@ -9,7 +9,6 @@
 #include "amqp-manager.h"
 
 #include "../utils/log.h"
-#include "../net/connection.h"
 #include "../utils/ioModif.h"
 #include "../utils/strbld.h"
 #include "../perf/marker.h"
@@ -56,6 +55,7 @@ AMQPManager::AMQPManager(
 	, queues_(std::move(mqQueues))
 	, exchanges_(std::move(mqExchanges))
 {
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	// set up the socket connection to the RabbitMQ server
 	reconnect();
 }
@@ -83,7 +83,7 @@ void AMQPManager::run(std::function<bool()> idleCallback) {
 }
 
 bool AMQPManager::step() {
-	LOGPREFIX(strbld() << "AMQPManager::" << name_);
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	if (!buffer_) {
 		// this is the first time we're called, must set up stuff
 		amqpMaxFrameSize_ = amqpConnection_->maxFrame();
@@ -161,7 +161,6 @@ bool AMQPManager::step() {
 }
 
 void AMQPManager::reconnect() {
-	LOGPREFIX(strbld() << "AMQPManager::" << name_);
 	AMQPLOGLN("Connecting...")
 	if (socketConnected_) {
 		net::closeConnection(sockConn_);
@@ -301,7 +300,7 @@ void AMQPManager::verifyTimeouts() {
 // AMQP::ConnectionHandler methods follow :::::::::::::::::::::::
 
 void AMQPManager::onData(AMQP::Connection *connection, const char *data, size_t size) {
-	LOGPREFIX(strbld() << "AMQPManager::" << name_);
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	DEBUGAMQPLOG(EM_ON << "AMQP send data (size " << size << ")" << EM_OFF);
 	size_t sentSize = 0;
 	while (sentSize < size) {
@@ -332,13 +331,13 @@ void AMQPManager::onData(AMQP::Connection *connection, const char *data, size_t 
 }
 
 void AMQPManager::onReady(AMQP::Connection *connection) {
-	LOGPREFIX(strbld() << "AMQPManager::" << name_);
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	DEBUGAMQPLOG("connection::onready()");
 	printConnectionStatus(connection);
 }
 
 void AMQPManager::onError(AMQP::Connection *connection, const char *message) {
-	LOGPREFIX(strbld() << "AMQPManager::" << name_);
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	ERRORLOG("AMQP disconnected: " << message);
 	printConnectionStatus(connection);
 	AMQPLOGLN("Attempting to reconnect...");
@@ -346,7 +345,7 @@ void AMQPManager::onError(AMQP::Connection *connection, const char *message) {
 }
 
 void AMQPManager::onClosed(AMQP::Connection *connection) {
-	LOGPREFIX(strbld() << "AMQPManager::" << name_);
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	onError(connection, "Connection closed by peer.");
 }
 
@@ -355,7 +354,7 @@ uint16_t AMQPManager::onNegotiate(AMQP::Connection *connection, uint16_t interva
 }
 
 void AMQPManager::onHeartbeat(AMQP::Connection *connection) {
-	LOGPREFIX(strbld() << "AMQPManager::" << name_);
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	timeLastDataReceived_ = std::chrono::system_clock::now();
 	DEBUGAMQPLOG("Heartbeat received");
 }

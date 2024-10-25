@@ -8,8 +8,8 @@
 
 namespace net {
 
-using connection = int;
-using newConnectionCallback = std::function<void(result, connection)>;
+struct ConnectionInfo;
+using connection = ConnectionInfo*;
 
 // attempts to connect to a remote host, blocking.
 // returns ok and fills outCon on success.
