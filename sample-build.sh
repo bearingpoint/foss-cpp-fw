@@ -36,7 +36,7 @@ if [ ! -d src/version ]; then
 fi
 VERSION=`git describe`
 if [[ $? = 0 ]]; then
-	printf "#pragma once\n#include <string>\n\nstatic const std::string VERSION = \"$VERSION\";\n" > src/version/_version.h
+	printf "#pragma once\n#include <string>\n\nstatic const std::string VERSION = \"$VERSION\";\n> > src/version/_version.h
 else
 	# otherwise this is not a git repo, so the _version.h file must have been already written by who archived the sources.
 	if [ ! -f src/version/_version.h ]; then
