@@ -10,11 +10,12 @@
 
 #ifdef ENABLE_PERF_PROFILING
 
-#include <cstring>
+#include <string>
 #include <vector>
 #include <memory>
 #include <numeric>
-#include <string>
+
+#include <cstring>
 
 namespace perf {
 
