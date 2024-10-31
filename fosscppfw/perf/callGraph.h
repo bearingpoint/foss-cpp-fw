@@ -4,9 +4,7 @@
  *  Created on: Aug 7, 2016
  *	  Author: bog
  */
-
-#ifndef PERF_CALLGRAPH_H_
-#define PERF_CALLGRAPH_H_
+#pragma once
 
 #ifdef ENABLE_PERF_PROFILING
 
@@ -63,5 +61,3 @@ private:
 } // namespace
 
 #endif // ENABLE_PERF_PROFILING
-
-#endif /* PERF_CALLGRAPH_H_ */

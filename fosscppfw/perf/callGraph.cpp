@@ -4,7 +4,6 @@
  *  Created on: Aug 7, 2016
  *	  Author: bog
  */
-
 #ifdef ENABLE_PERF_PROFILING
 
 #include "./callGraph.h"
