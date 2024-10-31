@@ -10,7 +10,6 @@
 #include "./callGraph.h"
 #include "./results.h"
 
-#include <cstring>
 #include <algorithm>
 
 namespace perf {

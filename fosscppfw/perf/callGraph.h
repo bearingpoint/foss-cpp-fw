@@ -12,6 +12,7 @@
 
 #include "section.h"
 
+#include <string>
 #include <stack>
 #include <unordered_map>
 #include <memory>
