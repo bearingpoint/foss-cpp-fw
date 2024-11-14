@@ -35,6 +35,9 @@ std::string strLower(std::string const& str);
 /** Transforms a string into uppercase */
 std::string strUpper(std::string const& str);
 
+/** Converts all strings in the list to lowercase, in place */
+void makeLowercase(std::vector<std::string>& strings);
+
 /** Replaces all occurrences of [what] with [replacement] directly into the target string. */
 void replaceAllSubstr(std::string &str, std::string const& what, std::string const& replacement);
 std::string trim(const std::string& str);

@@ -4,13 +4,11 @@
  *  Created on: Aug 7, 2016
  *	  Author: bog
  */
-
 #ifdef ENABLE_PERF_PROFILING
 
 #include "./callGraph.h"
 #include "./results.h"
 
-#include <cstring>
 #include <algorithm>
 
 namespace perf {
@@ -32,7 +30,7 @@ void CallGraph::pushSection(const char name[], bool deadTime) {
 			? getCrtThreadInstance().rootTrees_
 			: getCrtThreadInstance().crtStack_.top()->callees_;
 	auto treeIt = std::find_if(treeContainer.begin(), treeContainer.end(), [&name] (auto &sec) {
-		return !std::strcmp(sec->name_, name);
+		return !std::strncmp(sec->name_, name, sizeof(sec->name_) / sizeof(sec->name_[0]) - 1);
 	});
 	if (treeIt == treeContainer.end()) {
 		treeContainer.emplace_back(sectionData::make_shared(name));

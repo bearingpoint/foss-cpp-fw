@@ -15,6 +15,18 @@ public:
 		return sstream_.str();
 	}
 
+	bool empty() {
+		return size() == 0;
+	}
+
+	size_t size() {
+		size_t crtPos = sstream_.tellg();
+		sstream_.seekg(0, std::ios::end);
+		size_t size = sstream_.tellg();
+		sstream_.seekg(crtPos, std::ios::beg);
+		return size;
+	}
+
 	template <class C>
 	strbld& operator << (C const& c) {
 		sstream_ << c;

@@ -9,7 +9,6 @@
 #include "amqp-manager.h"
 
 #include "../utils/log.h"
-#include "../net/connection.h"
 #include "../utils/ioModif.h"
 #include "../utils/strbld.h"
 #include "../perf/marker.h"
@@ -27,9 +26,10 @@
 #define DEBUGAMQPLOG(X)
 #endif
 
-#define AMQPLOGLN(X) LOGLN(AMQP_LOG_COLOR << "[AMQP] " << X)
+#define AMQPLOGLN(X) LOGLN(AMQP_LOG_COLOR << X)
 
 static const size_t MAX_SEND_FRAME_SIZE = 4096; // bytes
+static const size_t MAX_REPLY_PAYLOAD_SIZE = 32768; // bytes
 
 void printConnectionStatus(AMQP::Connection *connection) {
 	DEBUGAMQPLOG("Connection status: +++++++++++++++++++++++++++++\n"
@@ -45,14 +45,20 @@ void printConnectionStatus(AMQP::Connection *connection) {
 
 
 AMQPManager::AMQPManager(
+	std::string const& name,
 	AMQP::ConnectionConfig connectionConfig,
 	std::vector<AMQP::QueueConfig> mqQueues,
 	std::vector<AMQP::ExchangeConfig> mqExchanges
 )
-	: connectionConfig_(connectionConfig)
+	: name_(name)
+	, connectionConfig_(connectionConfig)
 	, queues_(std::move(mqQueues))
 	, exchanges_(std::move(mqExchanges))
-{}
+{
+	LOGPREFIX(strbld() << "AMQP::" << name_);
+	// set up the socket connection to the RabbitMQ server
+	reconnect();
+}
 
 AMQPManager::~AMQPManager() {
 	if (amqpChannel_) {
@@ -67,89 +73,94 @@ AMQPManager::~AMQPManager() {
 	}
 }
 
-void AMQPManager::run(std::function<void()> idleCallback) {
-	// set up the socket connection to the RabbitMQ server
-	reconnect();
-
-	amqpMaxFrameSize_ = amqpConnection_->maxFrame();
-	bufferSize_ = 2 * amqpMaxFrameSize_;
-	buffer_ = (char*)malloc(bufferSize_);
-
-	// start the loop
-	while (true) {
-		try {
-			const size_t expectedDataSize = amqpConnection_->expected();
-			bool socketIdle = false;
-			if (bufferWriteOffset_ - bufferReadOffset_ < expectedDataSize) {
-				if (expectedDataSize + bufferWriteOffset_ > bufferSize_) {
-					// we must increase the buffer to accommodate more data
-					bufferSize_ = std::max(2 * bufferSize_, expectedDataSize + bufferWriteOffset_);
-					void* newBuffer = realloc(buffer_, bufferSize_);
-					if (!newBuffer) {
-						// failed to realloc
-						throw std::runtime_error("Failed to realloc a larger buffer for AMQP");
-					}
-					buffer_ = (char*)newBuffer;
-				}
-				size_t bytesToRead = std::min(net::bytesAvailable(sockConn_), expectedDataSize);
-				if (bytesToRead) {
-					try {
-						net::result res = net::read(sockConn_, buffer_ + bufferWriteOffset_, bufferSize_ - bufferWriteOffset_, bytesToRead);
-						if (res != net::result::ok) {
-							throw std::runtime_error(strbld() << "Error while reading from socket: " << net::errorString(res));
-						}
-						timeLastDataReceived_ = std::chrono::system_clock::now();
-					} catch (std::exception &e) {
-						ERRORLOG("Exception reading " << bytesToRead << " bytes from socket: " << e.what());
-						throw e;
-					}
-					bufferWriteOffset_ += bytesToRead;
-				} else {
-					socketIdle = true;
-				}
-			}
-			const size_t sizeToParse = std::min(expectedDataSize, bufferWriteOffset_ - bufferReadOffset_);
-			if (sizeToParse > 0) {
-				DEBUGAMQPLOG(EM_ON << "Parsing " << sizeToParse << " bytes of AMQP data." << EM_OFF);
-				size_t parsedSize;
-				try {
-					parsedSize = amqpConnection_->parse(buffer_ + bufferReadOffset_, sizeToParse);
-				} catch (std::exception const& err) {
-					ERRORLOG("Failed to parse AMQP data (sizeToParse: " << sizeToParse << "): " << err.what());
-					throw err;
-				}
-				bufferReadOffset_ += parsedSize;
-				if (bufferSize_ - bufferWriteOffset_ < bufferReadOffset_) {
-					// there's more unused buffer to the left of the used portion than to the right.
-					// we move everything to the beginning of the buffer
-					// (there may still be some additional unread data between bufferReadOffset_ and bufferWriteOffset_ that we must not lose)
-					auto const oldDataStart = bufferReadOffset_;
-					auto const oldDataSize = (bufferWriteOffset_ > bufferReadOffset_) ? bufferWriteOffset_ - bufferReadOffset_ : 0;
-					bufferWriteOffset_ = 0;
-					bufferReadOffset_ = 0;
-					if (oldDataSize) {
-						DEBUGAMQPLOG("Recycling " << oldDataSize << " bytes of data while rotating the buffer.");
-						memcpy(buffer_, buffer_ + oldDataStart, oldDataSize);
-						bufferWriteOffset_ = oldDataSize;
-					}
-				}
-			} else if (socketIdle) {
-				// seems we're idle
-				verifyTimeouts();
-				if (idleCallback) {
-					idleCallback();
-				}
-			}
-		} catch (std::exception &e) {
-			ERRORLOG("Exception while reading or parsing AMQP data: " << e.what());
-			AMQPLOGLN("Error encountered, reconnecting...");
-			reconnect();
+void AMQPManager::run(std::function<bool()> idleCallback) {
+	bool shouldContinue = true;
+	while (shouldContinue) {
+		if (!step()) {
+			shouldContinue = idleCallback();
 		}
 	}
 }
 
+bool AMQPManager::step() {
+	LOGPREFIX(strbld() << "AMQP::" << name_);
+	if (!buffer_) {
+		// this is the first time we're called, must set up stuff
+		amqpMaxFrameSize_ = amqpConnection_->maxFrame();
+		bufferSize_ = 2 * amqpMaxFrameSize_;
+		buffer_ = (char*)malloc(bufferSize_);
+	}
+
+	try {
+		const size_t expectedDataSize = amqpConnection_->expected();
+		bool socketIdle = false;
+		if (bufferWriteOffset_ - bufferReadOffset_ < expectedDataSize) {
+			if (expectedDataSize + bufferWriteOffset_ > bufferSize_) {
+				// we must increase the buffer to accommodate more data
+				bufferSize_ = std::max(2 * bufferSize_, expectedDataSize + bufferWriteOffset_);
+				void* newBuffer = realloc(buffer_, bufferSize_);
+				if (!newBuffer) {
+					// failed to realloc
+					throw std::runtime_error("Failed to realloc a larger buffer for AMQP");
+				}
+				buffer_ = (char*)newBuffer;
+			}
+			size_t bytesToRead = std::min(net::bytesAvailable(sockConn_), expectedDataSize);
+			if (bytesToRead) {
+				try {
+					net::result res = net::read(sockConn_, buffer_ + bufferWriteOffset_, bufferSize_ - bufferWriteOffset_, bytesToRead);
+					if (res != net::result::ok) {
+						throw std::runtime_error(strbld() << "Error while reading from socket: " << net::errorString(res));
+					}
+					timeLastDataReceived_ = std::chrono::system_clock::now();
+				} catch (std::exception &e) {
+					ERRORLOG("Exception reading " << bytesToRead << " bytes from socket: " << e.what());
+					throw e;
+				}
+				bufferWriteOffset_ += bytesToRead;
+			} else {
+				socketIdle = true;
+			}
+		}
+		const size_t sizeToParse = std::min(expectedDataSize, bufferWriteOffset_ - bufferReadOffset_);
+		if (sizeToParse > 0) {
+			DEBUGAMQPLOG(EM_ON << "Parsing " << sizeToParse << " bytes of AMQP data." << EM_OFF);
+			size_t parsedSize;
+			try {
+				parsedSize = amqpConnection_->parse(buffer_ + bufferReadOffset_, sizeToParse);
+			} catch (std::exception const& err) {
+				ERRORLOG("Failed to parse AMQP data (sizeToParse: " << sizeToParse << "): " << err.what());
+				throw err;
+			}
+			bufferReadOffset_ += parsedSize;
+			if (bufferSize_ - bufferWriteOffset_ < bufferReadOffset_) {
+				// there's more unused buffer to the left of the used portion than to the right.
+				// we move everything to the beginning of the buffer
+				// (there may still be some additional unread data between bufferReadOffset_ and bufferWriteOffset_ that we must not lose)
+				auto const oldDataStart = bufferReadOffset_;
+				auto const oldDataSize = (bufferWriteOffset_ > bufferReadOffset_) ? bufferWriteOffset_ - bufferReadOffset_ : 0;
+				bufferWriteOffset_ = 0;
+				bufferReadOffset_ = 0;
+				if (oldDataSize) {
+					DEBUGAMQPLOG("Recycling " << oldDataSize << " bytes of data while rotating the buffer.");
+					memcpy(buffer_, buffer_ + oldDataStart, oldDataSize);
+					bufferWriteOffset_ = oldDataSize;
+				}
+			}
+		} else if (socketIdle) {
+			// seems we're idle
+			verifyTimeouts();
+			return false;
+		}
+	} catch (std::exception &e) {
+		ERRORLOG("Exception while reading or parsing AMQP data: " << e.what());
+		AMQPLOGLN("Error encountered, reconnecting...");
+		reconnect();
+	}
+	return true;
+}
+
 void AMQPManager::reconnect() {
-	LOGPREFIX("AMQPManager");
 	AMQPLOGLN("Connecting...")
 	if (socketConnected_) {
 		net::closeConnection(sockConn_);
@@ -184,6 +195,7 @@ void AMQPManager::reconnect() {
 }
 
 void AMQPManager::initSocketConnection() {
+	LOGPREFIX("initSocketConnection");
 	socketConnected_ = false;
 	do {
 		AMQPLOGLN("Connecting to RabbitMQ...");
@@ -201,6 +213,7 @@ void AMQPManager::initSocketConnection() {
 }
 
 void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
+	LOGPREFIX("setupQueues");
 	// declare queues and install queue handlers provided by caller
 	for (auto &qConfig : queues) {
 		int queueFlags = 0;
@@ -236,12 +249,26 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 					PERF_MARKER("AMQP-send-reply");
 					// this is the result callback, which should ALWAYS be invoked from the main thread
 					DEBUGAMQPLOG("Sending back reply on queue '" << replyTo << "'");
-					AMQP::Envelope envelope(result.c_str(), result.size());
-					envelope.setCorrelationID(correlationId);
-					// send the reply
-					amqpChannel_->publish("", replyTo, envelope, AMQP::mandatory);
-					// acknowledge the initial message so it can be removed from the queue
-					amqpChannel_->ack(deliveryTag);
+					size_t bytesSent = 0;
+					while (bytesSent < result.size()) {
+						size_t messageSize = std::min(result.size() - bytesSent, MAX_REPLY_PAYLOAD_SIZE);
+						bool isMultipart = result.size() > MAX_REPLY_PAYLOAD_SIZE;
+						bool isLastPart = bytesSent + messageSize == result.size();
+						AMQP::Envelope envelope(&result[bytesSent], messageSize);
+						envelope.setCorrelationID(correlationId);
+						if (isMultipart && !isLastPart) {
+							envelope.setTypeName("multipart/incomplete");
+						}
+						if (amqpChannel_) {
+							// send the reply
+							amqpChannel_->publish("", replyTo, envelope, AMQP::mandatory);
+						}
+						bytesSent += messageSize;
+					}
+					if (amqpChannel_) {
+						// acknowledge the initial message so it can be removed from the queue
+						amqpChannel_->ack(deliveryTag);
+					}
 				});
 			});
 		});
@@ -273,6 +300,7 @@ void AMQPManager::verifyTimeouts() {
 // AMQP::ConnectionHandler methods follow :::::::::::::::::::::::
 
 void AMQPManager::onData(AMQP::Connection *connection, const char *data, size_t size) {
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	DEBUGAMQPLOG(EM_ON << "AMQP send data (size " << size << ")" << EM_OFF);
 	size_t sentSize = 0;
 	while (sentSize < size) {
@@ -303,11 +331,13 @@ void AMQPManager::onData(AMQP::Connection *connection, const char *data, size_t 
 }
 
 void AMQPManager::onReady(AMQP::Connection *connection) {
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	DEBUGAMQPLOG("connection::onready()");
 	printConnectionStatus(connection);
 }
 
 void AMQPManager::onError(AMQP::Connection *connection, const char *message) {
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	ERRORLOG("AMQP disconnected: " << message);
 	printConnectionStatus(connection);
 	AMQPLOGLN("Attempting to reconnect...");
@@ -315,6 +345,7 @@ void AMQPManager::onError(AMQP::Connection *connection, const char *message) {
 }
 
 void AMQPManager::onClosed(AMQP::Connection *connection) {
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	onError(connection, "Connection closed by peer.");
 }
 
@@ -323,6 +354,7 @@ uint16_t AMQPManager::onNegotiate(AMQP::Connection *connection, uint16_t interva
 }
 
 void AMQPManager::onHeartbeat(AMQP::Connection *connection) {
+	LOGPREFIX(strbld() << "AMQP::" << name_);
 	timeLastDataReceived_ = std::chrono::system_clock::now();
 	DEBUGAMQPLOG("Heartbeat received");
 }

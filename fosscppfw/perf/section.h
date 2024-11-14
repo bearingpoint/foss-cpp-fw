@@ -4,23 +4,22 @@
  *  Created on: Jul 22, 2016
  *	  Author: bog
  */
-
-#ifndef PERF_SECTION_H_
-#define PERF_SECTION_H_
+#pragma once
 
 #ifdef ENABLE_PERF_PROFILING
 
-#include <cstring>
+#include <string>
 #include <vector>
 #include <memory>
 #include <numeric>
-#include <string>
+
+#include <cstring>
 
 namespace perf {
 
 class sectionData {
 public:
-	std::string getName() const { return name_; }
+	std::basic_string<char> getName() const { return name_; }
 	bool isDeadTime() const { return deadTime_; }
 	uint64_t getInclusiveNanosec() const { return nanoseconds_; }
 	uint64_t getExclusiveNanosec() const {
@@ -60,5 +59,3 @@ private:
 }
 
 #endif // ENABLE_PERF_PROFILING
-
-#endif /* PERF_SECTION_H_ */

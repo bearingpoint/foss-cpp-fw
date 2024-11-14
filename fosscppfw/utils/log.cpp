@@ -57,9 +57,13 @@ void logger::pop_prefix() {
 #endif
 }
 
-void logger::writeprefix(std::ostream &stream) {
+void logger::writeprefix(std::ostream &stream, bool error) {
 	// 1. write timestamp
 	stream << "{" << formatCrtDateTime() << "} ";
+
+	if (error) {
+		stream << " !ERROR! ";
+	}
 
 	// 2. write logger name:
 #if SHARED_LOGGER_INSTANCE

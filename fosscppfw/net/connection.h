@@ -8,8 +8,8 @@
 
 namespace net {
 
-using connection = unsigned;
-using newConnectionCallback = std::function<void(result, connection)>;
+struct ConnectionInfo;
+using connection = ConnectionInfo*;
 
 // attempts to connect to a remote host, blocking.
 // returns ok and fills outCon on success.
@@ -31,5 +31,4 @@ result write(connection con, const void* buffer, size_t count);
 // returns ok on success, error code on failure.
 // the call is blocking.
 result read(connection con, void* buffer, size_t bufSize, size_t count);
-
 }

@@ -7,14 +7,8 @@
 #include <thread>
 #include <atomic>
 
-#ifdef DISABLE_THREAD_LOCAL
-#define OPTIONAL_THREAD_LOCAL
-#else
-#define OPTIONAL_THREAD_LOCAL thread_local
-#endif
-
 /*
-	IMPORTANT ADDRESSES:
+	IMPORTANT LINKS:
 
 	ASIO multicast examples:
 		* sender
@@ -29,22 +23,15 @@ namespace net {
 
 using asio::ip::tcp;
 
-static OPTIONAL_THREAD_LOCAL asio::io_context theIoContext;
-static OPTIONAL_THREAD_LOCAL std::vector<tcp::socket*> connections;
-#ifdef DISABLE_THREAD_LOCAL
-static std::mutex mtxConnections;
-#define LOCK_IF_NO_THREAD_LOCAL() std::lock_guard<std::mutex> lockIfNoThreadLocal(mtxConnections)
-#else
-#define LOCK_IF_NO_THREAD_LOCAL()
-#endif
+struct ConnectionInfo {
+	tcp::socket* socket;
+
+	ConnectionInfo(tcp::socket* socket) : socket(socket) {}
+};
+
+static asio::io_context theIoContext;
 
 static result translateError(const asio::error_code &err);
-
-static tcp::socket* getSocket(connection con) {
-	LOCK_IF_NO_THREAD_LOCAL();
-	assert(con < connections.size() && connections[con] != nullptr);
-	return connections[con];
-}
 
 result connect(std::string host, uint16_t port, connection& outCon) {
 	tcp::resolver resolver(theIoContext);
@@ -58,45 +45,41 @@ result connect(std::string host, uint16_t port, connection& outCon) {
 	asio::error_code err;
 	asio::connect(*newSocket, endpoints, err);
 	if (!err) {
-		LOCK_IF_NO_THREAD_LOCAL();
-		connections.push_back(newSocket);
-		outCon = connections.size() - 1;
+		outCon = new ConnectionInfo(newSocket);
 		return result::ok;
 	} else {
-		outCon = -1;
+		outCon = nullptr;
 		return translateError(err);
 	}
 }
 
 void closeConnection(connection con) {
-	LOCK_IF_NO_THREAD_LOCAL();
-	assert(con < connections.size() && connections[con] != nullptr);
+	assert(con && con->socket);
 	try {
-		connections[con]->shutdown(tcp::socket::shutdown_both);
-		connections[con]->close();
+		con->socket->shutdown(tcp::socket::shutdown_both);
+		con->socket->close();
 	} catch (std::exception const& e) {
 	}
-	delete connections[con];
-	connections[con] = nullptr;
+	con->socket = nullptr;
 }
 
 size_t bytesAvailable(connection con) {
-	auto socket = getSocket(con);
-	return socket->available();
+	assert(con && con->socket);
+	return con->socket->available();
 }
 
 result write(connection con, const void* buffer, size_t count) {
-	auto socket = getSocket(con);
+	assert(con && con->socket);
 	asio::error_code err;
-	asio::write(*socket, asio::buffer(buffer, count), err);
+	asio::write(*con->socket, asio::buffer(buffer, count), err);
 	return translateError(err);
 }
 
 result read(connection con, void* buffer, size_t bufSize, size_t count) {
+	assert(con && con->socket);
 	assert(count <= bufSize);
-	auto socket = getSocket(con);
 	asio::error_code err;
-	asio::read(*socket, asio::buffer(buffer, count), err);
+	asio::read(*con->socket, asio::buffer(buffer, count), err);
 	return translateError(err);
 }
 
