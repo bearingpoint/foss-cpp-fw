@@ -19,9 +19,13 @@ namespace filesystem {
 
 std::vector<std::string> getFiles(std::string const& baseDir, bool includeSubDirs);
 std::vector<std::string> getAllFilesFromDir(std::string const& baseDir);
-bool isDir(std::string const& dir);
+/** @deprecated use std::filesystem::is_directory() instead */
+bool isDir(std::string const& path);
+/** @deprecated use std::filesystem::exists() instead */
 bool pathExists(std::string const& path);
+/** @deprecated use std::filesystem::create_directory() instead */
 bool mkDir(std::string const& path);
+/** @deprecated use std::filesystem::create_directories() instead */
 bool mkDirRecursive(std::string const& path);
 std::string getFileName(std::string const& path);
 std::string stripExt(std::string const& path);
@@ -29,7 +33,9 @@ std::string getFileExt(std::string const& path);
 std::string getFileDirectory(std::string const& filePath);
 unsigned long getFileTimestamp(std::string const& path);	// returns timestamp in seconds (since 1970 or something)
 bool touchFile(std::string const& path);
+/** @deprecated use std::filesystem::copy_file() instead */
 bool copyFile(std::string const& source, std::string const& dest);
+/** @deprecated use std::filesystem::remove() instead */
 bool deleteFile(std::string const& path);
 uint64_t getFileSize(std::string const& path);
 
