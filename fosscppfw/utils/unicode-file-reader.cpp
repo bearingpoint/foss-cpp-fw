@@ -11,8 +11,11 @@
 #include <stdexcept>
 #include <thread>
 #include <fcntl.h>
+
+#ifndef WIN32_MSVC
 #include <unistd.h>
 #include <sys/stat.h>
+#endif
 
 class BaseFileReader {
 public:
