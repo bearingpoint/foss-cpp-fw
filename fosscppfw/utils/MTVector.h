@@ -29,6 +29,7 @@
 #include <utility>
 #include <thread>
 #include <cassert>
+#include <algorithm>
 
 template<class C>
 class MTVector {

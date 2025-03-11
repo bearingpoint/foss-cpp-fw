@@ -16,18 +16,21 @@
 #include "strbld.h"
 #include "wstrconv.h"
 
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <utime.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
+//#include <errno.h>
+//#include <fcntl.h>
 #include <filesystem>
 
-#if !defined(__WIN32__) && !defined(__MACOSX__)
-	#include <sys/sendfile.h>
-#endif
+//#ifndef WIN32_MSVC
+//	#include <dirent.h>
+//	#include <unistd.h>
+//	#include <utime.h>
+//#endif
+
+//#if !defined(__WIN32__) && !defined(__MACOSX__)
+//	#include <sys/sendfile.h>
+//#endif
 
 #include <stdio.h>
 #include <iostream>
@@ -40,54 +43,25 @@
 
 namespace filesystem {
 
-bool isDir(std::string const& dir) {
-	struct stat fileInfo;
-	stat(dir.c_str(), &fileInfo);
-	return S_ISDIR(fileInfo.st_mode);
+bool isDir(std::string const& path) {
+	return std::filesystem::is_directory(path);
 }
 
 bool pathExists(std::string const& path) {
-	struct stat fileInfo;
-	return stat(path.c_str(), &fileInfo) == 0;
+	return std::filesystem::exists(path);
 }
 
 bool touchFile(std::string const& path) {
-	if (!pathExists(path)) {
-		std::ofstream f(path);
-		return f.is_open();
-	}
-	return !utime(path.c_str(), nullptr);
+	std::filesystem::last_write_time(path, std::filesystem::file_time_type::clock::now());
+	return true;
 }
 
 bool mkDir(std::string const& path) {
-	LOGPREFIX("mkDir");
-	if (0 != mkdir(path.c_str()
-#ifndef __WIN32__
-			, S_IRWXU
-#endif
-			)) {
-		ERRORLOG(errno << ": Could not create directory \"" << path << "\"");
-		return false;
-	}
-	return true;
+	return std::filesystem::create_directory(path);
 }
 
 bool mkDirRecursive(std::string const& path) {
-	if (path.empty() || path==".")
-		return true;
-	std::vector<std::string> dirs = strSplit(path, '/');
-	// remove empty entries and dot entries
-	dirs.erase(std::remove_if(dirs.begin(), dirs.end(), [](auto &s) {
-		return s.empty() || s == ".";
-	}), dirs.end());
-	std::string builtPath = path[0] == '/' ? "/" : "./";	// start with absolute or relative path
-	for (auto &d : dirs) {
-		builtPath += d + "/";
-		if (!pathExists(builtPath))
-			if (!mkDir(builtPath))
-				return false;
-	}
-	return true;
+	return std::filesystem::create_directories(path);
 }
 
 std::string getFileName(std::string const& path) {
@@ -120,70 +94,15 @@ std::string getFileExt(std::string const& path) {
 }
 
 unsigned long getFileTimestamp(std::string const& path) {
-	LOGPREFIX("getFileTimestamp");
-	struct stat fileInfo;
-	if (stat(path.c_str(), &fileInfo) < 0) {
-		ERRORLOG("Could not stat() file \"" << path << "\"");
-		return 0;
-	}
-#if !defined(__WIN32__) && !defined(__MACOSX__)
-	return (unsigned long)fileInfo.st_mtim.tv_sec;
-#else
-	return (unsigned long)fileInfo.st_mtime;
-#endif
+	return std::filesystem::last_write_time(path).time_since_epoch().count();
 }
 
 bool copyFile(std::string const& source, std::string const& dest) {
-	LOGPREFIX("copyFile");
-	bool ret = true;
-	int fs = open(source.c_str(), O_RDONLY, 0);
-	if (fs < 0) {
-		ERRORLOG(errno << ": Could not open source file \"" << source <<"\"");
-		ret = false;
-	}
-	int fd = open(dest.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-	if (fd < 0) {
-		ERRORLOG(errno << ": Could not open destination file \"" << dest <<"\"");
-		ret = false;
-	}
-
-	if (ret) {
-		struct stat stat_source;
-		if (fstat(fs, &stat_source) < 0) {
-			ERRORLOG(errno << ": Could not stat() source file \"" << source << "\"");
-			ret = false;
-		}
-#if defined(__WIN32__) || defined(__MACOSX__)
-		if (ret) {
-			char* data = new char[stat_source.st_size];
-			ret = (read(fs, data, stat_source.st_size) >= 0);
-			if (ret)
-				ret = (write(fd, data, stat_source.st_size) >= 0);
-		}
-#else
-		if (ret) {
-			ret = (sendfile(fd, fs, 0, stat_source.st_size) >= 0);
-		}
-#endif
-		if (!ret) {
-			ERRORLOG(errno << ": Could not copy file \n" <<
-				"\"" << source <<"\" -> \"" << dest << "\"");
-		}
-	}
-
-	close(fs);
-	close(fd);
-
-	return ret;
+	return std::filesystem::copy_file(source, dest);
 }
 
 bool deleteFile(std::string const& path) {
-	LOGPREFIX("deleteFile");
-	if (unlink(path.c_str()) < 0) {
-		ERRORLOG(errno << ": Could not delete file \"" << path << "\"");
-		return false;
-	}
-	return true;
+	return std::filesystem::remove(path);
 }
 
 uint64_t getFileSize(std::string const& path) {
@@ -193,38 +112,26 @@ uint64_t getFileSize(std::string const& path) {
 }
 
 std::vector<std::string> getFiles(std::string const& baseDir, bool includeSubDirs) {
-	LOGPREFIX("getFiles");
-	std::vector<std::string> files;
-	DIR *dp;
-	struct dirent *dirp;
-	std::string separator = (baseDir.back() != '\\') ? "\\" : "";
-	if ((dp = opendir(baseDir.c_str())) == NULL) {
-		ERRORLOG(errno << ": Could not open directory \"" << baseDir << "\"\n");
-	} else {
-		while ((dirp = readdir(dp)) != NULL) {
-			if (dirp->d_name != std::string(".") && dirp->d_name != std::string("..")) {
-				auto path = baseDir + separator + dirp->d_name;
-				if (!isDir(path) || includeSubDirs)
-					files.push_back(path);
-			}
+	std::vector<std::string> entries;
+	for (std::filesystem::directory_entry const& entry : std::filesystem::directory_iterator(baseDir)) {
+		if (
+			entry.is_regular_file() 
+			|| (entry.is_directory() && includeSubDirs)
+		) {
+			entries.push_back(entry.path().string());
 		}
-		closedir(dp);
 	}
-	return files;
+	return entries;
 }
 
 std::vector<std::string> getAllFilesFromDir(std::string const& baseDir) {
-	std::vector<std::string> filesPath = {};
-	for (auto &path: getFiles(baseDir, true)) {
-		if (isDir(path)) {
-			std::vector<std::string> innerFilesPath = getAllFilesFromDir(path);
-			filesPath.reserve(filesPath.size() + innerFilesPath.size());
-			std::move(innerFilesPath.begin(), innerFilesPath.end(), std::back_inserter(filesPath));
-		} else {
-			filesPath.push_back(path);
+	std::vector<std::string> entries;
+	for (std::filesystem::directory_entry const& entry : std::filesystem::recursive_directory_iterator(baseDir)) {
+		if (entry.is_regular_file()) {
+			entries.push_back(entry.path().string());
 		}
 	}
-	return filesPath;
+	return entries;
 }
 
 void applyRecursive(std::string const& baseDir, std::function<void(std::string const& filename)> func) {

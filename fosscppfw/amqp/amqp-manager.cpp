@@ -16,6 +16,7 @@
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include <algorithm>
 
 //#define ENABLE_DEBUG_AMQP_LOGS // uncomment to enable debug logs
 #define AMQP_LOG_COLOR ioModif::FG_GREEN

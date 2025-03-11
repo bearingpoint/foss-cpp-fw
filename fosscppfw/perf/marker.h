@@ -20,6 +20,10 @@
 	#undef ENABLE_PERF_MARKERS
 #endif
 
+#ifdef WIN32_MSVC
+#define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif
+
 #ifdef ENABLE_PERF_MARKERS
 	#define COMBINE1(X,Y) X##Y  // helper macro
 	#define COMBINE(X,Y) COMBINE1(X,Y)

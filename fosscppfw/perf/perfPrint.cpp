@@ -17,8 +17,11 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <stdint.h>
 
+#ifndef WIN32_MSVC
 #include <unistd.h>
+#endif
 #ifndef __WIN32__
 #include <sys/ioctl.h>
 #endif
@@ -31,7 +34,7 @@ std::string formatTime(uint64_t val, int unitIndex = 0, uint64_t fraction = 0) {
 		{" ms", 1000},
 		{" s", 60},
 		{" m", 60},
-		{" h", __INT_MAX__}
+		{" h", INT64_MAX}
 	};
 	static constexpr int unitsCount = sizeof(units) / sizeof(units[0]);
 	std::stringstream str;
