@@ -16,22 +16,7 @@
 #include "strbld.h"
 #include "wstrconv.h"
 
-//#include <sys/stat.h>
-//#include <sys/types.h>
-//#include <errno.h>
-//#include <fcntl.h>
 #include <filesystem>
-
-//#ifndef WIN32_MSVC
-//	#include <dirent.h>
-//	#include <unistd.h>
-//	#include <utime.h>
-//#endif
-
-//#if !defined(__WIN32__) && !defined(__MACOSX__)
-//	#include <sys/sendfile.h>
-//#endif
-
 #include <stdio.h>
 #include <iostream>
 #include <string>
