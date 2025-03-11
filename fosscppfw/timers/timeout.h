@@ -10,9 +10,9 @@
 	After thre reset() method is called, the object's expired() method will keep returning false until start() is called again and from that
 	point on the interval elapsed becomes longer than the one specified.
 */
-class ThreadTimeout {
+class Timeout {
 public:
-	ThreadTimeout(int milliseconds)
+	Timeout(unsigned long milliseconds)
 		: timeoutMs_(milliseconds) {}
 
 	void start() {
@@ -30,6 +30,11 @@ public:
 		}
 		const auto diff = std::chrono::system_clock::now() - startTime_.load(std::memory_order_acquire);
 		return std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() >= timeoutMs_;
+	}
+
+	/** returns the configured timeout interval, in milliseconds */
+	const unsigned long getTimeout() {
+		return timeoutMs_;
 	}
 
 private:
