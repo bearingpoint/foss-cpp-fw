@@ -68,7 +68,8 @@ public:
 			// if the provided path is longer, we have no choice but to assume it's a full path.
 			// if the assumption proves wrong, the file will not be accessible
 			// see this for more info: https://stackoverflow.com/questions/28137284/does-getfullpathname-work-with-relative-paths-longer-than-max-path
-			strncpy(absolutePath, path.c_str(), sizeof(absolutePath));
+			strncpy(absolutePath, path.c_str(), sizeof(absolutePath) - 1);
+			absolutePath[sizeof(absolutePath) - 1] = 0; // make sure the string is null-terminated
 		}
 		auto wPath = str2Wstr(std::string("\\\\?\\") + absolutePath);
 		do {
