@@ -40,5 +40,5 @@ public:
 private:
 	const unsigned long timeoutMs_;
 	std::atomic<bool> running_{ false };
-	std::atomic<std::chrono::time_point<std::chrono::system_clock>> startTime_;
+	std::atomic<std::chrono::time_point<std::chrono::system_clock>> startTime_{ std::chrono::system_clock::now()};
 };
