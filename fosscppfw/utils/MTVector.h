@@ -35,7 +35,7 @@ template<class C>
 class MTVector {
 public:
 
-	MTVector(size_t preallocatedCapacity)
+	explicit MTVector(size_t preallocatedCapacity)
 		: capacity_(preallocatedCapacity)
 		, array_(static_cast<C*>(malloc(sizeof(C)*preallocatedCapacity)))
 	{

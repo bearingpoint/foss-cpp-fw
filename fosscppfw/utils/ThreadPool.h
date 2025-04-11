@@ -49,16 +49,16 @@ private:
 	std::vector<PoolTaskHandle> parts_;
 
 	friend class ThreadPool;
-	PoolTask(decltype(workFunc_) func)
+	explicit PoolTask(decltype(workFunc_) func)
 		: workFunc_(func) {
 	}
 
-	PoolTask(bool empty)
+	explicit PoolTask(bool empty)
 		: started_(true)
 		, finished_(true)
 	{ }
 
-	PoolTask(std::vector<PoolTaskHandle> &&parts)
+	explicit PoolTask(std::vector<PoolTaskHandle> &&parts)
 		: started_(true)
 		, isCombined_(true)
 		, parts_(std::move(parts))

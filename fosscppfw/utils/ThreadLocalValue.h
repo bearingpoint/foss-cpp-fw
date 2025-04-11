@@ -35,7 +35,7 @@ public:
 	}
 
 	ThreadLocalValue();
-	ThreadLocalValue(C initial);
+	explicit ThreadLocalValue(C initial);
 	~ThreadLocalValue();
 };
 

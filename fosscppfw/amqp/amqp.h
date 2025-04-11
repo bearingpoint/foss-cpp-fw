@@ -20,7 +20,7 @@ namespace detail {
 
 		virtual ~BaseConfig() = default;
 
-		BaseConfig(std::string name)
+		explicit BaseConfig(std::string name)
 			: name(name)
 		{}
 
@@ -43,7 +43,7 @@ struct QueueConfig: public detail::BaseConfig<QueueConfig> {
 
 	QueueConfig() = default;
 
-	QueueConfig(std::string name)
+	explicit QueueConfig(std::string name)
 		: BaseConfig(name)
 	{}
 

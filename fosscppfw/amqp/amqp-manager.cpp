@@ -116,7 +116,7 @@ bool AMQPManager::step() {
 					timeLastDataReceived_ = std::chrono::system_clock::now();
 				} catch (std::exception &e) {
 					ERRORLOG("Exception reading " << bytesToRead << " bytes from socket: " << e.what());
-					throw e;
+					throw;
 				}
 				bufferWriteOffset_ += bytesToRead;
 			} else {
@@ -131,7 +131,7 @@ bool AMQPManager::step() {
 				parsedSize = amqpConnection_->parse(buffer_ + bufferReadOffset_, sizeToParse);
 			} catch (std::exception const& err) {
 				ERRORLOG("Failed to parse AMQP data (sizeToParse: " << sizeToParse << "): " << err.what());
-				throw err;
+				throw;
 			}
 			bufferReadOffset_ += parsedSize;
 			if (bufferSize_ - bufferWriteOffset_ < bufferReadOffset_) {

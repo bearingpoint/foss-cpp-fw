@@ -45,7 +45,7 @@ private:
 		return std::unique_ptr<sectionData>(new sectionData(name));
 	}
 
-	sectionData(const char name[]) {
+	explicit sectionData(const char name[]) {
 		strncpy(name_, name, sizeof(name_)/sizeof(name_[0]) - 1);
 	}
 

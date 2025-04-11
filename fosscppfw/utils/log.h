@@ -169,7 +169,7 @@ private:
 
 class logger_prefix {
 public:
-	logger_prefix(std::string s) {
+	explicit logger_prefix(std::string s) {
 		logger::instance_.push_prefix(s);
 	}
 	~logger_prefix() {

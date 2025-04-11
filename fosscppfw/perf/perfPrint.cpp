@@ -152,9 +152,9 @@ void printFrameCaptureData(std::vector<perf::FrameCapture::frameData> data, std:
 #ifndef __WIN32__
 	struct winsize sz;
 	ioctl(STDOUT_FILENO,TIOCGWINSZ,&sz);
-	auto lineWidth = sz.ws_col - 10;
+	int lineWidth = sz.ws_col - 10;
 #else
-	auto lineWidth = 70;
+	int lineWidth = 70;
 #endif
 	if (lineWidth <= 0)
 		lineWidth = 80; // asume default

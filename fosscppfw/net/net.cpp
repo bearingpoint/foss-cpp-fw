@@ -26,7 +26,7 @@ using asio::ip::tcp;
 struct ConnectionInfo {
 	tcp::socket* socket;
 
-	ConnectionInfo(tcp::socket* socket) : socket(socket) {}
+	explicit ConnectionInfo(tcp::socket* socket) : socket(socket) {}
 };
 
 static asio::io_context theIoContext;

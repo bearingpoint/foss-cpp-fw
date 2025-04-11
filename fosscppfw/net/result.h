@@ -18,9 +18,9 @@ struct result {
 	} code;
 	std::string message = "";
 
-	result(result_code code, std::string msg)
+	result(result_code code, std::string const& msg)
 		: code(code), message(msg) {}
-	result(result_code code)
+	explicit result(result_code code)
 		: code(code) {}
 
 	result& operator=(result const& r) {
