@@ -20,7 +20,7 @@ struct result {
 
 	result(result_code code, std::string const& msg)
 		: code(code), message(msg) {}
-	explicit result(result_code code)
+	result(result_code code)
 		: code(code) {}
 
 	result& operator=(result const& r) {
