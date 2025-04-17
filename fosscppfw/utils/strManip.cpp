@@ -9,6 +9,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <random>
+#include <sstream>
+#include <iomanip>
 
 template <class TCHAR, class strType = std::basic_string<TCHAR>>
 std::vector<strType> strSplitImpl(strType const& text, std::vector<TCHAR> const& sep) {
@@ -156,4 +159,14 @@ std::string base64_decode(const std::string &encoded_string) {
 		}
 	}
 	return decoded_string;
+}
+
+std::string generateRandomHexString(size_t numBytes) {
+    std::random_device rd;
+    std::stringstream ss;
+    for (size_t i = 0; i < numBytes; ++i) {
+        unsigned int randomValue = rd();
+        ss << std::hex << std::setw(2) << std::setfill('0') << randomValue;
+    }
+    return ss.str().substr(0, numBytes * 2);
 }
