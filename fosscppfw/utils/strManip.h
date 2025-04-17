@@ -51,4 +51,11 @@ std::string trim(const std::string& str);
  */
 std::string base64_decode(const std::string &encoded_string);
 
+
+/**
+ * @brief Generates a random hexadecimal string
+ * @date 2025-04-17
+ */
+std::string generateRandomHexString(size_t numBytes);
+
 #include "_strManip_private.h"
