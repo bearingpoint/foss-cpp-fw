@@ -13,8 +13,10 @@
 
 bool parseConfigFile(std::string const& filePath, std::map<std::string, std::string> &opts, std::vector<std::string> const& requiredOpts) {
 	std::ifstream f(filePath);
-	if (!f.is_open())
+	if (!f.is_open()) {
+		ERRORLOG("Cannot read config file \"" << filePath << "\"");
 		return false;
+	}
 
 	LOGLN("Parsing config file \"" << filePath << "\"...");
 
@@ -38,7 +40,7 @@ bool parseConfigFile(std::string const& filePath, std::map<std::string, std::str
 			opts[tokenName] = value;
 		}
 		LOGLN("Finished parsing config file.");
-	} catch (std::runtime_error &err) {
+	} catch (std::runtime_error const& err) {
 		ERRORLOG("FAILED parsing config file \"" << filePath <<"\"\n" << err.what());
 		return false;
 	}
