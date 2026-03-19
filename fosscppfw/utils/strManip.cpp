@@ -82,6 +82,14 @@ std::string strLower(std::string const& str) {
 	return result;
 }
 
+std::string strLower(std::string const& str, std::string::const_iterator start, std::string::const_iterator end) {
+	std::string result;
+	std::transform(start, end, std::back_inserter(result), [] (char c) {
+		return std::tolower(c);
+	});
+	return result;
+}
+
 void makeLowercase(std::vector<std::string>& strings) {
 	std::transform(strings.begin(), strings.end(), strings.begin(),
 		[](std::string& str) {

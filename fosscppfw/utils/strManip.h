@@ -32,6 +32,9 @@ std::string strJoin(std::vector<T> const& parts, std::string const& delimiter);
 std::vector<std::string> strSplitPreserveQuotes(std::string const& text, std::vector<char> const& sep);
 /** Transforms a string into lowercase */
 std::string strLower(std::string const& str);
+/** Transforms a substring into lowercase */
+std::string strLower(std::string const& str, std::string::const_iterator start, std::string::const_iterator end);
+
 /** Transforms a string into uppercase */
 std::string strUpper(std::string const& str);
 
