@@ -75,14 +75,10 @@ std::vector<std::string> strSplitByRegex(std::string str, std::regex r) {
 }
 
 std::string strLower(std::string const& str) {
-	std::string result;
-	std::transform(str.begin(), str.end(), std::back_inserter(result), [] (char c) {
-		return std::tolower(c);
-	});
-	return result;
+	return strLower(str.begin(), str.end());
 }
 
-std::string strLower(std::string const& str, std::string::const_iterator start, std::string::const_iterator end) {
+std::string strLower(std::string::const_iterator start, std::string::const_iterator end) {
 	std::string result;
 	std::transform(start, end, std::back_inserter(result), [] (char c) {
 		return std::tolower(c);
