@@ -32,7 +32,7 @@ public:
 		 * Returns true when the map was updated. If pOutFinalValue is provided, it receives the value that
 		 * remains stored for key after this call, regardless of whether the map was updated.
 		 */
-		bool setIfGreater(K const& key, V&& value, V* pOutFinalValue = nullptr) {
+		bool setIfGreater(K const& key, V value, V* pOutFinalValue = nullptr) {
 			std::lock_guard<std::mutex> lock(pSource_->mutex_);
 			auto it = pSource_->mainData_.find(key);
 			if (it == pSource_->mainData_.end()) {
