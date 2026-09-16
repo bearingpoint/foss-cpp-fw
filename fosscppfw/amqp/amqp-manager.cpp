@@ -267,10 +267,11 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 				bool const preserveReplyUtf8Boundaries = qConfig.preserveReplyUtf8Boundaries;
 				auto const replyCompression = qConfig.replyCompression;
 				auto const replyPreparer = qConfig.replyPreparer;
+				auto const replyPreparationErrorFactory = qConfig.replyPreparationErrorFactory;
 				auto const requestHeaders = replyPreparer || replyCompression != AMQP::ReplyCompression::None
 					? msg.headers() : AMQP::Table{};
 				// call the handler
-				qConfig.handler(payload, [this, deliveryTag, replyTo, correlationId, deliveryChannelGeneration, replyChunkBytes, preserveReplyUtf8Boundaries, replyCompression, replyPreparer, requestHeaders] (std::string result) {
+				qConfig.handler(payload, [this, deliveryTag, replyTo, correlationId, deliveryChannelGeneration, replyChunkBytes, preserveReplyUtf8Boundaries, replyCompression, replyPreparer, replyPreparationErrorFactory, requestHeaders] (std::string result) {
 					if (deliveryChannelGeneration != channelGeneration_) {
 						AMQPLOGLN("Ignoring completion from a stale AMQP channel generation.");
 						return;
@@ -278,7 +279,7 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 					PERF_MARKER("AMQP-send-reply");
 					// this is the result callback, which should ALWAYS be invoked from the main thread
 					DEBUGAMQPLOG("Sending back reply on queue '" << replyTo << "'");
-					auto prepared = AMQP::prepareReply(result, requestHeaders, replyCompression, replyPreparer, correlationId, amqpConnection_->maxFrame());
+					auto prepared = AMQP::prepareReply(result, requestHeaders, replyCompression, replyPreparer, correlationId, amqpConnection_->maxFrame(), replyPreparationErrorFactory);
 					bool const isCompressed = prepared && !prepared->contentEncoding.empty();
 					AMQP::Table replyHeaders;
 					if (prepared) {

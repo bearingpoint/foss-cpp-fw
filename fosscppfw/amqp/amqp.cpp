@@ -20,29 +20,42 @@ ReplyCompression negotiateReplyCompression(ReplyCompression configured, Table co
 		? configured : ReplyCompression::None;
 }
 
-std::optional<std::string> compressReply(std::string_view payload, ReplyCompression compression) {
+std::optional<std::string> compressReply(
+	std::string_view payload, ReplyCompression compression, ReplyCompressionPolicy policy
+) {
 	constexpr size_t maxReplyBytes = 64 * 1024 * 1024;
-	if (compression != ReplyCompression::Zstd || payload.size() < 2 || payload.size() > maxReplyBytes) {
+	bool const required = policy == ReplyCompressionPolicy::Required;
+	if (compression != ReplyCompression::Zstd) {
+		if (required) throw std::invalid_argument("Required reply compression is disabled");
 		return std::nullopt;
 	}
+	if (!required && (payload.size() < 2 || payload.size() > maxReplyBytes)) return std::nullopt;
+	auto failed = [required](char const* detail) -> std::optional<std::string> {
+		if (required) throw std::runtime_error(std::string("Reply compression failed: ") + detail);
+		return std::nullopt;
+	};
 	try {
 		std::unique_ptr<ZSTD_CCtx, decltype(&ZSTD_freeCCtx)> context(ZSTD_createCCtx(), ZSTD_freeCCtx);
 		if (!context
 			|| ZSTD_isError(ZSTD_CCtx_setParameter(context.get(), ZSTD_c_compressionLevel, 1))
 			|| ZSTD_isError(ZSTD_CCtx_setParameter(context.get(), ZSTD_c_contentSizeFlag, 1))
 			|| ZSTD_isError(ZSTD_CCtx_setParameter(context.get(), ZSTD_c_checksumFlag, 1))) {
-			return std::nullopt;
+			return failed("unable to initialize Zstandard");
 		}
-		// A smaller bounded destination makes incompressible replies fall back before publication.
-		std::string compressed(payload.size() - 1, '\0');
+		size_t const capacity = required ? ZSTD_compressBound(payload.size()) : payload.size() - 1;
+		if (ZSTD_isError(capacity)) return failed(ZSTD_getErrorName(capacity));
+		std::string compressed(capacity, '\0');
 		size_t const bytes = ZSTD_compress2(
 			context.get(), compressed.data(), compressed.size(), payload.data(), payload.size()
 		);
-		if (ZSTD_isError(bytes)) return std::nullopt;
+		if (ZSTD_isError(bytes)) return failed(ZSTD_getErrorName(bytes));
 		compressed.resize(bytes);
 		return compressed;
 	} catch (std::bad_alloc const&) {
-		// Compression is optional; the already-produced plain reply remains usable.
+		if (required) throw;
+		return std::nullopt;
+	} catch (std::length_error const&) {
+		if (required) throw;
 		return std::nullopt;
 	}
 }
@@ -66,25 +79,34 @@ size_t getReplyChunkSize(std::string_view remainingPayload, size_t maxChunkBytes
 
 std::optional<PreparedReply> prepareReply(
 	std::string const& payload, Table const& requestHeaders, ReplyCompression compression,
-	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes
+	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes,
+	ReplyPreparationErrorFactory const& errorFactory
 ) {
-	std::optional<PreparedReply> prepared;
-	if (preparer) {
-		prepared = preparer(payload, requestHeaders, compression);
-	} else if (auto compressed = compressReply(payload, negotiateReplyCompression(compression, requestHeaders))) {
-		prepared = PreparedReply {std::move(*compressed), {}, "zstd"};
+	try {
+		std::optional<PreparedReply> prepared;
+		if (preparer) {
+			prepared = preparer(payload, requestHeaders, compression);
+		} else if (auto compressed = compressReply(payload, negotiateReplyCompression(compression, requestHeaders))) {
+			prepared = PreparedReply {std::move(*compressed), {}, "zstd"};
+		}
+		if (!prepared || prepared->headers.empty()) return prepared;
+		Table headers;
+		for (auto const& entry : prepared->headers) headers[entry.first] = entry.second;
+		MetaData metadata;
+		metadata.setHeaders(headers);
+		metadata.setContentEncoding(prepared->contentEncoding);
+		metadata.setCorrelationID(correlationId);
+		metadata.setTypeName("multipart/incomplete");
+		// AMQP content-header framing: frame prefix/end (8), class/weight (4), body size (8).
+		if (maxFrameBytes != 0 && 20u + metadata.size() > maxFrameBytes) {
+			if (!errorFactory) return std::nullopt;
+			throw std::length_error("Reply metadata exceeds the negotiated AMQP frame size");
+		}
+		return prepared;
+	} catch (std::exception const& error) {
+		if (!errorFactory) throw;
+		return PreparedReply {errorFactory(error.what()), {}, {}};
 	}
-	if (!prepared || prepared->headers.empty()) return prepared;
-	Table headers;
-	for (auto const& entry : prepared->headers) headers[entry.first] = entry.second;
-	MetaData metadata;
-	metadata.setHeaders(headers);
-	metadata.setContentEncoding(prepared->contentEncoding);
-	metadata.setCorrelationID(correlationId);
-	metadata.setTypeName("multipart/incomplete");
-	// AMQP content-header framing: frame prefix/end (8), class/weight (4), body size (8).
-	if (maxFrameBytes != 0 && 20u + metadata.size() > maxFrameBytes) return std::nullopt;
-	return prepared;
 }
 
 std::vector<QueueConfig> generateXRandomQueues(std::string const& exchangeName, int count, MQHandler handler) {

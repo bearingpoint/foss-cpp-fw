@@ -14,13 +14,17 @@ using MQResultCallback = std::function<void(std::string)>;
 using MQHandler = std::function<void(std::string payload, MQResultCallback resultCallback)>;
 
 enum class ReplyCompression { None, Zstd };
+enum class ReplyCompressionPolicy { IfSmaller, Required };
 class Table;
 
 ReplyCompression parseReplyCompression(std::string_view value);
 ReplyCompression negotiateReplyCompression(ReplyCompression configured, Table const& headers);
 
-/** Returns a complete compressed frame only when it is smaller than the original reply. */
-std::optional<std::string> compressReply(std::string_view payload, ReplyCompression compression);
+/** Required compression returns a frame regardless of its size, or throws on failure. */
+std::optional<std::string> compressReply(
+	std::string_view payload, ReplyCompression compression,
+	ReplyCompressionPolicy policy = ReplyCompressionPolicy::IfSmaller
+);
 
 struct PreparedReply {
 	std::string body;
@@ -32,10 +36,12 @@ struct PreparedReply {
 using ReplyPreparer = std::function<std::optional<PreparedReply>(
 	std::string const&, Table const&, ReplyCompression
 )>;
+using ReplyPreparationErrorFactory = std::function<std::string(std::string const&)>;
 
 std::optional<PreparedReply> prepareReply(
 	std::string const& payload, Table const& requestHeaders, ReplyCompression compression,
-	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes
+	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes,
+	ReplyPreparationErrorFactory const& errorFactory = {}
 );
 
 namespace detail {
@@ -73,6 +79,7 @@ struct QueueConfig: public detail::BaseConfig<QueueConfig> {
 	bool preserveReplyUtf8Boundaries = false;
 	ReplyCompression replyCompression = ReplyCompression::None;
 	ReplyPreparer replyPreparer;
+	ReplyPreparationErrorFactory replyPreparationErrorFactory;
 
 	QueueConfig() = default;
 
@@ -108,6 +115,11 @@ struct QueueConfig: public detail::BaseConfig<QueueConfig> {
 
 	QueueConfig& setReplyPreparer(ReplyPreparer preparer) {
 		replyPreparer = std::move(preparer);
+		return *this;
+	}
+
+	QueueConfig& setReplyPreparationErrorFactory(ReplyPreparationErrorFactory factory) {
+		replyPreparationErrorFactory = std::move(factory);
 		return *this;
 	}
 };
