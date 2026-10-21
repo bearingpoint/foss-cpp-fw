@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <amqpcpp.h>
+#include <array>
 #include <memory>
 #include <stdexcept>
 #include <zstd.h>
@@ -42,14 +43,21 @@ std::optional<std::string> compressReply(
 			|| ZSTD_isError(ZSTD_CCtx_setParameter(context.get(), ZSTD_c_checksumFlag, 1))) {
 			return failed("unable to initialize Zstandard");
 		}
-		size_t const capacity = required ? ZSTD_compressBound(payload.size()) : payload.size() - 1;
-		if (ZSTD_isError(capacity)) return failed(ZSTD_getErrorName(capacity));
-		std::string compressed(capacity, '\0');
-		size_t const bytes = ZSTD_compress2(
-			context.get(), compressed.data(), compressed.size(), payload.data(), payload.size()
-		);
-		if (ZSTD_isError(bytes)) return failed(ZSTD_getErrorName(bytes));
-		compressed.resize(bytes);
+		auto const pledged = ZSTD_CCtx_setPledgedSrcSize(context.get(), payload.size());
+		if (ZSTD_isError(pledged)) return failed(ZSTD_getErrorName(pledged));
+		// Grow with compressed output, not the potentially huge uncompressed reply.
+		std::string compressed;
+		std::array<char, 64 * 1024> buffer;
+		ZSTD_inBuffer input {payload.data(), payload.size(), 0};
+		size_t remaining;
+		do {
+			ZSTD_outBuffer output {buffer.data(), buffer.size(), 0};
+			remaining = ZSTD_compressStream2(context.get(), &output, &input, ZSTD_e_end);
+			if (ZSTD_isError(remaining)) return failed(ZSTD_getErrorName(remaining));
+			if (!required && compressed.size() + output.pos >= payload.size()) return std::nullopt;
+			compressed.append(buffer.data(), output.pos);
+		} while (remaining != 0);
+		compressed.shrink_to_fit();
 		return compressed;
 	} catch (std::bad_alloc const&) {
 		if (required) throw;
