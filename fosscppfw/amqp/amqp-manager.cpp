@@ -287,6 +287,8 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 						for (auto const& entry : prepared->headers) replyHeaders[entry.first] = entry.second;
 					}
 					size_t bytesSent = 0;
+					size_t chunkIndex = 0;
+					size_t const chunkCount = result.empty() ? 0 : 1 + (result.size() - 1) / replyChunkBytes;
 					while (bytesSent < result.size()) {
 						size_t messageSize = AMQP::getReplyChunkSize(
 							std::string_view(result).substr(bytesSent), replyChunkBytes,
@@ -297,6 +299,9 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 						AMQP::Envelope envelope(&result[bytesSent], messageSize);
 						envelope.setCorrelationID(correlationId);
 						if (isCompressed) envelope.setContentEncoding(prepared->contentEncoding);
+						if (prepared && prepared->sequenceChunks) {
+							AMQP::setReplyChunkHeaders(replyHeaders, chunkIndex, chunkCount, result.size());
+						}
 						if (prepared && !prepared->headers.empty()) envelope.setHeaders(replyHeaders);
 						if (isMultipart && !isLastPart) {
 							envelope.setTypeName("multipart/incomplete");
@@ -306,6 +311,7 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 							amqpChannel_->publish("", replyTo, envelope, AMQP::mandatory);
 						}
 						bytesSent += messageSize;
+						++chunkIndex;
 					}
 					if (amqpChannel_) {
 						// acknowledge the initial message so it can be removed from the queue
