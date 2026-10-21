@@ -1,8 +1,10 @@
 #pragma once
 
 #include "semaphore.h"
-#include <mutex>
 #include <deque>
+#include <iterator>
+#include <mutex>
+#include <utility>
 
 namespace detail {
 
@@ -18,7 +20,7 @@ public:
 	T pop() {
 		semaphore_.wait();
 		std::lock_guard<std::mutex> lock(queueMutex_);
-		T result = queue_.front();
+		T result = std::move(queue_.front());
 		queue_.pop_front();
 		return result;
 	}
@@ -29,7 +31,7 @@ public:
 			std::lock_guard<std::mutex> lock(queueMutex_);
 			queue_.swap(replacement);
 		}
-		return {replacement.begin(), replacement.end()};
+		return {std::make_move_iterator(replacement.begin()), std::make_move_iterator(replacement.end())};
 	}
 
 private:
