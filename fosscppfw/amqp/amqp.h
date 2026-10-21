@@ -7,11 +7,9 @@
 #include <cstddef>
 #include <optional>
 #include <utility>
+#include <variant>
 
 namespace AMQP {
-
-using MQResultCallback = std::function<void(std::string)>;
-using MQHandler = std::function<void(std::string payload, MQResultCallback resultCallback)>;
 
 enum class ReplyCompression { None, Zstd };
 enum class ReplyCompressionPolicy { IfSmaller, Required };
@@ -33,6 +31,27 @@ struct PreparedReply {
 	bool sequenceChunks = false;
 };
 
+/**
+ * Owns application results until the executor prepares them for the negotiated format.
+ * Empty headers and ReplyCompression::None must produce a plain reply for fallback.
+ */
+using ReplyProducer = std::function<PreparedReply(Table const&, ReplyCompression)>;
+using ReplyResult = std::variant<std::string, ReplyProducer>;
+
+PreparedReply preparePlainReply(ReplyResult result);
+
+struct MQResultCallback {
+	/** May run on an executor; captures request data, never the connection or channel. */
+	std::function<PreparedReply(ReplyResult)> prepare = preparePlainReply;
+	/** Must run on the AMQP thread, including after off-thread preparation. */
+	std::function<void(PreparedReply)> publish;
+
+	// Preserve the synchronous callback path for handlers without an executor.
+	void operator()(ReplyResult result) const { publish(prepare(std::move(result))); }
+};
+
+using MQHandler = std::function<void(std::string payload, MQResultCallback resultCallback)>;
+
 /** A null result preserves the original plain reply, before any fragments are sent. */
 using ReplyPreparer = std::function<std::optional<PreparedReply>(
 	std::string const&, Table const&, ReplyCompression
@@ -46,6 +65,12 @@ std::optional<PreparedReply> prepareReply(
 );
 
 void setReplyChunkHeaders(Table& headers, size_t index, size_t count, size_t totalBytes);
+
+PreparedReply prepareReplyResult(
+	ReplyResult result, Table const& requestHeaders, ReplyCompression compression,
+	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes,
+	ReplyPreparationErrorFactory const& errorFactory = {}
+);
 
 namespace detail {
 	template <class SUBCLASS>

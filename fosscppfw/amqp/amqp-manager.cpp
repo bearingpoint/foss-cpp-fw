@@ -270,52 +270,56 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 				auto const replyPreparationErrorFactory = qConfig.replyPreparationErrorFactory;
 				auto const requestHeaders = replyPreparer || replyCompression != AMQP::ReplyCompression::None
 					? msg.headers() : AMQP::Table{};
+				// Snapshot negotiated limits before preparation can leave the AMQP thread.
+				auto const maxFrameBytes = amqpConnection_->maxFrame();
 				// call the handler
-				qConfig.handler(payload, [this, deliveryTag, replyTo, correlationId, deliveryChannelGeneration, replyChunkBytes, preserveReplyUtf8Boundaries, replyCompression, replyPreparer, replyPreparationErrorFactory, requestHeaders] (std::string result) {
-					if (deliveryChannelGeneration != channelGeneration_) {
-						AMQPLOGLN("Ignoring completion from a stale AMQP channel generation.");
-						return;
-					}
-					PERF_MARKER("AMQP-send-reply");
-					// this is the result callback, which should ALWAYS be invoked from the main thread
-					DEBUGAMQPLOG("Sending back reply on queue '" << replyTo << "'");
-					auto prepared = AMQP::prepareReply(result, requestHeaders, replyCompression, replyPreparer, correlationId, amqpConnection_->maxFrame(), replyPreparationErrorFactory);
-					bool const isCompressed = prepared && !prepared->contentEncoding.empty();
-					AMQP::Table replyHeaders;
-					if (prepared) {
-						result = std::move(prepared->body);
-						for (auto const& entry : prepared->headers) replyHeaders[entry.first] = entry.second;
-					}
-					size_t bytesSent = 0;
-					size_t chunkIndex = 0;
-					size_t const chunkCount = result.empty() ? 0 : 1 + (result.size() - 1) / replyChunkBytes;
-					while (bytesSent < result.size()) {
-						size_t messageSize = AMQP::getReplyChunkSize(
-							std::string_view(result).substr(bytesSent), replyChunkBytes,
-							preserveReplyUtf8Boundaries && !isCompressed
-						);
-						bool isMultipart = result.size() > replyChunkBytes;
-						bool isLastPart = bytesSent + messageSize == result.size();
-						AMQP::Envelope envelope(&result[bytesSent], messageSize);
-						envelope.setCorrelationID(correlationId);
-						if (isCompressed) envelope.setContentEncoding(prepared->contentEncoding);
-						if (prepared && prepared->sequenceChunks) {
-							AMQP::setReplyChunkHeaders(replyHeaders, chunkIndex, chunkCount, result.size());
+				qConfig.handler(std::move(payload), AMQP::MQResultCallback {
+					.prepare = [requestHeaders, replyCompression, replyPreparer, correlationId, maxFrameBytes, replyPreparationErrorFactory](AMQP::ReplyResult result) {
+						return AMQP::prepareReplyResult(std::move(result), requestHeaders, replyCompression, replyPreparer, correlationId, maxFrameBytes, replyPreparationErrorFactory);
+					},
+					.publish = [this, deliveryTag, replyTo, correlationId, deliveryChannelGeneration, replyChunkBytes, preserveReplyUtf8Boundaries](AMQP::PreparedReply prepared) {
+						if (deliveryChannelGeneration != channelGeneration_) {
+							AMQPLOGLN("Ignoring completion from a stale AMQP channel generation.");
+							return;
 						}
-						if (prepared && !prepared->headers.empty()) envelope.setHeaders(replyHeaders);
-						if (isMultipart && !isLastPart) {
-							envelope.setTypeName("multipart/incomplete");
+						PERF_MARKER("AMQP-send-reply");
+						// this is the result callback, which should ALWAYS be invoked from the main thread
+						DEBUGAMQPLOG("Sending back reply on queue '" << replyTo << "'");
+						auto const& result = prepared.body;
+						bool const isCompressed = !prepared.contentEncoding.empty();
+						AMQP::Table replyHeaders;
+						for (auto const& entry : prepared.headers) replyHeaders[entry.first] = entry.second;
+						size_t bytesSent = 0;
+						size_t chunkIndex = 0;
+						size_t const chunkCount = result.empty() ? 0 : 1 + (result.size() - 1) / replyChunkBytes;
+						while (bytesSent < result.size()) {
+							size_t messageSize = AMQP::getReplyChunkSize(
+								std::string_view(result).substr(bytesSent), replyChunkBytes,
+								preserveReplyUtf8Boundaries && !isCompressed
+							);
+							bool isMultipart = result.size() > replyChunkBytes;
+							bool isLastPart = bytesSent + messageSize == result.size();
+							AMQP::Envelope envelope(&result[bytesSent], messageSize);
+							envelope.setCorrelationID(correlationId);
+							if (isCompressed) envelope.setContentEncoding(prepared.contentEncoding);
+							if (prepared.sequenceChunks) {
+								AMQP::setReplyChunkHeaders(replyHeaders, chunkIndex, chunkCount, result.size());
+							}
+							if (!prepared.headers.empty()) envelope.setHeaders(replyHeaders);
+							if (isMultipart && !isLastPart) {
+								envelope.setTypeName("multipart/incomplete");
+							}
+							if (amqpChannel_) {
+								// send the reply
+								amqpChannel_->publish("", replyTo, envelope, AMQP::mandatory);
+							}
+							bytesSent += messageSize;
+							++chunkIndex;
 						}
 						if (amqpChannel_) {
-							// send the reply
-							amqpChannel_->publish("", replyTo, envelope, AMQP::mandatory);
+							// acknowledge the initial message so it can be removed from the queue
+							amqpChannel_->ack(deliveryTag);
 						}
-						bytesSent += messageSize;
-						++chunkIndex;
-					}
-					if (amqpChannel_) {
-						// acknowledge the initial message so it can be removed from the queue
-						amqpChannel_->ack(deliveryTag);
 					}
 				});
 			});
