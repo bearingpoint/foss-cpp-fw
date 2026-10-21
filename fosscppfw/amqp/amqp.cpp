@@ -9,6 +9,29 @@
 
 namespace AMQP {
 
+PreparedReply preparePlainReply(ReplyResult result) {
+	if (auto* text = std::get_if<std::string>(&result)) return {std::move(*text), {}, {}};
+	return std::get<ReplyProducer>(result)(Table{}, ReplyCompression::None);
+}
+
+PreparedReply prepareReplyResult(
+	ReplyResult result, Table const& requestHeaders, ReplyCompression compression,
+	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes,
+	ReplyPreparationErrorFactory const& errorFactory
+) {
+	std::optional<PreparedReply> prepared;
+	if (auto* text = std::get_if<std::string>(&result)) {
+		prepared = prepareReply(*text, requestHeaders, compression, preparer, correlationId, maxFrameBytes, errorFactory);
+	} else {
+		auto const& producer = std::get<ReplyProducer>(result);
+		prepared = prepareReply({}, requestHeaders, compression,
+			[&producer](std::string const&, Table const& headers, ReplyCompression encoding) {
+				return producer(headers, encoding);
+			}, correlationId, maxFrameBytes, errorFactory);
+	}
+	return prepared ? std::move(*prepared) : preparePlainReply(std::move(result));
+}
+
 ReplyCompression parseReplyCompression(std::string_view value) {
 	if (value == "none") return ReplyCompression::None;
 	if (value == "zstd") return ReplyCompression::Zstd;

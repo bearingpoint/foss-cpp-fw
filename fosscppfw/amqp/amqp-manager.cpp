@@ -274,9 +274,8 @@ void AMQPManager::setupQueues(std::vector<AMQP::QueueConfig> const& queues) {
 				auto const maxFrameBytes = amqpConnection_->maxFrame();
 				// call the handler
 				qConfig.handler(std::move(payload), AMQP::MQResultCallback {
-					.prepare = [requestHeaders, replyCompression, replyPreparer, correlationId, maxFrameBytes, replyPreparationErrorFactory](std::string result) {
-						auto prepared = AMQP::prepareReply(result, requestHeaders, replyCompression, replyPreparer, correlationId, maxFrameBytes, replyPreparationErrorFactory);
-						return prepared ? std::move(*prepared) : AMQP::PreparedReply {std::move(result), {}, {}};
+					.prepare = [requestHeaders, replyCompression, replyPreparer, correlationId, maxFrameBytes, replyPreparationErrorFactory](AMQP::ReplyResult result) {
+						return AMQP::prepareReplyResult(std::move(result), requestHeaders, replyCompression, replyPreparer, correlationId, maxFrameBytes, replyPreparationErrorFactory);
 					},
 					.publish = [this, deliveryTag, replyTo, correlationId, deliveryChannelGeneration, replyChunkBytes, preserveReplyUtf8Boundaries](AMQP::PreparedReply prepared) {
 						if (deliveryChannelGeneration != channelGeneration_) {
