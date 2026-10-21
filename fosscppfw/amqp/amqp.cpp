@@ -4,6 +4,8 @@
 #include <amqpcpp.h>
 #include <array>
 #include <memory>
+#include <limits>
+#include <random>
 #include <stdexcept>
 #include <zstd.h>
 
@@ -108,6 +110,24 @@ size_t getReplyChunkSize(std::string_view remainingPayload, size_t maxChunkBytes
 	return boundary > 0 && !isContinuation(boundary) ? boundary : chunkSize;
 }
 
+void setReplyChunkHeaders(Table& headers, size_t index, size_t count, size_t totalBytes) {
+	headers["x-reply-chunk-index"] = std::to_string(index);
+	headers["x-reply-chunk-count"] = std::to_string(count);
+	headers["x-reply-total-bytes"] = std::to_string(totalBytes);
+}
+
+static std::string replyAttemptId() {
+	std::random_device random;
+	char const* hex = "0123456789abcdef";
+	std::string id;
+	for (size_t i = 0; i < 16; ++i) {
+		auto const byte = random() & 0xff;
+		id += hex[byte >> 4];
+		id += hex[byte & 0xf];
+	}
+	return id;
+}
+
 std::optional<PreparedReply> prepareReply(
 	std::string const& payload, Table const& requestHeaders, ReplyCompression compression,
 	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes,
@@ -120,9 +140,20 @@ std::optional<PreparedReply> prepareReply(
 		} else if (auto compressed = compressReply(payload, negotiateReplyCompression(compression, requestHeaders))) {
 			prepared = PreparedReply {std::move(*compressed), {}, "zstd"};
 		}
-		if (!prepared || prepared->headers.empty()) return prepared;
+		if (!prepared) return prepared;
+		if (prepared->sequenceChunks) {
+			if (prepared->contentEncoding != "zstd") throw std::invalid_argument("Sequenced replies require binary Zstandard chunks");
+			prepared->headers.emplace_back("x-reply-chunk-protocol", "1");
+			prepared->headers.emplace_back("x-reply-attempt-id", replyAttemptId());
+		}
+		if (prepared->headers.empty()) return prepared;
 		Table headers;
 		for (auto const& entry : prepared->headers) headers[entry.first] = entry.second;
+		// Reserve the largest possible decimal counters before publishing any part.
+		if (prepared->sequenceChunks) {
+			auto const maximum = std::numeric_limits<size_t>::max();
+			setReplyChunkHeaders(headers, maximum, maximum, maximum);
+		}
 		MetaData metadata;
 		metadata.setHeaders(headers);
 		metadata.setContentEncoding(prepared->contentEncoding);

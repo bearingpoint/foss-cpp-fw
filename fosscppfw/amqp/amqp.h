@@ -28,6 +28,7 @@ struct PreparedReply {
 	std::string body;
 	std::vector<std::pair<std::string, std::string>> headers;
 	std::string contentEncoding;
+	bool sequenceChunks = false;
 };
 
 /**
@@ -62,6 +63,8 @@ std::optional<PreparedReply> prepareReply(
 	ReplyPreparer const& preparer, std::string const& correlationId, size_t maxFrameBytes,
 	ReplyPreparationErrorFactory const& errorFactory = {}
 );
+
+void setReplyChunkHeaders(Table& headers, size_t index, size_t count, size_t totalBytes);
 
 PreparedReply prepareReplyResult(
 	ReplyResult result, Table const& requestHeaders, ReplyCompression compression,
