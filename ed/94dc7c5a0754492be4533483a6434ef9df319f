@@ -1,0 +1,26 @@
+fosscppfw/amqp/amqp-manager.cpp
+  s_e884734c786e48::t_1876d294ef8165 273-274,276-281
+  s_e884734c786e48::t_8ed7c3cd80f512 282-312,315-316
+fosscppfw/amqp/amqp.h
+  s_e884734c786e48::t_1876d294ef8165 32-44
+fosscppfw/utils/async-queue-detail.h
+  s_e884734c786e48::t_1876d294ef8165 5-7,23,34,63
+fosscppfw/amqp/amqp.cpp
+  s_e884734c786e48::t_1876d294ef8165 46-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ed94dc7c5a0754492be4533483a6434ef9df319f",
+  "prompts": {},
+  "sessions": {
+    "s_e884734c786e48": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fc168-9e24-7c11-badd-3dcc64a698f6",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Rǎzvan Bordeanu <razvan.bordeanu@bearingpoint.com>"
+    }
+  }
+}
