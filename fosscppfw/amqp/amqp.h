@@ -28,6 +28,10 @@ struct PreparedReply {
 	std::string body;
 	std::vector<std::pair<std::string, std::string>> headers;
 	std::string contentEncoding;
+	/**
+	 * Numbers the published parts with attempt and chunk headers so the receiver can store and order them itself.
+	 * Supports Zstandard and plain (unencoded) bodies; prepareReply adds and validates the protocol headers.
+	 */
 	bool sequenceChunks = false;
 };
 
@@ -208,6 +212,17 @@ std::vector<QueueConfig> generateXRandomQueues(std::string const& exchangeName, 
 /** Returns a chunk length without copying the payload. maxChunkBytes must be positive. */
 size_t getReplyChunkSize(
 	std::string_view remainingPayload,
+	size_t maxChunkBytes,
+	bool preserveUtf8Boundaries = false
+);
+
+/**
+ * Returns the exact message sizes used by the publisher, including any UTF-8 boundary adjustments.
+ * A chunk can be shorter than maxChunkBytes, so callers must not estimate the count by dividing sizes.
+ * maxChunkBytes must be positive.
+ */
+std::vector<size_t> splitReplyChunks(
+	std::string_view payload,
 	size_t maxChunkBytes,
 	bool preserveUtf8Boundaries = false
 );

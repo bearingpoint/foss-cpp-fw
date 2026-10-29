@@ -13,7 +13,10 @@ namespace AMQP {
 
 PreparedReply preparePlainReply(ReplyResult result) {
 	if (auto* text = std::get_if<std::string>(&result)) return {std::move(*text), {}, {}};
-	return std::get<ReplyProducer>(result)(Table{}, ReplyCompression::None);
+	auto prepared = std::get<ReplyProducer>(result)(Table{}, ReplyCompression::None);
+	// This fallback bypasses prepareReply and adds no protocol headers, so it must not claim to number the parts.
+	prepared.sequenceChunks = false;
+	return prepared;
 }
 
 PreparedReply prepareReplyResult(
@@ -110,6 +113,18 @@ size_t getReplyChunkSize(std::string_view remainingPayload, size_t maxChunkBytes
 	return boundary > 0 && !isContinuation(boundary) ? boundary : chunkSize;
 }
 
+std::vector<size_t> splitReplyChunks(std::string_view payload, size_t maxChunkBytes, bool preserveUtf8Boundaries) {
+	if (maxChunkBytes == 0) throw std::invalid_argument("Reply chunk size must be positive");
+	std::vector<size_t> sizes;
+	for (size_t offset = 0; offset < payload.size();) {
+		// A nonempty payload and positive limit always produce a nonempty chunk.
+		size_t const size = getReplyChunkSize(payload.substr(offset), maxChunkBytes, preserveUtf8Boundaries);
+		sizes.push_back(size);
+		offset += size;
+	}
+	return sizes;
+}
+
 void setReplyChunkHeaders(Table& headers, size_t index, size_t count, size_t totalBytes) {
 	headers["x-reply-chunk-index"] = std::to_string(index);
 	headers["x-reply-chunk-count"] = std::to_string(count);
@@ -142,7 +157,10 @@ std::optional<PreparedReply> prepareReply(
 		}
 		if (!prepared) return prepared;
 		if (prepared->sequenceChunks) {
-			if (prepared->contentEncoding != "zstd") throw std::invalid_argument("Sequenced replies require binary Zstandard chunks");
+			// Both plain text and binary packed candidates carry sequence headers; other encodings are unsupported.
+			if (!prepared->contentEncoding.empty() && prepared->contentEncoding != "zstd") {
+				throw std::invalid_argument("Sequenced replies require plain or Zstandard chunks");
+			}
 			prepared->headers.emplace_back("x-reply-chunk-protocol", "1");
 			prepared->headers.emplace_back("x-reply-attempt-id", replyAttemptId());
 		}
@@ -156,7 +174,7 @@ std::optional<PreparedReply> prepareReply(
 		}
 		MetaData metadata;
 		metadata.setHeaders(headers);
-		metadata.setContentEncoding(prepared->contentEncoding);
+		if (!prepared->contentEncoding.empty()) metadata.setContentEncoding(prepared->contentEncoding);
 		metadata.setCorrelationID(correlationId);
 		metadata.setTypeName("multipart/incomplete");
 		// AMQP content-header framing: frame prefix/end (8), class/weight (4), body size (8).
